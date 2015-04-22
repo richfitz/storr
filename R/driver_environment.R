@@ -1,0 +1,65 @@
+##' Dummy environment driver that can possibly be used for the internals
+##' @title Environment object cache driver
+##' @export
+driver_environment <- function() {
+  .R6_driver_environment$new(path)
+}
+
+.R6_driver_environment <- R6::R6Class(
+  "driver_environment",
+
+  public=list(
+    envir_data=NULL,
+    envir_keys=NULL,
+
+    initialize=function(path) {
+      self$envir_data <- new.env(parent=emptyenv())
+      self$envir_keys <- new.env(parent=emptyenv())
+    },
+
+    exists_hash=function(hash) {
+      exists0(hash, self$envir_data)
+    },
+    exists_key=function(key) {
+      exists0(key, self$envir_keys)
+    },
+
+    ## Write some data into its hash value
+    set_hash_value=function(hash, value) {
+      assign(hash, value, self$envir_data)
+    },
+    ## Associate a key with some data
+    set_key_hash=function(key, hash) {
+      assign(key, hash, self$envir_keys)
+    },
+
+    ## Get the hash of some data stored.
+    get_data=function(hash) {
+      if (self$exists_hash(hash)) {
+        self$envir_data[[hash]]
+      } else {
+        stop(HashError(hash))
+      }
+    },
+    get_hash=function(key) {
+      if (self$exists_key(key)) {
+        self$envir_keys[[key]]
+      } else {
+        stop(KeyError(key))
+      }
+    },
+
+    del_hash=function(hash) {
+      rm0(hash, self$envir_data)
+    },
+    del_key=function(key) {
+      rm0(key, self$envir_keys)
+    },
+
+    list_hashes=function() {
+      ls(self$envir_data)
+    },
+    list_keys=function() {
+      ls(self$envir_keys)
+    }
+  ))
