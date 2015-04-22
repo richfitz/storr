@@ -14,7 +14,7 @@ before_install:
 install:
   - ./travis-tool.sh install_deps
   - ./travis-tool.sh github_package ropensci/RedisAPI
-  - git clone --recursive https://github.com/richfitz/rrlite && make -C rrlite install
+  - git clone --recursive https://github.com/richfitz/rrlite && make -C rrlite install && rm -rf rrlite
 
 script: ./travis-tool.sh run_tests
 
