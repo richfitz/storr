@@ -2,7 +2,7 @@
 ##' @title Environment object cache driver
 ##' @export
 driver_environment <- function() {
-  .R6_driver_environment$new(path)
+  .R6_driver_environment$new()
 }
 
 .R6_driver_environment <- R6::R6Class(
@@ -12,7 +12,7 @@ driver_environment <- function() {
     envir_data=NULL,
     envir_keys=NULL,
 
-    initialize=function(path) {
+    initialize=function() {
       self$envir_data <- new.env(parent=emptyenv())
       self$envir_keys <- new.env(parent=emptyenv())
     },

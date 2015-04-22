@@ -8,5 +8,5 @@ License: BSD_2_clause + file LICENSE
 LazyData: true
 Author: Rich FitzJohn
 Maintainer: Rich FitzJohn <rich.fitzjohn@gmail.com>
-Imports: R6
-Suggests: testthat, RedisAPI, RcppRedis, rrlite
+Imports: R6, RedisAPI, digest
+Suggests: testthat, RcppRedis, rrlite
