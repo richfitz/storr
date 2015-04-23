@@ -39,8 +39,8 @@ driver_rds <- function(path) {
       writeLines(hash, self$name_key(key))
     },
 
-    ## Get the hash of some data stored.
-    get_data=function(hash) {
+    ## Get value, given hash
+    get_value=function(hash) {
       name <- self$name_data(hash)
       if (file.exists(name)) {
         readRDS(name)
@@ -48,6 +48,7 @@ driver_rds <- function(path) {
         stop(HashError(hash))
       }
     },
+    ## Get hash, given key
     get_hash=function(key) {
       name <- self$name_key(key)
       if (file.exists(name)) {

@@ -2,7 +2,7 @@ context("objects")
 
 test_that("basic", {
   drivers <- create_drivers()
-  on.exit(attr(drivers, "cleanup")())
+  on.exit(cleanup_drivers(drivers))
 
   for (dr in drivers) {
     cache <- object_cache(dr)
@@ -22,7 +22,7 @@ test_that("basic", {
     expect_that(cache$list_hashes(), equals(hash))
     expect_that(cache$get_hash("aaa"), equals(hash))
     expect_that(cache$get("aaa"), equals(d))
-    expect_that(cache$get_data(hash), equals(d))
+    expect_that(cache$get_value(hash), equals(d))
     expect_that(ls(cache$envir), equals(hash))
 
     ## Set a second key to to the same value:

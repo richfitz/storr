@@ -31,7 +31,7 @@ object_cache <- function(driver) {
     },
 
     get=function(key, use_cache=TRUE) {
-      self$get_data(self$get_hash(key), use_cache)
+      self$get_value(self$get_hash(key), use_cache)
     },
 
     get_hash=function(key) {
@@ -56,11 +56,11 @@ object_cache <- function(driver) {
       invisible(unused)
     },
 
-    get_data=function(hash, use_cache=TRUE) {
+    get_value=function(hash, use_cache=TRUE) {
       if (use_cache && exists0(hash, self$envir)) {
         self$envir[[hash]]
       } else {
-        self$driver$get_data(hash)
+        self$driver$get_value(hash)
       }
     },
 

@@ -12,6 +12,10 @@ create_drivers <- function() {
   ret
 }
 
+cleanup_drivers <- function(drivers) {
+  attr(drivers, "cleanup")()
+}
+
 drop_keys <- function(con, pattern) {
   del <- as.character(con$KEYS(pattern))
   if (length(del) > 0) {

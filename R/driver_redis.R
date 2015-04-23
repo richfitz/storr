@@ -57,7 +57,7 @@ driver_redis_api <- function(prefix, con) {
     ## Get value, given hash
     get_value=function(hash) {
       if (self$exists_hash(hash)) {
-        self$con$HGET(self$key_hash_value, hash)
+        string_to_object(self$con$HGET(self$key_hash_value, hash))
       } else {
         stop(HashError(hash))
       }

@@ -33,14 +33,15 @@ driver_environment <- function() {
       assign(key, hash, self$envir_keys)
     },
 
-    ## Get the hash of some data stored.
-    get_data=function(hash) {
+    ## Get value, given hash
+    get_value=function(hash) {
       if (self$exists_hash(hash)) {
         self$envir_data[[hash]]
       } else {
         stop(HashError(hash))
       }
     },
+    ## Get hash, given key
     get_hash=function(key) {
       if (self$exists_key(key)) {
         self$envir_keys[[key]]
