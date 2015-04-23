@@ -1,15 +1,23 @@
 context("environments")
 
 test_that("export", {
-  path <- tempdir()
-  cache <- object_cache(driver_rds(path))
-  on.exit(unlink(path, recursive=TRUE))
+  path1 <- tempfile()
+  cache <- object_cache(driver_rds(path1))
+  on.exit(unlink(path1, recursive=TRUE))
+
+  path2 <- tempfile()
+  cache2 <- object_cache(driver_rds(path2))
+  on.exit(unlink(path2, recursive=TRUE))
 
   ## Need a function to generate a bunch of objects
   cache$set("d", mtcars)
   e <- cache$to_environment()
   expect_that(ls(e), equals("d"))
   expect_that(e[["d"]], equals(mtcars))
+
+  cache$export(cache2)
+  expect_that(cache2$list(), equals("d"))
+  expect_that(cache2$get("d"), equals(mtcars))
 
   e$dat <- iris
   nms <- cache$import(e)

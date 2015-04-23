@@ -71,24 +71,25 @@ object_cache <- function(driver) {
       self$driver$list_hashes()
     },
 
+    ## TODO: for *all* the functions below:
+    ##   (a) does this really belong as a class method?
+    ##   (b) is the argument order correct?  `list` kind of wants to
+    ##       be both first and last.
     ## To/from R environments (distinct from the environment driver)
-    import=function(envir) {
-      names <- ls(envir, all.names=TRUE)
-      for (i in names) {
-        self$set(i, envir[[i]])
-      }
-      invisible(names)
+    import=function(envir, list=NULL) {
+      object_cache_copy(self, envir, list)
     },
-    export=function(envir) {
-      names <- self$list()
-      for (i in names) {
-        assign(i, self$get(i), envir)
-      }
-      invisible(names)
+    ## The logic here is taken from remake's object_store, which is
+    ## useful as this is destined to replace that object.
+    export=function(target, list=NULL) {
+      object_cache_copy(target, self, list)
     },
-    to_environment=function(parent=.GlobalEnv) {
+    ## A simple convenience function, given that as.environment is not
+    ## going to work (it's internal and the mode of an R6 class is
+    ## already environment!)
+    to_environment=function(parent=.GlobalEnv, list=NULL) {
       envir <- new.env(parent=parent)
-      self$export(envir)
+      self$export(envir, list)
       envir
     }
   ))
