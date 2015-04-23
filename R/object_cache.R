@@ -69,5 +69,26 @@ object_cache <- function(driver) {
     },
     list_hashes=function() {
       self$driver$list_hashes()
+    },
+
+    ## To/from R environments (distinct from the environment driver)
+    import=function(envir) {
+      names <- ls(envir, all.names=TRUE)
+      for (i in names) {
+        self$set(i, envir[[i]])
+      }
+      invisible(names)
+    },
+    export=function(envir) {
+      names <- self$list()
+      for (i in names) {
+        assign(i, self$get(i), envir)
+      }
+      invisible(names)
+    },
+    to_environment=function(parent=.GlobalEnv) {
+      envir <- new.env(parent=parent)
+      self$export(envir)
+      envir
     }
   ))
