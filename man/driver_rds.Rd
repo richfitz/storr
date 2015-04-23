@@ -4,12 +4,15 @@
 \alias{driver_rds}
 \title{RDS object cache driver}
 \usage{
-driver_rds(path)
+driver_rds(path, compress = FALSE)
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice
 for ephemeral storage, \code{rappdirs} might be nice for
 application data.}
+
+\item{compress}{Compress the generated file?  This saves a small
+amount of space for a reasonable amount of time.}
 }
 \description{
 RDS object cache driver

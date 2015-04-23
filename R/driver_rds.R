@@ -3,9 +3,11 @@
 ##' @param path Path for the store.  \code{tempdir()} is a good choice
 ##' for ephemeral storage, \code{rappdirs} might be nice for
 ##' application data.
+##' @param compress Compress the generated file?  This saves a small
+##' amount of space for a reasonable amount of time.
 ##' @export
-driver_rds <- function(path) {
-  .R6_driver_rds$new(path)
+driver_rds <- function(path, compress=FALSE) {
+  .R6_driver_rds$new(path, compress)
 }
 
 .R6_driver_rds <- R6::R6Class(
@@ -14,10 +16,12 @@ driver_rds <- function(path) {
   public=list(
     path_data=NULL,
     path_keys=NULL,
+    compress=NULL,
 
-    initialize=function(path) {
+    initialize=function(path, compress) {
       self$path_data <- file.path(path, "data")
       self$path_keys <- file.path(path, "keys")
+      self$compress <- compress
       dir.create(path, FALSE, TRUE)
       dir.create(self$path_data, FALSE, TRUE)
       dir.create(self$path_keys, FALSE, TRUE)
@@ -32,7 +36,7 @@ driver_rds <- function(path) {
 
     ## Write some data into its hash value
     set_hash_value=function(hash, value) {
-      saveRDS(value, self$name_data(hash))
+      saveRDS(value, self$name_data(hash), compress=self$compress)
     },
     ## Associate a key with some data
     set_key_hash=function(key, hash) {
