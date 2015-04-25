@@ -89,21 +89,20 @@ driver_redis_api <- function(prefix, con) {
     },
 
     ## List support:
-    is_list=function(key) {
-      ## make this && exists_key(key)?
-      self$con$EXISTS(self$name_list(key)) == 1L
+    is_list=function(key, namespace="objects") {
+      self$con$EXISTS(self$name_list(key, namespace)) == 1L
     },
-    length_list=function(key) {
-      self$con$LLEN(self$name_list(key))
+    length_list=function(key, namespace="objects") {
+      self$con$LLEN(self$name_list(key, namespace))
     },
 
-    set_key_hash_list=function(key, hash, i=NULL) {
-      name <- self$name_list(key)
+    set_key_hash_list=function(key, hash, i=NULL, namespace="objects") {
+      name <- self$name_list(key, namespace)
       if (is.null(i)) {
         self$con$DEL(name)
         self$con$RPUSH(name, hash)
-      } else if (self$is_list(key)) {
-        list_check_range(key, i, self$length_list(key))
+      } else if (self$is_list(key, namespace)) {
+        list_check_range(key, i, self$length_list(key, namespace))
         for (j in i) {
           self$con$LSET(name, i - 1L, hash[[j]])
         }
@@ -117,8 +116,8 @@ driver_redis_api <- function(prefix, con) {
     ##   - key does not exist (KeyError?)
     ##   - key is not a list (TypeError?)
     ##   - index is out of bounds (RangeError?)
-    get_hash_list=function(key, i=NULL) {
-      name <- self$name_list(key)
+    get_hash_list=function(key, i=NULL, namespace="objects") {
+      name <- self$name_list(key, namespace)
       if (is.null(i)) {
         as.character(self$con$LRANGE(name, 0, -1))
       } else {
@@ -126,8 +125,8 @@ driver_redis_api <- function(prefix, con) {
         vcapply(i - 1L, self$con$LINDEX, key=name)
       }
     },
-    del_hash_list=function(key) {
-      self$con$DEL(self$name_list(key))
+    del_hash_list=function(key, namespace="objects") {
+      self$con$DEL(self$name_list(key, namespace))
     },
 
     name_data=function(hash) {
@@ -136,8 +135,8 @@ driver_redis_api <- function(prefix, con) {
     name_key=function(key, namespace="objects") {
       sprintf("%s:keys:%s:%s", self$prefix, namespace, key)
     },
-    name_list=function(key) {
-      sprintf("%s:list:%s", self$prefix, key)
+    name_list=function(key, namespace="objects") {
+      sprintf("%s:lists:%s:%s", self$prefix, namespace, key)
     }
   ))
 

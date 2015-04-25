@@ -22,7 +22,7 @@ test_that("basic", {
     expect_that(cache$list_hashes(), equals(hash))
     expect_that(cache$get_hash("aaa"), equals(hash))
     expect_that(cache$get("aaa"), equals(d))
-    expect_that(cache$get("aaa", FALSE), equals(d))
+    expect_that(cache$get("aaa", use_cache=FALSE), equals(d))
     expect_that(cache$get_value(hash), equals(d))
     expect_that(ls(cache$envir), equals(hash))
 
@@ -32,7 +32,7 @@ test_that("basic", {
     expect_that(cache$list_hashes(), equals(hash))
     expect_that(cache$get_hash("bbb"), equals(hash))
     expect_that(cache$get("bbb"), equals(d))
-    expect_that(cache$get("bbb", FALSE), equals(d))
+    expect_that(cache$get("bbb", use_cache=FALSE), equals(d))
 
     ## Drop key:
     expect_that(cache$del("aaa"), is_true())
@@ -51,9 +51,9 @@ test_that("basic", {
     expect_that(ls(cache$envir), equals(character(0)))
 
     ## Skip the cache on the way in:
-    cache$set("bbb", d, FALSE)
+    cache$set("bbb", d, use_cache=FALSE)
     expect_that(ls(cache$envir), equals(character(0)))
     expect_that(cache$get("bbb"), equals(d))
-    expect_that(cache$get("bbb", FALSE), equals(d))
+    expect_that(cache$get("bbb", use_cache=FALSE), equals(d))
   }
 })

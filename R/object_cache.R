@@ -19,38 +19,40 @@ object_cache <- function(driver) {
       self$envir  <- new.env(parent=emptyenv())
     },
 
-    type=function(key) {
-      if (!self$driver$exists_key(key)) {
+    type=function(key, namespace="objects") {
+      if (!self$driver$exists_key(key, namespace)) {
         "none"
-      } else if (self$is_list(key)) {
+      } else if (self$is_list(key, namespace)) {
         "list"
       } else {
         "data"
       }
     },
 
-    set=function(key, value, use_cache=TRUE) {
+    set=function(key, value, namespace="objects", use_cache=TRUE) {
       hash <- hash_object(value)
       self$set_value(hash, value, use_cache)
-      self$driver$set_key_hash(key, hash)
+      self$driver$set_key_hash(key, hash, namespace)
     },
 
-    get=function(key, use_cache=TRUE) {
-      if (self$is_list(key) && !self$driver$exists_key(key)) {
-        value <- self$get_list(key, use_cache)
-        self$set(key, value, use_cache)
+    get=function(key, namespace="objects", use_cache=TRUE) {
+      if (self$is_list(key, namespace) &&
+          !self$driver$exists_key(key, namespace)) {
+        value <- self$get_list(key, namespace, use_cache)
+        self$set(key, value, namespace, use_cache)
         value
       } else {
-        self$get_value(self$get_hash(key), use_cache)
+        self$get_value(self$get_hash(key, namespace), use_cache)
       }
     },
 
-    get_hash=function(key) {
-      self$driver$get_hash(key)
+    get_hash=function(key, namespace="objects") {
+      self$driver$get_hash(key, namespace)
     },
 
-    del=function(key) {
-      invisible(self$driver$del_key(key))
+    del=function(key, namespace="objects") {
+      invisible(self$driver$del_key(key, namespace))
+      ## TODO: deal with is_list, del_list here
     },
 
     ## Totally naive garbage collection.  Should be replacable by the
@@ -66,6 +68,8 @@ object_cache <- function(driver) {
       rm0(unused, self$envir)
       invisible(unused)
     },
+    ## TODO: rename clear_cache?  flush_cache?  Make it clear this is
+    ## not destructive.
     flush=function() {
       rm(list=ls(self$envir, all.names=TRUE), envir=self$envir)
     },
@@ -91,67 +95,69 @@ object_cache <- function(driver) {
       }
     },
 
-    list=function() {
-      self$driver$list_keys()
-    },
+    ## TODO: These are getting renamed...
+    ## TODO: list_lists()!
     list_hashes=function() {
       self$driver$list_hashes()
     },
+    list=function(namespace="objects") {
+      self$driver$list_keys(namespace)
+    },
 
     ## List support:
-    is_list=function(key) {
+    is_list=function(key, namespace="objects") {
       ## TODO: can we just assign functions up during initialization
       ## and then lock those bindings?  That'd be much nicer.
       ##   self$driver$is_list(key)
-      !is.null(self$driver$is_list) && self$driver$is_list(key)
+      !is.null(self$driver$is_list) && self$driver$is_list(key, namespace)
     },
-    length_list=function(key) {
-      self$driver$length_list(key)
+    length_list=function(key, namespace="objects") {
+      self$driver$length_list(key, namespace)
     },
 
-    set_list=function(key, value, use_cache=TRUE) {
-      self$set_list_elements(key, value, NULL, use_cache)
-      self$set(list_attr_name(key), attributes(value))
-      self$set(key, value, use_cache)
+    set_list=function(key, value, namespace="objects", use_cache=TRUE) {
+      self$set_list_elements(key, value, NULL, namespace, use_cache)
+      self$set(key, attributes(value), use_cache, "list_attr")
+      self$set(key, value, namespace, use_cache)
     },
     ## "set list element" requires more care because we need to
     ## invalidate the current list and that requires tweaking get...
-    get_list_element=function(key, i, use_cache=TRUE) {
+    get_list_element=function(key, i, namespace="objects", use_cache=TRUE) {
       assert_scalar(i)
-      hash <- self$driver$get_hash_list(key, i)
+      hash <- self$driver$get_hash_list(key, i, namespace)
       self$get_value(hash, use_cache)
     },
-    get_list_elements=function(key, i, use_cache=TRUE) {
-      hash <- self$driver$get_hash_list(key, i)
+    get_list_elements=function(key, i, namespace="objects", use_cache=TRUE) {
+      hash <- self$driver$get_hash_list(key, i, namespace)
       lapply(hash, self$get_value, use_cache)
     },
     ## NOTE: the order of arguments here (key, i, value) differs from
     ## the underlying driver (key, value, i) because of i being
     ## potentially optional.  That might change, but *this* order will
     ## remain the same.
-    set_list_element=function(key, i, value, use_cache=TRUE) {
+    set_list_element=function(key, i, value, namespace="objects", use_cache=TRUE) {
       assert_scalar(i)
       hash <- hash_object(value)
       self$set_value(hash, value, use_cache)
-      self$driver$set_key_hash_list(key, hash, i)
-      self$driver$del_key(key)
+      self$driver$set_key_hash_list(key, hash, i, namespace)
+      self$driver$del_key(key, namespace)
     },
-    set_list_elements=function(key, values, i, use_cache=TRUE) {
+    set_list_elements=function(key, values, i, namespace="objects", use_cache=TRUE) {
       if (!is.null(i)) {
         assert_length(i, length(values))
       }
       hash_el <- vcapply(values, hash_object)
       for (j in seq_along(hash_el)) {
-        self$set_value(hash_el[[i]], values[[i]], use_cache)
+        self$set_value(hash_el[[i]], values[[i]], namespace, use_cache)
       }
-      self$driver$set_key_hash_list(key, hash_el, i)
-      self$driver$del_key(key)
+      self$driver$set_key_hash_list(key, hash_el, i, namespace)
+      self$driver$del_key(key, namespace)
     },
-    get_list=function(key, use_cache=TRUE) {
+    get_list=function(key, namespace="objects", use_cache=TRUE) {
       i <- seq_len(self$length_list(key))
-      dat <- self$get_list_elements(key, i, use_cache)
-      attributes(dat) <- self$get(list_attr_name(key))
-      dat
+      value <- self$get_list_elements(key, i, namespace, use_cache)
+      attributes(value) <- self$get(key, namespace="list_attr")
+      value
     },
 
     ## TODO: for *all* the functions below:
