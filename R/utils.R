@@ -37,3 +37,9 @@ assert_length <- function(x, n, name=deparse(substitute(x))) {
     stop(sprintf("%s must have %d elements", name, n), call. = FALSE)
   }
 }
+
+dir_create <- function(path) {
+  if (!file.exists(path)) {
+    dir.create(path, FALSE, TRUE)
+  }
+}

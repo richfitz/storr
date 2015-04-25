@@ -10,5 +10,5 @@ test_that("creation", {
   expect_that(file.exists(path), is_true())
   expect_that(dir(path), equals(c("data", "keys")))
   expect_that(dir(file.path(path, "data")), equals(character(0)))
-  expect_that(dir(file.path(path, "keys")), equals(character(0)))
+  expect_that(dir(file.path(path, "keys", "objects")), equals(character(0)))
 })

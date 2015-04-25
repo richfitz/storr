@@ -41,8 +41,8 @@ driver_redis_api <- function(prefix, con) {
     exists_hash=function(hash) {
       self$con$EXISTS(self$name_data(hash)) == 1L
     },
-    exists_key=function(key) {
-      self$con$EXISTS(self$name_key(key)) == 1L
+    exists_key=function(key, namespace="objects") {
+      self$con$EXISTS(self$name_key(key, namespace)) == 1L
     },
 
     ## Write some data into its hash value
@@ -50,8 +50,8 @@ driver_redis_api <- function(prefix, con) {
       self$con$SET(self$name_data(hash), object_to_string(value))
     },
     ## Associate a key with some data
-    set_key_hash=function(key, hash) {
-      self$con$SET(self$name_key(key), hash)
+    set_key_hash=function(key, hash, namespace="objects") {
+      self$con$SET(self$name_key(key, namespace), hash)
     },
 
     ## Get value, given hash
@@ -64,8 +64,8 @@ driver_redis_api <- function(prefix, con) {
       }
     },
     ## Get hash, given key
-    get_hash=function(key) {
-      name <- self$name_key(key)
+    get_hash=function(key, namespace="objects") {
+      name <- self$name_key(key, namespace)
       if (self$con$EXISTS(name)) {
         self$con$GET(name)
       } else {
@@ -76,16 +76,16 @@ driver_redis_api <- function(prefix, con) {
     del_hash=function(hash) {
       self$con$DEL(self$name_data(hash)) == 1L
     },
-    del_key=function(key) {
-      self$con$DEL(self$name_key(key)) == 1L
+    del_key=function(key, namespace="objects") {
+      self$con$DEL(self$name_key(key, namespace)) == 1L
     },
 
     ## Potentially expensive!
     list_hashes=function() {
       keys_minus_prefix(self$con, self$name_data(""))
     },
-    list_keys=function() {
-      keys_minus_prefix(self$con, self$name_key(""))
+    list_keys=function(namespace="objects") {
+      keys_minus_prefix(self$con, self$name_key("", namespace))
     },
 
     ## List support:
@@ -133,8 +133,8 @@ driver_redis_api <- function(prefix, con) {
     name_data=function(hash) {
       sprintf("%s:data:%s", self$prefix, hash)
     },
-    name_key=function(key) {
-      sprintf("%s:keys:%s", self$prefix, key)
+    name_key=function(key, namespace="objects") {
+      sprintf("%s:keys:%s:%s", self$prefix, namespace, key)
     },
     name_list=function(key) {
       sprintf("%s:list:%s", self$prefix, key)
