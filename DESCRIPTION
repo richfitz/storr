@@ -1,7 +1,6 @@
-Package: objects
+Package: storr
 Title: What the package does (one line)
 Version: 0.1.0
-Authors@R: "First Last <first.last@example.com> [aut, cre]"
 Description: What the package does (one paragraph)
 Depends: R (>= 3.1.2)
 License: BSD_2_clause + file LICENSE

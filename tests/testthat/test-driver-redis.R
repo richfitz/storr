@@ -10,7 +10,7 @@ context("driver (Redis)")
 ## Redis specific things.  Eventually will be list specific and then
 ## I'll implement for all drivers.
 test_that("Lists on none", {
-  dr <- driver_redis("cacher")
+  dr <- driver_redis("storr")
   dr$flush()
 
   key <- "aaa"
@@ -39,7 +39,7 @@ test_that("Lists on none", {
 })
 
 test_that("Lists on objects", {
-  dr <- driver_redis("cacher")
+  dr <- driver_redis("storr")
   dr$flush()
 
   key <- "aaa"
@@ -70,7 +70,7 @@ test_that("Lists on objects", {
 })
 
 test_that("Actual lists!", {
-  dr <- driver_redis("cacher")
+  dr <- driver_redis("storr")
   dr$flush()
 
   key <- "aaa"

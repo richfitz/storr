@@ -1,4 +1,4 @@
 library(testthat)
-library(objects)
+library(storr)
 
-test_check("objects")
+test_check("storr")

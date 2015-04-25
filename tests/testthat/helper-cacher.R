@@ -1,6 +1,6 @@
 create_drivers <- function() {
   path <- tempfile()
-  prefix <- "cacher"
+  prefix <- "storr"
   ret <- list(envir=driver_environment(),
               rds=driver_rds(path),
               driver=driver_redis(prefix),
