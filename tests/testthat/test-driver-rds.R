@@ -8,7 +8,6 @@ test_that("creation", {
   on.exit(unlink(path, recursive=TRUE))
 
   expect_that(file.exists(path), is_true())
-  expect_that(dir(path), equals(c("data", "keys")))
+  expect_that(dir(path), equals_unsorted(c("data", "keys", "list")))
   expect_that(dir(file.path(path, "data")), equals(character(0)))
-  expect_that(dir(file.path(path, "keys", "objects")), equals(character(0)))
 })

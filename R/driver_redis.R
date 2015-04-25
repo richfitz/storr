@@ -28,12 +28,10 @@ driver_redis_api <- function(prefix, con) {
 
     initialize=function(prefix, con) {
       self$con <- con
-      ## hash -> data mapping
-      ## key -> hash mapping
-      ## list element -> hash mapping
       self$prefix <- prefix
     },
 
+    ## TODO: This will change!
     flush=function() {
       drop_keys(self$con, paste0(self$prefix, "*"))
     },

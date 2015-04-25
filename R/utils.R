@@ -6,6 +6,10 @@ exists0 <- function(name, envir) {
   exists(name, envir, inherits=FALSE)
 }
 
+exists1 <- function(name, envir) {
+  is.environment(envir) && exists0(name, envir)
+}
+
 rm0 <- function(list, envir) {
   del <- exists0(list, envir)
   rm(list=list[del], envir=envir)
@@ -42,4 +46,19 @@ dir_create <- function(path) {
   if (!file.exists(path)) {
     dir.create(path, FALSE, TRUE)
   }
+}
+
+file_remove <- function(path) {
+  assert_scalar(path)
+  exists <- file.exists(path)
+  if (exists) {
+    file.remove(path)
+  }
+  invisible(exists)
+}
+
+## See R.utils::countLines for a promising alternative...
+## and http://stackoverflow.com/questions/23456170/get-the-number-of-lines-in-a-text-file-using-r
+count_lines <- function(filename) {
+  length(readLines(filename))
 }

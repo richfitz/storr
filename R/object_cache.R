@@ -108,8 +108,7 @@ object_cache <- function(driver) {
     is_list=function(key, namespace="objects") {
       ## TODO: can we just assign functions up during initialization
       ## and then lock those bindings?  That'd be much nicer.
-      ##   self$driver$is_list(key)
-      !is.null(self$driver$is_list) && self$driver$is_list(key, namespace)
+      self$driver$is_list(key, namespace)
     },
     length_list=function(key, namespace="objects") {
       self$driver$length_list(key, namespace)
