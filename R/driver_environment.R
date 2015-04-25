@@ -90,7 +90,7 @@ driver_environment <- function() {
         list_check_range(key, i, self$length_list(key, namespace))
         tmp <- self$envir_list[[namespace]][[key]]
         tmp[i] <- hash
-        assign(key, hash, self$envir_list[[namespace]])
+        assign(key, tmp, self$envir_list[[namespace]])
       } else {
         ## TODO: driver-level type information - none or string here?
         stop(TypeError(key, "list", "other"))

@@ -19,6 +19,7 @@ object_cache <- function(driver) {
       self$envir  <- new.env(parent=emptyenv())
     },
 
+    ## TODO: This is going to be overhauled.
     type=function(key, namespace="objects") {
       if (!self$driver$exists_key(key, namespace)) {
         "none"
@@ -115,8 +116,8 @@ object_cache <- function(driver) {
     },
 
     set_list=function(key, value, namespace="objects", use_cache=TRUE) {
-      self$set_list_elements(key, value, NULL, namespace, use_cache)
-      self$set(key, attributes(value), use_cache, "list_attr")
+      self$set_list_elements(key, NULL, value, namespace, use_cache)
+      self$set(key, attributes(value), "list_attr", use_cache)
       self$set(key, value, namespace, use_cache)
     },
     ## "set list element" requires more care because we need to
@@ -137,15 +138,15 @@ object_cache <- function(driver) {
       self$driver$set_key_hash_list(key, i, hash, namespace)
       self$driver$del_key(key, namespace)
     },
-    set_list_elements=function(key, values, i, namespace="objects", use_cache=TRUE) {
+    set_list_elements=function(key, i, values, namespace="objects", use_cache=TRUE) {
       if (!is.null(i)) {
         assert_length(i, length(values))
       }
       hash_el <- vcapply(values, hash_object)
       for (j in seq_along(hash_el)) {
-        self$set_value(hash_el[[i]], values[[i]], namespace, use_cache)
+        self$set_value(hash_el[[j]], values[[j]], use_cache)
       }
-      self$driver$set_key_hash_list(key, hash_el, i, namespace)
+      self$driver$set_key_hash_list(key, i, hash_el, namespace)
       self$driver$del_key(key, namespace)
     },
     get_list=function(key, namespace="objects", use_cache=TRUE) {
@@ -177,16 +178,3 @@ object_cache <- function(driver) {
       envir
     }
   ))
-
-## TODO: not a great mangling scheme - would be better to have an
-## internal data annex I think; something that the drivers can provide
-## however they want.  So then we'd say:
-##   driver$set(key, value, namespace="list_info")
-## with the default namespace be "objects" and with support for
-## arbitrary namespaces.  I think that'll turn out generally useful
-## actually.
-##
-## For now this will do.
-list_attr_name <- function(key) {
-  sprintf(".__list_info__%s", key)
-}

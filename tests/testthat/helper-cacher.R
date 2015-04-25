@@ -3,7 +3,7 @@ create_drivers <- function() {
   prefix <- "storr"
   ret <- list(envir=driver_environment(),
               rds=driver_rds(path),
-              driver=driver_redis(prefix),
+              redis=driver_redis(prefix),
               rlite=driver_rlite(prefix))
   attr(ret, "cleanup") <- function() {
     unlink(path, recursive=TRUE)

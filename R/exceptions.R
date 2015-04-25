@@ -13,7 +13,7 @@ HashError <- function(hash, driver) {
 }
 
 ## TODO: allow possible range here?
-IndexError <- function(key, index, driver) {
+IndexError <- function(key, index) {
   structure(list(key=key,
                  index=index,
                  message=sprintf("Index %s is out of bounds",
