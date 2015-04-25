@@ -131,15 +131,11 @@ object_cache <- function(driver) {
       hash <- self$driver$get_hash_list(key, i, namespace)
       lapply(hash, self$get_value, use_cache)
     },
-    ## NOTE: the order of arguments here (key, i, value) differs from
-    ## the underlying driver (key, value, i) because of i being
-    ## potentially optional.  That might change, but *this* order will
-    ## remain the same.
     set_list_element=function(key, i, value, namespace="objects", use_cache=TRUE) {
       assert_scalar(i)
       hash <- hash_object(value)
       self$set_value(hash, value, use_cache)
-      self$driver$set_key_hash_list(key, hash, i, namespace)
+      self$driver$set_key_hash_list(key, i, hash, namespace)
       self$driver$del_key(key, namespace)
     },
     set_list_elements=function(key, values, i, namespace="objects", use_cache=TRUE) {

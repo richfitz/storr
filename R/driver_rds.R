@@ -24,13 +24,13 @@ driver_rds <- function(path, compress=FALSE) {
       self$compress <- compress
       dir_create(path)
       dir_create(self$path_data)
-      dir_create(self$name_key("", namespace="objects"))
+      dir_create(self$path_keys)
     },
 
     exists_hash=function(hash) {
       file.exists(self$name_data(hash))
     },
-    exists_key=function(key, namespace="objects") {
+    exists_key=function(key, namespace) {
       file.exists(self$name_key(key, namespace))
     },
 
@@ -39,10 +39,8 @@ driver_rds <- function(path, compress=FALSE) {
       saveRDS(value, self$name_data(hash), compress=self$compress)
     },
     ## Associate a key with some data
-    set_key_hash=function(key, hash, namespace="objects") {
-      if (namespace != "objects") {
-        dir_create(self$name_key("", namespace))
-      }
+    set_key_hash=function(key, hash, namespace) {
+      dir_create(self$name_key("", namespace))
       writeLines(hash, self$name_key(key, namespace))
     },
 
@@ -56,7 +54,7 @@ driver_rds <- function(path, compress=FALSE) {
       }
     },
     ## Get hash, given key
-    get_hash=function(key, namespace="objects") {
+    get_hash=function(key, namespace) {
       name <- self$name_key(key, namespace)
       if (file.exists(name)) {
         readLines(name)
@@ -68,14 +66,14 @@ driver_rds <- function(path, compress=FALSE) {
     del_hash=function(hash) {
       suppressWarnings(file.remove(self$name_data(hash)))
     },
-    del_key=function(key, namespace="objects") {
+    del_key=function(key, namespace) {
       suppressWarnings(file.remove(self$name_key(key, namespace)))
     },
 
     list_hashes=function() {
       sub("\\.rds$", "", dir(self$path_data))
     },
-    list_keys=function(namespace="objects") {
+    list_keys=function(namespace) {
       dir(self$name_key("", namespace),
           all.files=TRUE, no..=TRUE)
     },
@@ -83,7 +81,7 @@ driver_rds <- function(path, compress=FALSE) {
     name_data=function(hash) {
       sprintf("%s/%s.rds", self$path_data, hash)
     },
-    name_key=function(key, namespace="objects") {
+    name_key=function(key, namespace) {
       sprintf("%s/%s/%s", self$path_keys, namespace, key)
     }
   ))

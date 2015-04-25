@@ -20,7 +20,7 @@ driver_environment <- function() {
     exists_hash=function(hash) {
       exists0(hash, self$envir_data)
     },
-    exists_key=function(key, namespace="objects") {
+    exists_key=function(key, namespace) {
       exists0(key, self$envir_keys[[namespace]])
     },
 
@@ -29,7 +29,7 @@ driver_environment <- function() {
       assign(hash, value, self$envir_data)
     },
     ## Associate a key with some data
-    set_key_hash=function(key, hash, namespace="objects") {
+    set_key_hash=function(key, hash, namespace) {
       if (is.null(self$envir_keys[[namespace]])) {
         self$envir_keys[[namespace]] <- new.env(parent=emptyenv())
       }
@@ -45,7 +45,7 @@ driver_environment <- function() {
       }
     },
     ## Get hash, given key
-    get_hash=function(key, namespace="objects") {
+    get_hash=function(key, namespace) {
       if (self$exists_key(key, namespace)) {
         self$envir_keys[[namespace]][[key]]
       } else {
@@ -56,14 +56,14 @@ driver_environment <- function() {
     del_hash=function(hash) {
       rm0(hash, self$envir_data)
     },
-    del_key=function(key, namespace="objects") {
+    del_key=function(key, namespace) {
       rm0(key, self$envir_keys[[namespace]])
     },
 
     list_hashes=function() {
       ls(self$envir_data)
     },
-    list_keys=function(namespace="objects") {
+    list_keys=function(namespace) {
       ls(self$envir_keys[[namespace]])
     }
   ))
