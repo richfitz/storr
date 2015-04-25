@@ -24,15 +24,18 @@ driver_redis_api <- function(prefix, con) {
 
   public=list(
     con=NULL,
-    prefix_data=NULL,
-    prefix_keys=NULL,
+    prefix=NULL,
 
     initialize=function(prefix, con) {
       self$con <- con
       ## hash -> data mapping
-      self$prefix_data <- paste0(prefix, ":data")
       ## key -> hash mapping
-      self$prefix_keys <- paste0(prefix, ":hash")
+      ## list element -> hash mapping
+      self$prefix <- prefix
+    },
+
+    flush=function() {
+      drop_keys(self$con, paste0(self$prefix, "*"))
     },
 
     exists_hash=function(hash) {
@@ -85,10 +88,63 @@ driver_redis_api <- function(prefix, con) {
       keys_minus_prefix(self$con, self$name_key(""))
     },
 
+    ## List support:
+    is_list=function(key) {
+      ## make this && exists_key(key)?
+      self$con$EXISTS(self$name_list(key)) == 1L
+    },
+    length_list=function(key) {
+      self$con$LLEN(self$name_list(key))
+    },
+
+    set_key_hash_list=function(key, hash, i=NULL) {
+      name <- self$name_list(key)
+      if (is.null(i)) {
+        self$con$DEL(name)
+        self$con$RPUSH(name, hash)
+      } else if (self$is_list(key)) {
+        list_check_range(key, i, self$length_list(key))
+        for (j in i) {
+          self$con$LSET(name, i - 1L, hash[[j]])
+        }
+      } else {
+        stop(TypeError(key, "list", self$con$TYPE(key)))
+      }
+    },
+
+    ## TODO: Getting good error messages without a billion calls back
+    ## to Redis is going to be difficult here.  Can fail because:
+    ##   - key does not exist (KeyError?)
+    ##   - key is not a list (TypeError?)
+    ##   - index is out of bounds (RangeError?)
+    get_hash_list=function(key, i=NULL) {
+      name <- self$name_list(key)
+      if (is.null(i)) {
+        as.character(self$con$LRANGE(name, 0, -1))
+      } else {
+        list_check_range(key, i, self$length_list(key))
+        vcapply(i - 1L, self$con$LINDEX, key=name)
+      }
+    },
+    del_hash_list=function(key) {
+      self$con$DEL(self$name_list(key))
+    },
+
     name_data=function(hash) {
-      sprintf("%s:%s", self$prefix_data, hash)
+      sprintf("%s:data:%s", self$prefix, hash)
     },
     name_key=function(key) {
-      sprintf("%s:%s", self$prefix_keys, key)
+      sprintf("%s:keys:%s", self$prefix, key)
+    },
+    name_list=function(key) {
+      sprintf("%s:list:%s", self$prefix, key)
     }
   ))
+
+## TODO: Merge into RedisAPI with a best-practice based on SCAN.
+drop_keys <- function(con, pattern) {
+  del <- as.character(con$KEYS(pattern))
+  if (length(del) > 0) {
+    con$DEL(del)
+  }
+}

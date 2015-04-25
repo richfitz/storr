@@ -16,9 +16,9 @@ cleanup_drivers <- function(drivers) {
   attr(drivers, "cleanup")()
 }
 
-drop_keys <- function(con, pattern) {
-  del <- as.character(con$KEYS(pattern))
-  if (length(del) > 0) {
-    con$DEL(del)
+equals_unsorted <- function(expected, ...) {
+  eq <- testthat::equals(sort(expected), ...)
+  function(actual) {
+    eq(sort(actual))
   }
 }

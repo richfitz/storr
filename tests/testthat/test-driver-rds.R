@@ -1,4 +1,4 @@
-context("driver_rds")
+context("driver (rds)")
 
 ## Tests of the implementation details of the rds driver only...
 test_that("creation", {
