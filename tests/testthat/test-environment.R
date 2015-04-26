@@ -2,11 +2,11 @@ context("environments")
 
 test_that("export", {
   path1 <- tempfile()
-  cache <- object_cache(driver_rds(path1))
+  cache <- storr(driver_rds(path1))
   on.exit(unlink(path1, recursive=TRUE))
 
   path2 <- tempfile()
-  cache2 <- object_cache(driver_rds(path2))
+  cache2 <- storr(driver_rds(path2))
   on.exit(unlink(path2, recursive=TRUE))
 
   ## Need a function to generate a bunch of objects

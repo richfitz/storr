@@ -2,13 +2,13 @@
 ##' @title Object cache
 ##' @param driver A driver object
 ##' @export
-object_cache <- function(driver) {
-  .R6_object_cache$new(driver)
+storr <- function(driver) {
+  .R6_storr$new(driver)
 }
 
 ##' @importFrom R6 R6Class
-.R6_object_cache <- R6::R6Class(
-  "object_cache",
+.R6_storr <- R6::R6Class(
+  "storr",
 
   public=list(
     driver=NULL,
@@ -19,11 +19,10 @@ object_cache <- function(driver) {
       self$envir  <- new.env(parent=emptyenv())
     },
 
-    ## TODO: This is going to be overhauled.
     type=function(key, namespace="objects") {
       if (!self$driver$exists_key(key, namespace)) {
         "none"
-      } else if (self$is_list(key, namespace)) {
+      } else if (self$driver$exists_list(key, namespace)) {
         "list"
       } else {
         "data"
@@ -37,7 +36,7 @@ object_cache <- function(driver) {
     },
 
     get=function(key, namespace="objects", use_cache=TRUE) {
-      if (self$is_list(key, namespace) &&
+      if (self$driver$exists_list(key, namespace) &&
           !self$driver$exists_key(key, namespace)) {
         value <- self$get_list(key, namespace, use_cache)
         self$set(key, value, namespace, use_cache)
@@ -52,8 +51,13 @@ object_cache <- function(driver) {
     },
 
     del=function(key, namespace="objects") {
+      ## TODO: This will report the wrong thing for lists being
+      ## deleted much of the time.  Possibly drop due to YAGNI?
+      if (self$driver$exists_list(key, namespace)) {
+        self$driver$del_key(key, namespace="list_attr")
+        self$driver$del_hash_list(key, namespace)
+      }
       invisible(self$driver$del_key(key, namespace))
-      ## TODO: deal with is_list, del_list here
     },
 
     ## Totally naive garbage collection.  Should be replacable by the
@@ -97,19 +101,26 @@ object_cache <- function(driver) {
     },
 
     ## TODO: These are getting renamed...
-    ## TODO: list_lists()!
     list_hashes=function() {
       self$driver$list_hashes()
     },
+    ## NOTE: this is the user-facing set of keys, which might be
+    ## different to the driver-reported set of keys because it
+    ## includes indexable things.
     list=function(namespace="objects") {
-      self$driver$list_keys(namespace)
+      sort(union(self$driver$list_keys(namespace),
+                 self$driver$list_lists(namespace)))
+    },
+
+    exists=function(key, namespace="objects") {
+      self$driver$exists_key(key, namespace) ||
+        self$driver$exists_list(key, namespace)
     },
 
     ## List support:
-    is_list=function(key, namespace="objects") {
-      ## TODO: can we just assign functions up during initialization
-      ## and then lock those bindings?  That'd be much nicer.
-      self$driver$is_list(key, namespace)
+    ## TODO: This one *might* be is_list, really?
+    exists_list=function(key, namespace="objects") {
+      self$driver$exists_list(key, namespace)
     },
     length_list=function(key, namespace="objects") {
       self$driver$length_list(key, namespace)
@@ -162,12 +173,12 @@ object_cache <- function(driver) {
     ##       be both first and last.
     ## To/from R environments (distinct from the environment driver)
     import=function(envir, list=NULL) {
-      object_cache_copy(self, envir, list)
+      storr_copy(self, envir, list)
     },
     ## The logic here is taken from remake's object_store, which is
     ## useful as this is destined to replace that object.
     export=function(target, list=NULL) {
-      object_cache_copy(target, self, list)
+      storr_copy(target, self, list)
     },
     ## A simple convenience function, given that as.environment is not
     ## going to work (it's internal and the mode of an R6 class is

@@ -1,7 +1,7 @@
 context("driver (lists)")
 
 ## List functions are:
-##   is_list
+##   exists_list
 ##   length_list
 ##   set_key_hash_list
 ##   get_hash_list
@@ -20,7 +20,7 @@ test_that("Lists on none", {
   for (dr in drivers) {
     expect_that(dr$exists_key(key, ns), is_false())
 
-    expect_that(dr$is_list(key, ns), is_false())
+    expect_that(dr$exists_list(key, ns), is_false())
     expect_that(dr$length_list(key, ns), equals(0))
     expect_that(dr$get_hash_list(key, NULL, ns), equals(character(0)))
 
@@ -53,11 +53,11 @@ test_that("Lists on objects", {
     value <- "xxx"
     ns <- "objects"
 
-    object_cache(dr)$set(key, 1:10)
+    storr(dr)$set(key, 1:10)
 
     expect_that(dr$exists_key(key, ns), is_true())
 
-    expect_that(dr$is_list(key, ns), is_false())
+    expect_that(dr$exists_list(key, ns), is_false())
     expect_that(dr$length_list(key, ns), equals(0))
     expect_that(dr$get_hash_list(key, NULL, ns), equals(character(0)))
 
@@ -89,7 +89,7 @@ test_that("Actual lists!", {
 
     dr$set_key_hash_list(key, NULL, hash, ns)
 
-    expect_that(dr$is_list(key, ns), is_true())
+    expect_that(dr$exists_list(key, ns), is_true())
     expect_that(dr$length_list(key, ns), equals(length(value)))
     expect_that(dr$get_hash_list(key, NULL, ns), equals(hash))
 

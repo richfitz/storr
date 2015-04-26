@@ -87,8 +87,11 @@ driver_redis_api <- function(prefix, con) {
     },
 
     ## List support:
-    is_list=function(key, namespace) {
+    exists_list=function(key, namespace) {
       self$con$EXISTS(self$name_list(key, namespace)) == 1L
+    },
+    list_lists=function(namespace) {
+      keys_minus_prefix(self$con, self$name_list("", namespace))
     },
     length_list=function(key, namespace) {
       self$con$LLEN(self$name_list(key, namespace))
@@ -99,7 +102,7 @@ driver_redis_api <- function(prefix, con) {
       if (is.null(i)) {
         self$con$DEL(name)
         self$con$RPUSH(name, hash)
-      } else if (self$is_list(key, namespace)) {
+      } else if (self$exists_list(key, namespace)) {
         list_check_range(key, i, self$length_list(key, namespace))
         for (j in i) {
           self$con$LSET(name, i - 1L, hash[[j]])

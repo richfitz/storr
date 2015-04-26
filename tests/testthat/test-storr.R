@@ -1,12 +1,12 @@
-context("objects")
+context("storr")
 
 test_that("basic", {
   drivers <- create_drivers()
   on.exit(cleanup_drivers(drivers))
 
   for (dr in drivers) {
-    cache <- object_cache(dr)
-    expect_that(cache, is_a("object_cache"))
+    cache <- storr(dr)
+    expect_that(cache, is_a("storr"))
 
     expect_that(cache$list(), equals(character(0)))
     expect_that(cache$list_hashes(), equals(character(0)))

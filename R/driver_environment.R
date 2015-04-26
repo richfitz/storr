@@ -73,9 +73,13 @@ driver_environment <- function() {
     },
 
     ## List support:
-    is_list=function(key, namespace) {
+    exists_list=function(key, namespace) {
       self$ensure_envir("envir_list", namespace)
       exists0(key, self$envir_list[[namespace]])
+    },
+    list_lists=function(namespace) {
+      self$ensure_envir("envir_list", namespace)
+      ls(self$envir_list[[namespace]])
     },
     length_list=function(key, namespace) {
       length(self$envir_list[[namespace]][[key]])
@@ -86,7 +90,7 @@ driver_environment <- function() {
 
       if (is.null(i)) {
         assign(key, hash, self$envir_list[[namespace]])
-      } else if (self$is_list(key, namespace)) {
+      } else if (self$exists_list(key, namespace)) {
         list_check_range(key, i, self$length_list(key, namespace))
         tmp <- self$envir_list[[namespace]][[key]]
         tmp[i] <- hash

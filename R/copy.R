@@ -5,12 +5,12 @@
 ## S3 looks nice because we can abstract over assign / $set but it
 ## doesn't actually work that well.
 ##
-## We can overload [[ for object_cache but that breaks other things,
+## We can overload [[ for storr but that breaks other things,
 ## so instead the Rube Goldberg machine is for environments giving a
 ## fake $get method that redirects to [[.
-object_cache_copy <- function(dest, src, list=NULL) {
+storr_copy <- function(dest, src, list=NULL) {
   if (is.null(list)) {
-    if (inherits(src, "object_cache")) {
+    if (inherits(src, "storr")) {
       list <- src$list()
     } else if (is.environment(src)) {
       list <- ls(src, all.names=TRUE)

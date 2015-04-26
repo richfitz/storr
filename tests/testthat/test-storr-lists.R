@@ -1,4 +1,7 @@
- context("lists")
+context("storr lists")
+
+## TODO: test attributes
+## TODO: test namespace
 
 test_that("basic", {
   drivers <- create_drivers()
@@ -7,7 +10,7 @@ test_that("basic", {
   for (dr in drivers) {
     value <- as.list(1:5)
     key <- "x"
-    cache <- object_cache(dr)
+    cache <- storr(dr)
 
     ## We'll set this as a list this way.
 
@@ -54,14 +57,24 @@ test_that("basic", {
     cmp <- value
     cmp[[1]] <- "a"
 
-    ## TODO: This is a problem...
-    expect_that(cache$list(), equals(character(0)))
+    expect_that(cache$list(), equals(key))
 
     expect_that(cache$get_list(key), equals(cmp))
-    ## TODO: no $exists @ cache?
+    expect_that(cache$exists(key), is_true())
     expect_that(cache$driver$exists_key(key, "objects"), is_false())
+    expect_that(cache$driver$exists_list(key, "objects"), is_true())
+
     expect_that(cache$get(key), equals(cmp))
+
+    expect_that(cache$exists(key), is_true())
     expect_that(cache$driver$exists_key(key, "objects"), is_true())
+    expect_that(cache$driver$exists_list(key, "objects"), is_true())
     expect_that(cache$list(), equals(key))
+
+    cache$del(key)
+    expect_that(cache$exists(key), is_false())
+    expect_that(cache$driver$exists_key(key, "objects"), is_false())
+    expect_that(cache$driver$exists_list(key, "objects"), is_false())
+    expect_that(cache$list(), equals(character(0)))
   }
 })

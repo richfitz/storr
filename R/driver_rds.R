@@ -82,8 +82,12 @@ driver_rds <- function(path, compress=FALSE) {
     },
 
     ## List support:
-    is_list=function(key, namespace) {
+    exists_list=function(key, namespace) {
       file.exists(self$name_list(key, namespace))
+    },
+    list_lists=function(namespace) {
+      dir(self$name_list("", namespace),
+          all.files=TRUE, no..=TRUE)
     },
     length_list=function(key, namespace) {
       name <- self$name_list(key, namespace)
@@ -99,7 +103,7 @@ driver_rds <- function(path, compress=FALSE) {
       name <- self$name_list(key, namespace)
       if (is.null(i)) {
         writeLines(hash, name)
-      } else if (self$is_list(key, namespace)) {
+      } else if (self$exists_list(key, namespace)) {
         list_check_range(key, i, self$length_list(key, namespace))
         tmp <- readLines(name)
         tmp[i] <- hash
