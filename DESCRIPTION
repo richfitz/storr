@@ -1,7 +1,10 @@
 Package: storr
-Title: What the package does (one line)
+Title: Simple Object Storer
 Version: 0.1.0
-Description: What the package does (one paragraph)
+Description: Creates and manages simple key-value stores.  These can
+  use a variety of approaches for storing the data, including
+  serialisation to file, or using 'Redis' to store the data in a way
+  that can be addressed by multiple processes.
 Depends: R (>= 3.1.2)
 License: BSD_2_clause + file LICENSE
 LazyData: true
