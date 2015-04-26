@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Rich FitzJohn" />
+
+<meta name="date" content="2015-04-26" />
+
+<title>storr</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<link href="data:text/css,body%20%7B%0A%20%20background%2Dcolor%3A%20%23fff%3B%0A%20%20margin%3A%201em%20auto%3B%0A%20%20max%2Dwidth%3A%20700px%3B%0A%20%20overflow%3A%20visible%3B%0A%20%20padding%2Dleft%3A%202em%3B%0A%20%20padding%2Dright%3A%202em%3B%0A%20%20font%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0A%20%20font%2Dsize%3A%2014px%3B%0A%20%20line%2Dheight%3A%201%2E35%3B%0A%7D%0A%0A%23header%20%7B%0A%20%20text%2Dalign%3A%20center%3B%0A%7D%0A%0A%23TOC%20%7B%0A%20%20clear%3A%20both%3B%0A%20%20margin%3A%200%200%2010px%2010px%3B%0A%20%20padding%3A%204px%3B%0A%20%20width%3A%20400px%3B%0A%20%20border%3A%201px%20solid%20%23CCCCCC%3B%0A%20%20border%2Dradius%3A%205px%3B%0A%0A%20%20background%2Dcolor%3A%20%23f6f6f6%3B%0A%20%20font%2Dsize%3A%2013px%3B%0A%20%20line%2Dheight%3A%201%2E3%3B%0A%7D%0A%20%20%23TOC%20%2Etoctitle%20%7B%0A%20%20%20%20font%2Dweight%3A%20bold%3B%0A%20%20%20%20font%2Dsize%3A%2015px%3B%0A%20%20%20%20margin%2Dleft%3A%205px%3B%0A%20%20%7D%0A%0A%20%20%23TOC%20ul%20%7B%0A%20%20%20%20padding%2Dleft%3A%2040px%3B%0A%20%20%20%20margin%2Dleft%3A%20%2D1%2E5em%3B%0A%20%20%20%20margin%2Dtop%3A%205px%3B%0A%20%20%20%20margin%2Dbottom%3A%205px%3B%0A%20%20%7D%0A%20%20%23TOC%20ul%20ul%20%7B%0A%20%20%20%20margin%2Dleft%3A%20%2D2em%3B%0A%20%20%7D%0A%20%20%23TOC%20li%20%7B%0A%20%20%20%20line%2Dheight%3A%2016px%3B%0A%20%20%7D%0A%0Atable%20%7B%0A%20%20margin%3A%201em%20auto%3B%0A%20%20border%2Dwidth%3A%201px%3B%0A%20%20border%2Dcolor%3A%20%23DDDDDD%3B%0A%20%20border%2Dstyle%3A%20outset%3B%0A%20%20border%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0A%20%20border%2Dwidth%3A%202px%3B%0A%20%20padding%3A%205px%3B%0A%20%20border%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0A%20%20border%2Dwidth%3A%201px%3B%0A%20%20border%2Dstyle%3A%20inset%3B%0A%20%20line%2Dheight%3A%2018px%3B%0A%20%20padding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0A%20%20border%2Dleft%2Dstyle%3A%20none%3B%0A%20%20border%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0A%0Ap%20%7B%0A%20%20margin%3A%200%2E5em%200%3B%0A%7D%0A%0Ablockquote%20%7B%0A%20%20background%2Dcolor%3A%20%23f6f6f6%3B%0A%20%20padding%3A%200%2E25em%200%2E75em%3B%0A%7D%0A%0Ahr%20%7B%0A%20%20border%2Dstyle%3A%20solid%3B%0A%20%20border%3A%20none%3B%0A%20%20border%2Dtop%3A%201px%20solid%20%23777%3B%0A%20%20margin%3A%2028px%200%3B%0A%7D%0A%0Adl%20%7B%0A%20%20margin%2Dleft%3A%200%3B%0A%7D%0A%20%20dl%20dd%20%7B%0A%20%20%20%20margin%2Dbottom%3A%2013px%3B%0A%20%20%20%20margin%2Dleft%3A%2013px%3B%0A%20%20%7D%0A%20%20dl%20dt%20%7B%0A%20%20%20%20font%2Dweight%3A%20bold%3B%0A%20%20%7D%0A%0Aul%20%7B%0A%20%20margin%2Dtop%3A%200%3B%0A%7D%0A%20%20ul%20li%20%7B%0A%20%20%20%20list%2Dstyle%3A%20circle%20outside%3B%0A%20%20%7D%0A%20%20ul%20ul%20%7B%0A%20%20%20%20margin%2Dbottom%3A%200%3B%0A%20%20%7D%0A%0Apre%2C%20code%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20color%3A%20%23333%3B%0A%7D%0Apre%20%7B%0A%20%20white%2Dspace%3A%20pre%2Dwrap%3B%20%20%20%20%2F%2A%20Wrap%20long%20lines%20%2A%2F%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20margin%3A%205px%200px%2010px%200px%3B%0A%20%20padding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0A%0Acode%20%7B%0A%20%20font%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0A%20%20font%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0A%20%20padding%3A%202px%200px%3B%0A%7D%0A%0Adiv%2Efigure%20%7B%0A%20%20text%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0A%20%20background%2Dcolor%3A%20%23FFFFFF%3B%0A%20%20padding%3A%202px%3B%0A%20%20border%3A%201px%20solid%20%23DDDDDD%3B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20border%3A%201px%20solid%20%23CCCCCC%3B%0A%20%20margin%3A%200%205px%3B%0A%7D%0A%0Ah1%20%7B%0A%20%20margin%2Dtop%3A%200%3B%0A%20%20font%2Dsize%3A%2035px%3B%0A%20%20line%2Dheight%3A%2040px%3B%0A%7D%0A%0Ah2%20%7B%0A%20%20border%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0A%20%20padding%2Dtop%3A%2010px%3B%0A%20%20padding%2Dbottom%3A%202px%3B%0A%20%20font%2Dsize%3A%20145%25%3B%0A%7D%0A%0Ah3%20%7B%0A%20%20border%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0A%20%20padding%2Dtop%3A%2010px%3B%0A%20%20font%2Dsize%3A%20120%25%3B%0A%7D%0A%0Ah4%20%7B%0A%20%20border%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0A%20%20margin%2Dleft%3A%208px%3B%0A%20%20font%2Dsize%3A%20105%25%3B%0A%7D%0A%0Ah5%2C%20h6%20%7B%0A%20%20border%2Dbottom%3A%201px%20solid%20%23ccc%3B%0A%20%20font%2Dsize%3A%20105%25%3B%0A%7D%0A%0Aa%20%7B%0A%20%20color%3A%20%230033dd%3B%0A%20%20text%2Ddecoration%3A%20none%3B%0A%7D%0A%20%20a%3Ahover%20%7B%0A%20%20%20%20color%3A%20%236666ff%3B%20%7D%0A%20%20a%3Avisited%20%7B%0A%20%20%20%20color%3A%20%23800080%3B%20%7D%0A%20%20a%3Avisited%3Ahover%20%7B%0A%20%20%20%20color%3A%20%23BB00BB%3B%20%7D%0A%20%20a%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0A%20%20%20%20text%2Ddecoration%3A%20underline%3B%20%7D%0A%20%20a%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0A%20%20%20%20text%2Ddecoration%3A%20underline%3B%20%7D%0A%0A%2F%2A%20Class%20described%20in%20https%3A%2F%2Fbenjeffrey%2Ecom%2Fposts%2Fpandoc%2Dsyntax%2Dhighlighting%2Dcss%0A%20%20%20Colours%20from%20https%3A%2F%2Fgist%2Egithub%2Ecom%2Frobsimmons%2F1172277%20%2A%2F%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20Keyword%20%2A%2F%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%2F%2A%20DataType%20%2A%2F%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%2F%2A%20DecVal%20%28decimal%20values%29%20%2A%2F%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20BaseN%20%2A%2F%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20Float%20%2A%2F%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20Char%20%2A%2F%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20String%20%2A%2F%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%2F%2A%20Comment%20%2A%2F%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%2F%2A%20OtherToken%20%2A%2F%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20AlertToken%20%2A%2F%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20Function%20calls%20%2A%2F%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%2F%2A%20ErrorTok%20%2A%2F%0A%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+<div id="header">
+<h1 class="title">storr</h1>
+<h4 class="author"><em>Rich FitzJohn</em></h4>
+<h4 class="date"><em>2015-04-26</em></h4>
+</div>
+
+
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(storr)</code></pre>
+<p>At the moment, <code>storr</code> requires a driver to be explicitly given; that will change to be a bit more user-friendly shortly.</p>
+<p>The idea with different drivers is that different ways of storing data have different trade-offs in terms of speed, size, concurrency, etc; the approach here should allow different backends to be switched in and out while keeping the same user-facing interface.</p>
+<p><code>driver_rds</code> stores contents at some path by saving out to rds files. Here I’m using a temporary directory for the path; the driver will create a number of subdirectories here.</p>
+<pre class="sourceCode r"><code class="sourceCode r">path &lt;-<span class="st"> </span><span class="kw">tempfile</span>(<span class="st">&quot;storr_&quot;</span>)
+dr &lt;-<span class="st"> </span>storr::<span class="kw">driver_rds</span>(path)</code></pre>
+<p>With this driver object we can create the <code>storr</code> object which is what we actually interact with:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(<span class="dt">driver=</span>dr)</code></pre>
+<div id="key-value-store" class="section level1">
+<h1>Key-value store:</h1>
+<p>The most simple way of interacting with a <code>storr</code> object is <code>get</code>/<code>set</code>/<code>del</code> for getting, setting and deleting data stored at some key. To store data:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">set</span>(<span class="st">&quot;mykey&quot;</span>, mtcars)</code></pre>
+<p>To get the data back</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(st$<span class="kw">get</span>(<span class="st">&quot;mykey&quot;</span>))</code></pre>
+<pre><code>##                    mpg cyl disp  hp drat    wt  qsec vs am gear carb
+## Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+## Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+## Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+## Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+## Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
+## Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1</code></pre>
+<p>What is in the <code>storr</code>?</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list</span>()</code></pre>
+<pre><code>## [1] &quot;mykey&quot;</code></pre>
+<p>Or, much faster, test for existance of a particular key:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">exists</span>(<span class="st">&quot;mykey&quot;</span>)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">exists</span>(<span class="st">&quot;another_key&quot;</span>)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<p>To delete it:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">del</span>(<span class="st">&quot;mykey&quot;</span>)</code></pre>
+<p>It’s gone!</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list</span>()</code></pre>
+<pre><code>## character(0)</code></pre>
+</div>
+<div id="lists-and-indexable-serialisation" class="section level1">
+<h1>Lists and indexable serialisation</h1>
+<p>A disadvantage of saving R objects to disk is you have to read the entire thing in at once. <code>storr</code> addresses one specific solution to this problem; allowing simple indexing of objects that are list-like (i.e., things you could throw at <code>lapply</code> productively).</p>
+<p>Here’s a daft object that we want to serialise but address by index later.</p>
+<pre class="sourceCode r"><code class="sourceCode r">obj &lt;-<span class="st"> </span><span class="kw">setNames</span>(<span class="kw">lapply</span>(<span class="dv">1</span>:<span class="dv">5</span>, runif), letters[<span class="dv">1</span>:<span class="dv">5</span>])
+obj</code></pre>
+<pre><code>## $a
+## [1] 0.3733974
+## 
+## $b
+## [1] 0.91699928 0.01103497
+## 
+## $c
+## [1] 0.9207483 0.3152247 0.3701013
+## 
+## $d
+## [1] 0.878507472 0.004071728 0.889897065 0.955923091
+## 
+## $e
+## [1] 0.03041871 0.14666421 0.18116952 0.86352483 0.62908567</code></pre>
+<p>Rather than use <code>set</code>, use <code>set_list</code> to assign the object against a key.</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">set_list</span>(<span class="st">&quot;mylist&quot;</span>, obj)</code></pre>
+<p>The object appears in the <code>storr</code> as before</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list</span>()</code></pre>
+<pre><code>## [1] &quot;mylist&quot;</code></pre>
+<p>and can be accessed in its entirety:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get</span>(<span class="st">&quot;mylist&quot;</span>)</code></pre>
+<pre><code>## $a
+## [1] 0.3733974
+## 
+## $b
+## [1] 0.91699928 0.01103497
+## 
+## $c
+## [1] 0.9207483 0.3152247 0.3701013
+## 
+## $d
+## [1] 0.878507472 0.004071728 0.889897065 0.955923091
+## 
+## $e
+## [1] 0.03041871 0.14666421 0.18116952 0.86352483 0.62908567</code></pre>
+<p>but it has a different type:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">type</span>(<span class="st">&quot;mylist&quot;</span>)</code></pre>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+<p>Can be queried on length:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">length_list</span>(<span class="st">&quot;mylist&quot;</span>)</code></pre>
+<pre><code>## [1] 5</code></pre>
+<p>To access an individual element:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get_list_element</span>(<span class="st">&quot;mylist&quot;</span>, <span class="dv">2</span>)</code></pre>
+<pre><code>## [1] 0.91699928 0.01103497</code></pre>
+<p>To access multiple elements (names are dropped at present, but might be retrieveable as an option in future)</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get_list_elements</span>(<span class="st">&quot;mylist&quot;</span>, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>))</code></pre>
+<pre><code>## [[1]]
+## [1] 0.3733974
+## 
+## [[2]]
+## [1] 0.9207483 0.3152247 0.3701013
+## 
+## [[3]]
+## [1] 0.03041871 0.14666421 0.18116952 0.86352483 0.62908567</code></pre>
+<p>To assign to individual elements:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">set_list_element</span>(<span class="st">&quot;mylist&quot;</span>, <span class="dv">3</span>, <span class="st">&quot;a different value&quot;</span>)
+st$<span class="kw">get_list_element</span>(<span class="st">&quot;mylist&quot;</span>, <span class="dv">3</span>)</code></pre>
+<pre><code>## [1] &quot;a different value&quot;</code></pre>
+<p>Retrieve the whole list again; names are still there but the value of the 3rd element has changed.</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get</span>(<span class="st">&quot;mylist&quot;</span>)</code></pre>
+<pre><code>## $a
+## [1] 0.3733974
+## 
+## $b
+## [1] 0.91699928 0.01103497
+## 
+## $c
+## [1] &quot;a different value&quot;
+## 
+## $d
+## [1] 0.878507472 0.004071728 0.889897065 0.955923091
+## 
+## $e
+## [1] 0.03041871 0.14666421 0.18116952 0.86352483 0.62908567</code></pre>
+<p>Lists can be deleted as before</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">del</span>(<span class="st">&quot;mylist&quot;</span>)</code></pre>
+</div>
+<div id="import-export" class="section level1">
+<h1>Import / export</h1>
+<p>Objects can be imported in and exported out of a <code>storr</code>;</p>
+<p>Import from a list, environment or another <code>storr</code></p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">import</span>(<span class="kw">list</span>(<span class="dt">a=</span><span class="dv">1</span>, <span class="dt">b=</span><span class="dv">2</span>))
+st$<span class="kw">list</span>()</code></pre>
+<pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get</span>(<span class="st">&quot;a&quot;</span>)</code></pre>
+<pre><code>## [1] 1</code></pre>
+<p>Export to an environment or another <code>storr</code></p>
+<pre class="sourceCode r"><code class="sourceCode r">e &lt;-<span class="st"> </span><span class="kw">new.env</span>(<span class="dt">parent=</span><span class="kw">emptyenv</span>())
+st$<span class="kw">export</span>(e)
+<span class="kw">ls</span>(e)</code></pre>
+<pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">e$a</code></pre>
+<pre><code>## [1] 1</code></pre>
+<p>Convenience function that does the same as the above (exports to a new environment that has <code>.GlobalEnv</code> as its parent)</p>
+<pre class="sourceCode r"><code class="sourceCode r">e2 &lt;-<span class="st"> </span>st$<span class="kw">to_environment</span>()
+<span class="kw">ls</span>(e2)</code></pre>
+<pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">parent.env</span>(e2)</code></pre>
+<pre><code>## &lt;environment: R_GlobalEnv&gt;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">st2 &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(<span class="dt">driver=</span>storr::<span class="kw">driver_rds</span>(<span class="kw">tempfile</span>(<span class="st">&quot;storr_&quot;</span>)))
+st2$<span class="kw">list</span>()</code></pre>
+<pre><code>## character(0)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">st2$<span class="kw">import</span>(st)
+st2$<span class="kw">list</span>()</code></pre>
+<pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
+</div>
+<div id="supported-backends" class="section level1">
+<h1>Supported backends</h1>
+<ul>
+<li>environments (<code>driver_environment</code>) - mostly for debugging and transient storage, but by far the fastest.</li>
+<li>on disk with rds (<code>driver_rds</code>) - zero dependencies, quite fast, will suffer under high concurrency because there is no file locking.</li>
+<li>Redis (<code>driver_redis</code>) - uses <a href="https://github.com/eddelbuettel/rcppredis"><code>RcppRedis</code></a> to store the data in a <a href="http://redis.io">Redis</a> database. Slower than rds, but can allow multiple R processes to share the same set of objects.</li>
+<li>rlite (<code>driver_rlite</code>) - stores data in an <a href="https://github.com/seppo0010/rlite">rlite</a> using <a href="https://github.com/ropensci/rrlite"><code>rrlite</code></a>. This is the slowest at present and does not support concurrency at all. But rlite has the potential to be as useful as SQLite is so this will improve.</li>
+</ul>
+</div>
+<div id="implementation-details" class="section level1">
+<h1>Implementation details</h1>
+<p><code>storr</code> includes a few useful features that are common to all drivers.</p>
+<div id="content-addressable-lookup" class="section level2">
+<h2>Content addressable lookup</h2>
+<p>The only thing that is stored against a key is the hash of some object. Each driver does this a different way, but for the rds driver it stores small text files that list the hash in them. So:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="kw">file.path</span>(st$driver$path_keys, <span class="st">&quot;objects&quot;</span>))</code></pre>
+<pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">readLines</span>(<span class="kw">file.path</span>(st$driver$path_keys, <span class="st">&quot;objects&quot;</span>, <span class="st">&quot;a&quot;</span>))</code></pre>
+<pre><code>## [1] &quot;6717f2823d3202449301145073ab8719&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get_hash</span>(<span class="st">&quot;a&quot;</span>)</code></pre>
+<pre><code>## [1] &quot;6717f2823d3202449301145073ab8719&quot;</code></pre>
+<p>Then there is one big pool of hash / value pairs:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list_hashes</span>()</code></pre>
+<pre><code>##  [1] &quot;0ee41d724a288da677db8c7289b18439&quot; &quot;48eb3fd61d4ec543402769c229b67462&quot;
+##  [3] &quot;6717f2823d3202449301145073ab8719&quot; &quot;6f007e941525a4b3109bc404030a1dbd&quot;
+##  [5] &quot;8be560c3bf784a01d9544fa32103faa0&quot; &quot;8f02abff01627861f01696c2b04663b7&quot;
+##  [7] &quot;a63c70e73b58d0823ab3bcbd3b543d6f&quot; &quot;a683e3b08d0e3610583430fa170b4d3d&quot;
+##  [9] &quot;aaeb511d26ad91667a708553e0383a71&quot; &quot;db8e490a925a60e62212cefc7674ca02&quot;
+## [11] &quot;f123ed780a27b1f734e57df72cee987f&quot; &quot;f1a2b96445a23906f2dc63e0040a28aa&quot;</code></pre>
+<p>in the rds driver these are stored like so:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="kw">file.path</span>(st$driver$path_data))</code></pre>
+<pre><code>##  [1] &quot;0ee41d724a288da677db8c7289b18439.rds&quot;
+##  [2] &quot;48eb3fd61d4ec543402769c229b67462.rds&quot;
+##  [3] &quot;6717f2823d3202449301145073ab8719.rds&quot;
+##  [4] &quot;6f007e941525a4b3109bc404030a1dbd.rds&quot;
+##  [5] &quot;8be560c3bf784a01d9544fa32103faa0.rds&quot;
+##  [6] &quot;8f02abff01627861f01696c2b04663b7.rds&quot;
+##  [7] &quot;a63c70e73b58d0823ab3bcbd3b543d6f.rds&quot;
+##  [8] &quot;a683e3b08d0e3610583430fa170b4d3d.rds&quot;
+##  [9] &quot;aaeb511d26ad91667a708553e0383a71.rds&quot;
+## [10] &quot;db8e490a925a60e62212cefc7674ca02.rds&quot;
+## [11] &quot;f123ed780a27b1f734e57df72cee987f.rds&quot;
+## [12] &quot;f1a2b96445a23906f2dc63e0040a28aa.rds&quot;</code></pre>
+<p>This is going to need garbage collecting every so often - no reference counting is done so stale objects can build up.</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">gc</span>()
+st$<span class="kw">list_hashes</span>()</code></pre>
+<pre><code>## [1] &quot;6717f2823d3202449301145073ab8719&quot; &quot;db8e490a925a60e62212cefc7674ca02&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="kw">file.path</span>(st$driver$path_data))</code></pre>
+<pre><code>## [1] &quot;6717f2823d3202449301145073ab8719.rds&quot;
+## [2] &quot;db8e490a925a60e62212cefc7674ca02.rds&quot;</code></pre>
+<p>Eventually this might be automated but for now it’s not.</p>
+</div>
+<div id="environment-based-caching" class="section level2">
+<h2>Environment-based caching</h2>
+<p>Every time data passes across a <code>get</code> or <code>set</code> method, <code>storr</code> stores the data in an environment within the <code>storr</code> object. Because we store the content against its hash, it’s always in sync with what is saved to disk. That means that the look up process goes like this:</p>
+<ol style="list-style-type: decimal">
+<li>Ask for a key, get returned the hash of the content</li>
+<li>Check in the caching environment for that hash and return that if present</li>
+<li>If not present, read content from disk/db/wherever the driver stores it and save it into the caching environment</li>
+</ol>
+<p>Because looking up data in the environment is likely to be orders of magnitide faster than reading from disks or databases, this means that commonly accessed data will be accessed at a similar speed to native R objects, while still immediately reflecting changes to the content (because that would mean the hash changes)</p>
+<p>To demonstrate:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(<span class="dt">driver=</span>storr::<span class="kw">driver_rds</span>(<span class="kw">tempfile</span>(<span class="st">&quot;storr_&quot;</span>)))</code></pre>
+<p>This is the caching environent; currently empty</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ls</span>(st$envir)</code></pre>
+<pre><code>## character(0)</code></pre>
+<p>Set some key to some data:</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">set</span>(<span class="st">&quot;mykey&quot;</span>, <span class="kw">runif</span>(<span class="dv">100</span>))</code></pre>
+<p>The environment now includes an object with a <em>name</em> that is the same as the <em>hash</em> of its contents:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ls</span>(st$envir)</code></pre>
+<pre><code>## [1] &quot;666a4e38cc58e89f2099aea267301e6b&quot;</code></pre>
+<p>Extract the object from the environment and hash it</p>
+<pre class="sourceCode r"><code class="sourceCode r">storr:::<span class="kw">hash_object</span>(st$envir[[<span class="kw">ls</span>(st$envir)]])</code></pre>
+<pre><code>## [1] &quot;666a4e38cc58e89f2099aea267301e6b&quot;</code></pre>
+<p>When we look up the value stored against key <code>mykey</code>, the first step is to check the key/hash map; this returns the key above (this step <em>does</em> involve reading from disk)</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get_hash</span>(<span class="st">&quot;mykey&quot;</span>)</code></pre>
+<pre><code>## [1] &quot;666a4e38cc58e89f2099aea267301e6b&quot;</code></pre>
+<p>It then calls <code>$get_value</code> to extract the value associated with that hash - the first thing that function does is try to locate the hash in the environment, otherwise it reads the data from wherever the driver stores it.</p>
+<pre class="sourceCode r"><code class="sourceCode r">st$get_value</code></pre>
+<pre><code>## function (hash, use_cache = TRUE) 
+## {
+##     envir &lt;- self$envir
+##     if (use_cache &amp;&amp; exists0(hash, envir)) {
+##         envir[[hash]]
+##     }
+##     else {
+##         value &lt;- self$driver$get_value(hash)
+##         if (use_cache) {
+##             envir[[hash]] &lt;- value
+##         }
+##         value
+##     }
+## }
+## &lt;environment: 0x7fbbec7024e8&gt;</code></pre>
+<p>The speed up is going to be fairly context dependent, but 10x seems pretty good in this case (some of the overhead is simply a longer code path as we call out to the driver).</p>
+<pre class="sourceCode r"><code class="sourceCode r">hash &lt;-<span class="st"> </span>st$<span class="kw">get_hash</span>(<span class="st">&quot;mykey&quot;</span>)
+microbenchmark::<span class="kw">microbenchmark</span>(st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">TRUE</span>),
+                               st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">FALSE</span>))</code></pre>
+<pre><code>## Unit: microseconds
+##                                   expr    min      lq      mean  median
+##   st$get_value(hash, use_cache = TRUE) 10.072 11.1445  13.73785 13.8630
+##  st$get_value(hash, use_cache = FALSE) 93.208 94.8845 109.65909 96.7495
+##        uq     max neval
+##   14.4065  27.335   100
+##  105.6100 244.965   100</code></pre>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

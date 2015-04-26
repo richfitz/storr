@@ -15,3 +15,13 @@ Object caching.  Based on ideas in both [remake](https://github.com/richfitz/rem
   - git via [git2r](https://github.com/ropensci/git2r)
 
 We always go back to the common storage (database, filesystem, whatever) for the current object -> hash mapping but when retrieving a hash we can often do that without hitting the underlying storage.  This means that repeated lookups happen very quickly while still being able to reflect change elsewhere.
+
+# Installation
+
+```
+devtools::install_github("richfitz/storr")
+```
+
+# Documentation
+
+There is a vignette (`vignette("storr")`) that outlines the basic idea.  Source is [here](vignette/storr.Rmd), and rendered [here](http://htmlpreview.github.io/?https://raw.githubusercontent.com/richfitz/storr/master/inst/doc/storr.html)
