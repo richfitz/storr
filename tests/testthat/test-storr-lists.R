@@ -78,3 +78,20 @@ test_that("basic", {
     expect_that(cache$list(), equals(character(0)))
   }
 })
+
+test_that("garbage collection", {
+  drivers <- create_drivers()
+  on.exit(cleanup_drivers(drivers))
+
+  st <- storr(drivers$rds)
+
+  st$set_list("mykey", 1:5)
+  h <- st$list_hashes()
+  st$gc()
+  expect_that(st$list_hashes(), equals(h))
+
+  st$set("another", 3)
+  st$del("mykey")
+  st$gc()
+  expect_that(st$list_hashes(), equals(hash_object(3)))
+})

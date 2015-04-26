@@ -3,7 +3,7 @@ hash_object <- function(x) {
 }
 
 exists0 <- function(name, envir) {
-  exists(name, envir, inherits=FALSE)
+  exists(name, envir=envir, inherits=FALSE)
 }
 
 exists1 <- function(name, envir) {
@@ -11,9 +11,11 @@ exists1 <- function(name, envir) {
 }
 
 rm0 <- function(list, envir) {
-  del <- exists0(list, envir)
-  rm(list=list[del], envir=envir)
-  del
+  if (length(list) > 0L) {
+    del <- exists0(list, envir)
+    rm(list=list[del], envir=envir)
+    del
+  }
 }
 
 str_drop_start <- function(x, sub) {

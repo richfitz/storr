@@ -60,11 +60,26 @@ storr <- function(driver) {
       invisible(self$driver$del_key(key, namespace))
     },
 
-    ## Totally naive garbage collection.  Should be replacable by the
-    ## driver.  Note that this does *not* support lists yet!
+    ## Totally naive garbage collection.  Should possibly be
+    ## replacable by the driver.
     gc=function() {
-      keys <- self$list()
-      hashes_used <- vapply(keys, self$get_hash, character(1))
+      ## TODO: need to get all keys from all namespaces; that probably
+      ## requires that drivers can report about namespaces.
+      ##
+      ## Probably best to have drivers do the hard work for us here?
+      ns <- "objects"
+      keys <- self$list(ns)
+      hashes_used1 <- vcapply(keys, self$driver$get_hash,
+                              ns, USE.NAMES=FALSE)
+
+      lists <- self$driver$list_lists(ns)
+      hashes_used2 <- unlist(lapply(lists, self$driver$get_hash_list,
+                                    NULL, ns))
+      hashes_used3 <- vcapply(lists, self$driver$get_hash,
+                              "list_attr", USE.NAMES=FALSE)
+
+      hashes_used <- unique(c(hashes_used1, hashes_used2, hashes_used3))
+
       hashes <- self$list_hashes()
       unused <- setdiff(hashes, hashes_used)
       for (h in unused) {
@@ -80,12 +95,13 @@ storr <- function(driver) {
     },
 
     get_value=function(hash, use_cache=TRUE) {
-      if (use_cache && exists0(hash, self$envir)) {
-        self$envir[[hash]]
+      envir <- self$envir
+      if (use_cache && exists0(hash, envir)) {
+        envir[[hash]]
       } else {
         value <- self$driver$get_value(hash)
         if (use_cache) {
-          self$envir[[hash]] <- value
+          envir[[hash]] <- value
         }
         value
       }

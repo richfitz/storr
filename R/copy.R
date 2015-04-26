@@ -14,6 +14,8 @@ storr_copy <- function(dest, src, list=NULL) {
       list <- src$list()
     } else if (is.environment(src)) {
       list <- ls(src, all.names=TRUE)
+    } else if (is.list(src)) {
+      list <- names(src)
     } else {
       stop("Invalid type for src")
     }
