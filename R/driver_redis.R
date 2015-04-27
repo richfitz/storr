@@ -18,7 +18,6 @@ driver_redis_api <- function(prefix, con) {
   .R6_driver_redis_api$new(prefix, con)
 }
 
-##' @importFrom RedisAPI object_to_string string_to_object
 .R6_driver_redis_api <- R6::R6Class(
   "driver_redis_api",
 

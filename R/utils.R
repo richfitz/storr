@@ -64,3 +64,14 @@ file_remove <- function(path) {
 count_lines <- function(filename) {
   length(readLines(filename))
 }
+
+## NOTE: these come from RedisAPI; they're directly here rather than
+## as an @import diretive because I want to keep the dependency chain
+## polite.  But it means that if either package improves how these are
+## handled that needs backporting.
+object_to_string <- function(obj) {
+  rawToChar(serialize(obj, NULL, TRUE))
+}
+string_to_object <- function(str) {
+  unserialize(charToRaw(str))
+}
