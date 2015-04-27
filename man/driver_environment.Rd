@@ -7,7 +7,10 @@
 \usage{
 driver_environment()
 
-storr_environment()
+storr_environment(default_namespace = "objects")
+}
+\arguments{
+\item{default_namespace}{Default namespace (see \code{\link{storr}})}
 }
 \description{
 Dummy environment driver that can possibly be used for the internals

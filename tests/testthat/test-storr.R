@@ -57,3 +57,28 @@ test_that("basic", {
     expect_that(cache$get("bbb", use_cache=FALSE), equals(d))
   }
 })
+
+test_that("Default namespace", {
+  path <- tempfile()
+  st0 <- storr_rds(path)
+  st <- storr_rds(path, default_namespace="storr")
+  st1 <- storr_rds(path)
+  expect_that(formals(st0$type)$namespace, equals("objects"))
+  expect_that(formals(st$type)$namespace, equals("storr"))
+  expect_that(formals(st1$type)$namespace, equals("objects"))
+
+  for (m in ls(st)) {
+    ff <- formals(st[[m]])
+    if ("namespace" %in% names(ff)) {
+      expect_that(ff$namespace, equals("storr"))
+    }
+  }
+
+  st$set("foo", 1:10)
+  expect_that(st$list("objects"), equals(character(0)))
+  expect_that(st$list("storr"), equals("foo"))
+
+  st0$set("foo", letters)
+  expect_that(st0$get("foo"), equals(letters))
+  expect_that(st$get("foo"), equals(1:10))
+})

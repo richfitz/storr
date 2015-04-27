@@ -15,11 +15,11 @@ driver_rlite(prefix, ...)
 
 driver_redis_api(prefix, con)
 
-storr_redis(prefix, ...)
+storr_redis(prefix, ..., default_namespace = "objects")
 
-storr_rlite(prefix, ...)
+storr_rlite(prefix, ..., default_namespace = "objects")
 
-storr_redis_api(prefix, con)
+storr_redis_api(prefix, con, default_namespace = "objects")
 }
 \arguments{
 \item{prefix}{Prefix for keys}
@@ -28,6 +28,8 @@ storr_redis_api(prefix, con)
 \code{rrlite::hirlite}.}
 
 \item{con}{A \code{redis_api} object}
+
+\item{default_namespace}{Default namespace (see \code{\link{storr}})}
 }
 \description{
 Redis object cache driver

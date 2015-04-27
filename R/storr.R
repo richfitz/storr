@@ -1,9 +1,13 @@
 ##' Create an object cache
 ##' @title Object cache
 ##' @param driver A driver object
+##' @param default_namespace Default namespace to store objects in.
+##' By default \code{"objects"} is used, but this might be useful to
+##' have two diffent \code{storr} objects pointing at the same store,
+##' but storing things in different namespaces.
 ##' @export
-storr <- function(driver) {
-  .R6_storr$new(driver)
+storr <- function(driver, default_namespace="objects") {
+  .R6_storr$new(driver, default_namespace)
 }
 
 ##' @importFrom R6 R6Class
@@ -14,9 +18,20 @@ storr <- function(driver) {
     driver=NULL,
     envir=NULL,
 
-    initialize=function(driver) {
+    initialize=function(driver, default_namespace) {
       self$driver <- driver
       self$envir  <- new.env(parent=emptyenv())
+
+      ## This trades off (little) initialization speed for (little)
+      ## execution speed, but also provides a clearer UI because the
+      ## actual default namespace will be the function argument.
+      if (default_namespace != "objects") {
+        for (m in ls(self)) {
+          if ("namespace" %in% names(formals(self[[m]]))) {
+            modify_defaults_R6(self, m, "namespace", default_namespace)
+          }
+        }
+      }
     },
 
     type=function(key, namespace="objects") {
@@ -183,33 +198,31 @@ storr <- function(driver) {
       value
     },
 
-    ## TODO: for *all* the functions below:
-    ##   (a) does this really belong as a class method?
-    ##   (b) is the argument order correct?  `list` kind of wants to
-    ##       be both first and last.
+    ## TODO: All of these need to support namespaces.
+
     ## To/from R environments (distinct from the environment driver)
-    import=function(envir, list=NULL) {
-      storr_copy(self, envir, list)
+    import=function(envir, list=NULL, namespace="objects") {
+      storr_copy(self, envir, list, namespace)
     },
     ## The logic here is taken from remake's object_store, which is
     ## useful as this is destined to replace that object.
-    export=function(target, list=NULL) {
-      storr_copy(target, self, list)
+    export=function(target, list=NULL, namespace="objects") {
+      storr_copy(target, self, list, namespace)
     },
     ## A simple convenience function, given that as.environment is not
     ## going to work (it's internal and the mode of an R6 class is
     ## already environment!)
-    to_environment=function(parent=.GlobalEnv, list=NULL) {
+    to_environment=function(parent=.GlobalEnv, list=NULL, namespace="objects") {
       envir <- new.env(parent=parent)
-      self$export(envir, list)
+      self$export(envir, list, namespace)
       envir
     },
 
-    archive_export=function(path, names=NULL) {
-      self$export(storr_rds(path), names)
+    archive_export=function(path, names=NULL, namespace="objects") {
+      self$export(storr_rds(path), names, namespace)
     },
 
-    archive_import=function(path, names=NULL) {
-      self$import(storr_rds(path), names)
+    archive_import=function(path, names=NULL, namespace="objects") {
+      self$import(storr_rds(path), names, namespace)
     }
   ))

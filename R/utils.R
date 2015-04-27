@@ -75,3 +75,26 @@ object_to_string <- function(obj) {
 string_to_object <- function(str) {
   unserialize(charToRaw(str))
 }
+
+modify_defaults_R6 <- function(cl, name, argname, default) {
+  unlockBinding(name, cl)
+  on.exit(lockBinding(name, cl))
+  cl[[name]] <- modify_defaults(cl[[name]], "namespace", default)
+  invisible()
+}
+
+modify_defaults <- function(fun, argname, default) {
+  ff <- formals(fun)
+  ff[argname] <- default
+  replace_formals(fun, ff)
+}
+
+## This replaces forms, but preserves attributes except for srcref,
+## which will be invalid for any nontrivial change (and will
+## confusingly be printed with the wrong structure).
+replace_formals <- function(fun, value, envir=environment(fun)) {
+  old_attributes <- attributes(fun)
+  formals(fun, envir=envir) <- value
+  attributes(fun) <- old_attributes[names(old_attributes) != "srcref"]
+  fun
+}

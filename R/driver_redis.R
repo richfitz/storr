@@ -21,18 +21,19 @@ driver_redis_api <- function(prefix, con) {
 }
 ##' @export
 ##' @rdname driver_redis
-storr_redis <- function(prefix, ...) {
-  storr(driver_redis(prefix, ...))
+##' @param default_namespace Default namespace (see \code{\link{storr}})
+storr_redis <- function(prefix, ..., default_namespace="objects") {
+  storr(driver_redis(prefix, ...), default_namespace)
 }
 ##' @export
 ##' @rdname driver_redis
-storr_rlite <- function(prefix, ...) {
-  storr(driver_rlite(prefix, ...))
+storr_rlite <- function(prefix, ..., default_namespace="objects") {
+  storr(driver_rlite(prefix, ...), default_namespace)
 }
 ##' @export
 ##' @rdname driver_redis
-storr_redis_api <- function(prefix, con) {
-  storr(driver_redis_api(prefix, con))
+storr_redis_api <- function(prefix, con, default_namespace="objects") {
+  storr(driver_redis_api(prefix, con), default_namespace)
 }
 
 .R6_driver_redis_api <- R6::R6Class(

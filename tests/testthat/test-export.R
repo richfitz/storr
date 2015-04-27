@@ -36,3 +36,26 @@ test_that("export / import", {
   expect_that(st3$list(), equals("foo"))
   expect_that(st3$get("foo"), equals(st2$get("a")))
 })
+
+test_that("namespace", {
+  st <- storr_environment()
+
+  st$set("a", mtcars, namespace="ns1")
+  st$set("b", iris,   namespace="ns2")
+
+  path <- tempfile("export_")
+  expect_that(dir(path), equals(character(0)))
+
+  tmp <- storr_rds(path)
+
+  st$archive_export(path)
+  expect_that(tmp$list(), equals(character(0)))
+
+  st$archive_export(path, namespace="ns1")
+  expect_that(tmp$list(), equals(character(0)))
+  expect_that(tmp$list("ns1"), equals("a"))
+
+  st$archive_export(path, namespace="ns2")
+  expect_that(tmp$list(), equals(character(0)))
+  expect_that(tmp$list("ns2"), equals("b"))
+})

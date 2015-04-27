@@ -7,7 +7,7 @@
 \usage{
 driver_rds(path, compress = FALSE)
 
-storr_rds(path, compress = FALSE)
+storr_rds(path, compress = FALSE, default_namespace = "objects")
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice
@@ -16,6 +16,8 @@ application data.}
 
 \item{compress}{Compress the generated file?  This saves a small
 amount of space for a reasonable amount of time.}
+
+\item{default_namespace}{Default namespace (see \code{\link{storr}})}
 }
 \description{
 RDS object cache driver

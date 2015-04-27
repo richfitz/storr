@@ -11,8 +11,9 @@ driver_rds <- function(path, compress=FALSE) {
 }
 ##' @export
 ##' @rdname driver_rds
-storr_rds <- function(path, compress=FALSE) {
-  storr(driver_rds(path, compress))
+##' @param default_namespace Default namespace (see \code{\link{storr}})
+storr_rds <- function(path, compress=FALSE, default_namespace="objects") {
+  storr(driver_rds(path, compress), default_namespace)
 }
 
 .R6_driver_rds <- R6::R6Class(

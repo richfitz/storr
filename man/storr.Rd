@@ -4,10 +4,15 @@
 \alias{storr}
 \title{Object cache}
 \usage{
-storr(driver)
+storr(driver, default_namespace = "objects")
 }
 \arguments{
 \item{driver}{A driver object}
+
+\item{default_namespace}{Default namespace to store objects in.
+By default \code{"objects"} is used, but this might be useful to
+have two diffent \code{storr} objects pointing at the same store,
+but storing things in different namespaces.}
 }
 \description{
 Create an object cache

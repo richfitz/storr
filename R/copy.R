@@ -8,10 +8,14 @@
 ## We can overload [[ for storr but that breaks other things,
 ## so instead the Rube Goldberg machine is for environments giving a
 ## fake $get method that redirects to [[.
-storr_copy <- function(dest, src, list=NULL) {
+##
+## TODO: namespace here assumes we're copy from and to the same
+## namespace.  That's not always going to be reasonable but will have
+## to do for now.
+storr_copy <- function(dest, src, list, namespace) {
   if (is.null(list)) {
     if (inherits(src, "storr")) {
-      list <- src$list()
+      list <- src$list(namespace)
     } else if (is.environment(src)) {
       list <- ls(src, all.names=TRUE)
     } else if (is.list(src)) {
@@ -23,8 +27,8 @@ storr_copy <- function(dest, src, list=NULL) {
 
   names_dest <- export_names(list)
 
-  do_get <- make_get(src)
-  do_set <- make_set(dest)
+  do_get <- make_get(src, namespace)
+  do_set <- make_set(dest, namespace)
   for (i in seq_along(list)) {
     do_set(names_dest[[i]], do_get(list[[i]]))
   }
@@ -36,11 +40,12 @@ make_get <- function(x, ...) {
   UseMethod("make_get")
 }
 ##' @export
-make_get.default <- function(x, ...) {
+make_get.default <- function(x, namespace, ...) {
   if (!is.function(x$get)) {
     stop("No suitable method found")
   }
-  x$get
+  force(namespace)
+  function(i) x$get(i, namespace=namespace)
 }
 ##' @export
 make_get.environment <- function(x, ...) {
@@ -54,11 +59,12 @@ make_set <- function(x, ...) {
   UseMethod("make_set")
 }
 ##' @export
-make_set.default <- function(x, ...) {
+make_set.default <- function(x, namespace, ...) {
   if (!is.function(x$set)) {
     stop("No suitable method found")
   }
-  x$set
+  force(namespace)
+  function(i, value) x$set(i, value, namespace=namespace)
 }
 ##' @export
 make_set.environment <- function(x, ...) {
