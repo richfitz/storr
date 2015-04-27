@@ -2,9 +2,12 @@
 % Please edit documentation in R/driver_environment.R
 \name{driver_environment}
 \alias{driver_environment}
+\alias{storr_environment}
 \title{Environment object cache driver}
 \usage{
 driver_environment()
+
+storr_environment()
 }
 \description{
 Dummy environment driver that can possibly be used for the internals

@@ -9,6 +9,11 @@
 driver_rds <- function(path, compress=FALSE) {
   .R6_driver_rds$new(path, compress)
 }
+##' @export
+##' @rdname driver_rds
+storr_rds <- function(path, compress=FALSE) {
+  storr(driver_rds(path, compress))
+}
 
 .R6_driver_rds <- R6::R6Class(
   "driver_rds",

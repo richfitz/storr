@@ -2,9 +2,12 @@
 % Please edit documentation in R/driver_rds.R
 \name{driver_rds}
 \alias{driver_rds}
+\alias{storr_rds}
 \title{RDS object cache driver}
 \usage{
 driver_rds(path, compress = FALSE)
+
+storr_rds(path, compress = FALSE)
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice

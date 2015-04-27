@@ -2,18 +2,32 @@
 % Please edit documentation in R/driver_redis.R
 \name{driver_redis}
 \alias{driver_redis}
+\alias{driver_redis_api}
 \alias{driver_rlite}
+\alias{storr_redis}
+\alias{storr_redis_api}
+\alias{storr_rlite}
 \title{Redis object cache driver}
 \usage{
 driver_redis(prefix, ...)
 
 driver_rlite(prefix, ...)
+
+driver_redis_api(prefix, con)
+
+storr_redis(prefix, ...)
+
+storr_rlite(prefix, ...)
+
+storr_redis_api(prefix, con)
 }
 \arguments{
 \item{prefix}{Prefix for keys}
 
 \item{...}{Arguments passed through to \code{RedisAPI::hiredis} or
 \code{rrlite::hirlite}.}
+
+\item{con}{A \code{redis_api} object}
 }
 \description{
 Redis object cache driver

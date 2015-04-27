@@ -13,9 +13,26 @@ driver_redis <- function(prefix, ...) {
 driver_rlite <- function(prefix, ...) {
   driver_redis_api(prefix, rrlite::hirlite(...))
 }
-
+##' @export
+##' @rdname driver_redis
+##' @param con A \code{redis_api} object
 driver_redis_api <- function(prefix, con) {
   .R6_driver_redis_api$new(prefix, con)
+}
+##' @export
+##' @rdname driver_redis
+storr_redis <- function(prefix, ...) {
+  storr(driver_redis(prefix, ...))
+}
+##' @export
+##' @rdname driver_redis
+storr_rlite <- function(prefix, ...) {
+  storr(driver_rlite(prefix, ...))
+}
+##' @export
+##' @rdname driver_redis
+storr_redis_api <- function(prefix, con) {
+  storr(driver_redis_api(prefix, con))
 }
 
 .R6_driver_redis_api <- R6::R6Class(

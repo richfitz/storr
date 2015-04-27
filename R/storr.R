@@ -203,5 +203,13 @@ storr <- function(driver) {
       envir <- new.env(parent=parent)
       self$export(envir, list)
       envir
+    },
+
+    archive_export=function(path, names=NULL) {
+      self$export(storr_rds(path), names)
+    },
+
+    archive_import=function(path, names=NULL) {
+      self$import(storr_rds(path), names)
     }
   ))

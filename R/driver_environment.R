@@ -4,6 +4,11 @@
 driver_environment <- function() {
   .R6_driver_environment$new()
 }
+##' @export
+##' @rdname driver_environment
+storr_environment <- function() {
+  storr(driver_environment())
+}
 
 ## TODO: get / [[
 ## TODO: assign / [[<-
