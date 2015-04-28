@@ -6,6 +6,7 @@ Object caching.  Based on ideas in both [remake](https://github.com/richfitz/rem
 
 * cached in-memory copies that might be faster to retrieve than on-disk copies
 * content-addressable storage, storing and retrieving potentially fewer copies of identical data
+* Indexable serialisation of list-like objects allow random access reads and writes (suitable for breaking objects up for use across a distributed computing environment).
 * Pluggable backends - currently
   - environment (memory)
   - rds (disk)
