@@ -234,6 +234,14 @@ storr <- function(driver, default_namespace="objects",
 ##
 ## This is pretty evil code generation.  There may be a better way,
 ## but this avoids a lot of nasty repetition.
+##
+## It might be better to do this at the *driver* level; the only
+## driver this really matters for is the rds driver, so that could
+## just be an argument passed there.  I think that's more general, so
+## might be better.
+##
+## If that's the case, need some support for suppressing the mangling
+## temporarily.
 storr_mangled_methods <- function() {
   self <- NULL # avoid false positive NOTE
   ret <- list(storr=NULL,
@@ -247,9 +255,12 @@ storr_mangled_methods <- function() {
     f <- public[[m]]
     fun_name <- call("$", call("$", quote(self), quote(storr)), as.name(m))
     fun_args <- lapply(names(formals(f)), as.symbol)
-    if ("key" %in% names(formals(f))) {
+    if (m %in% c("archive_export", "archive_import")) {
+      fun_args[[match("names", names(formals(f)))]] <-
+        quote(if (is.null(names)) names else hash_string(names))
+    } else if ("key" %in% names(formals(f))) {
       fun_args[[match("key", names(formals(f)))]] <-
-        call("hash_string", quote(key))
+        quote(hash_string(key))
     }
     body(f) <- as.call(c(list(fun_name), fun_args))
     ret[[m]] <- f
