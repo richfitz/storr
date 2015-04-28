@@ -2,6 +2,10 @@ hash_object <- function(x) {
   digest::digest(x)
 }
 
+hash_string <- function(str) {
+  digest::digest(str, serialize=FALSE)
+}
+
 exists0 <- function(name, envir) {
   exists(name, envir=envir, inherits=FALSE)
 }

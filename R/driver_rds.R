@@ -12,8 +12,10 @@ driver_rds <- function(path, compress=FALSE) {
 ##' @export
 ##' @rdname driver_rds
 ##' @param default_namespace Default namespace (see \code{\link{storr}})
-storr_rds <- function(path, compress=FALSE, default_namespace="objects") {
-  storr(driver_rds(path, compress), default_namespace)
+##' @param mangle_key Mangle key? (see \code{\link{storr}})
+storr_rds <- function(path, compress=FALSE,
+                      default_namespace="objects", mangle_key=FALSE) {
+  storr(driver_rds(path, compress), default_namespace, mangle_key)
 }
 
 .R6_driver_rds <- R6::R6Class(

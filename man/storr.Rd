@@ -4,7 +4,7 @@
 \alias{storr}
 \title{Object cache}
 \usage{
-storr(driver, default_namespace = "objects")
+storr(driver, default_namespace = "objects", mangle_key = FALSE)
 }
 \arguments{
 \item{driver}{A driver object}
@@ -13,6 +13,13 @@ storr(driver, default_namespace = "objects")
 By default \code{"objects"} is used, but this might be useful to
 have two diffent \code{storr} objects pointing at the same store,
 but storing things in different namespaces.}
+
+\item{mangle_key}{Mangle keys?  If TRUE, then the key is run
+through a hash function first; this allows storing keys against
+names that include characters that might not be supported by the
+underlying driver.  At present the hash function mangles the
+\emph{string} \code{key} but future versions might allow mangling
+the \code{value} of \code{key}.}
 }
 \description{
 Create an object cache

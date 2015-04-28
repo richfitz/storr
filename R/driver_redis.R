@@ -22,18 +22,22 @@ driver_redis_api <- function(prefix, con) {
 ##' @export
 ##' @rdname driver_redis
 ##' @param default_namespace Default namespace (see \code{\link{storr}})
-storr_redis <- function(prefix, ..., default_namespace="objects") {
-  storr(driver_redis(prefix, ...), default_namespace)
+##' @param mangle_key Mangle keys? (see  \code{\link{storr}})
+storr_redis <- function(prefix, ..., default_namespace="objects",
+                        mangle_key=FALSE) {
+  storr(driver_redis(prefix, ...), default_namespace, mangle_key)
 }
 ##' @export
 ##' @rdname driver_redis
-storr_rlite <- function(prefix, ..., default_namespace="objects") {
-  storr(driver_rlite(prefix, ...), default_namespace)
+storr_rlite <- function(prefix, ..., default_namespace="objects",
+                        mangle_key=FALSE) {
+  storr(driver_rlite(prefix, ...), default_namespace, mangle_key)
 }
 ##' @export
 ##' @rdname driver_redis
-storr_redis_api <- function(prefix, con, default_namespace="objects") {
-  storr(driver_redis_api(prefix, con), default_namespace)
+storr_redis_api <- function(prefix, con, default_namespace="objects",
+                            mangle_key=FALSE) {
+  storr(driver_redis_api(prefix, con), default_namespace, mangle_key)
 }
 
 .R6_driver_redis_api <- R6::R6Class(

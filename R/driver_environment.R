@@ -7,8 +7,9 @@ driver_environment <- function() {
 ##' @export
 ##' @rdname driver_environment
 ##' @param default_namespace Default namespace (see \code{\link{storr}})
-storr_environment <- function(default_namespace="objects") {
-  storr(driver_environment(), default_namespace)
+##' @param mangle_key Mangle key? (see \code{\link{storr}})
+storr_environment <- function(default_namespace="objects", mangle_key=FALSE) {
+  storr(driver_environment(), default_namespace, mangle_key)
 }
 
 ## TODO: get / [[

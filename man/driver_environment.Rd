@@ -7,10 +7,12 @@
 \usage{
 driver_environment()
 
-storr_environment(default_namespace = "objects")
+storr_environment(default_namespace = "objects", mangle_key = FALSE)
 }
 \arguments{
 \item{default_namespace}{Default namespace (see \code{\link{storr}})}
+
+\item{mangle_key}{Mangle key? (see \code{\link{storr}})}
 }
 \description{
 Dummy environment driver that can possibly be used for the internals

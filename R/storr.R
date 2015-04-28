@@ -5,9 +5,20 @@
 ##' By default \code{"objects"} is used, but this might be useful to
 ##' have two diffent \code{storr} objects pointing at the same store,
 ##' but storing things in different namespaces.
+##' @param mangle_key Mangle keys?  If TRUE, then the key is run
+##' through a hash function first; this allows storing keys against
+##' names that include characters that might not be supported by the
+##' underlying driver.  At present the hash function mangles the
+##' \emph{string} \code{key} but future versions might allow mangling
+##' the \code{value} of \code{key}.
 ##' @export
-storr <- function(driver, default_namespace="objects") {
-  .R6_storr$new(driver, default_namespace)
+storr <- function(driver, default_namespace="objects",
+                  mangle_key=FALSE) {
+  if (mangle_key) {
+    .R6_storr_mangled$new(driver, default_namespace)
+  } else {
+    .R6_storr$new(driver, default_namespace)
+  }
 }
 
 ##' @importFrom R6 R6Class
@@ -21,17 +32,7 @@ storr <- function(driver, default_namespace="objects") {
     initialize=function(driver, default_namespace) {
       self$driver <- driver
       self$envir  <- new.env(parent=emptyenv())
-
-      ## This trades off (little) initialization speed for (little)
-      ## execution speed, but also provides a clearer UI because the
-      ## actual default namespace will be the function argument.
-      if (default_namespace != "objects") {
-        for (m in ls(self)) {
-          if ("namespace" %in% names(formals(self[[m]]))) {
-            modify_defaults_R6(self, m, "namespace", default_namespace)
-          }
-        }
-      }
+      rewrite_namespace(self, default_namespace)
     },
 
     type=function(key, namespace="objects") {
@@ -226,3 +227,53 @@ storr <- function(driver, default_namespace="objects") {
       self$import(storr_rds(path), names, namespace)
     }
   ))
+
+## This is another version that will arrange to mangle key *names* to
+## their hash.  This results in a store where we cannot determine the
+## keys for what is stored in it!
+##
+## This is pretty evil code generation.  There may be a better way,
+## but this avoids a lot of nasty repetition.
+storr_mangled_methods <- function() {
+  self <- NULL # avoid false positive NOTE
+  ret <- list(storr=NULL,
+              initialize=function(...) {
+                self$storr <- storr(...)
+                rewrite_namespace(self, formals(self$storr$get)$namespace)
+              })
+
+  public <- .R6_storr$public_methods
+  for (m in setdiff(names(public), "initialize")) {
+    f <- public[[m]]
+    fun_name <- call("$", call("$", quote(self), quote(storr)), as.name(m))
+    fun_args <- lapply(names(formals(f)), as.symbol)
+    if ("key" %in% names(formals(f))) {
+      fun_args[[match("key", names(formals(f)))]] <-
+        call("hash_string", quote(key))
+    }
+    body(f) <- as.call(c(list(fun_name), fun_args))
+    ret[[m]] <- f
+  }
+
+  ret
+}
+
+.R6_storr_mangled <- R6::R6Class(
+  "storr_mangled",
+  public=storr_mangled_methods())
+
+## This trades off (little) initialization speed for (little)
+## execution speed, but also provides a clearer UI because the
+## actual default namespace will be the function argument.
+##
+## This triggers a NOTE in R CMD check but should be OK here given
+## we're hitting things that we control directly.
+rewrite_namespace <- function(self, default_namespace) {
+  if (default_namespace != "objects") {
+    for (m in ls(self)) {
+      if ("namespace" %in% names(formals(self[[m]]))) {
+        modify_defaults_R6(self, m, "namespace", default_namespace)
+      }
+    }
+  }
+}

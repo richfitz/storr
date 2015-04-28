@@ -15,11 +15,12 @@ driver_rlite(prefix, ...)
 
 driver_redis_api(prefix, con)
 
-storr_redis(prefix, ..., default_namespace = "objects")
+storr_redis(prefix, ..., default_namespace = "objects", mangle_key = FALSE)
 
-storr_rlite(prefix, ..., default_namespace = "objects")
+storr_rlite(prefix, ..., default_namespace = "objects", mangle_key = FALSE)
 
-storr_redis_api(prefix, con, default_namespace = "objects")
+storr_redis_api(prefix, con, default_namespace = "objects",
+  mangle_key = FALSE)
 }
 \arguments{
 \item{prefix}{Prefix for keys}
@@ -30,6 +31,8 @@ storr_redis_api(prefix, con, default_namespace = "objects")
 \item{con}{A \code{redis_api} object}
 
 \item{default_namespace}{Default namespace (see \code{\link{storr}})}
+
+\item{mangle_key}{Mangle keys? (see  \code{\link{storr}})}
 }
 \description{
 Redis object cache driver
