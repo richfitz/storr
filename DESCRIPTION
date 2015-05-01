@@ -5,7 +5,7 @@ Description: Creates and manages simple key-value stores.  These can
   use a variety of approaches for storing the data, including
   serialisation to file, or using 'Redis' to store the data in a way
   that can be addressed by multiple processes.
-Depends: R (>= 3.1.2)
+Depends: R (>= 3.1.0)
 License: BSD_2_clause + file LICENSE
 LazyData: true
 Author: Rich FitzJohn
