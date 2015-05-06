@@ -63,6 +63,7 @@ st$list()
 
 ## Here's a daft object that we want to serialise but address by index
 ## later.
+set.seed(1)
 obj <- setNames(lapply(1:5, runif), letters[1:5])
 obj
 
@@ -199,6 +200,7 @@ st <- storr::storr(driver=storr::driver_rds(tempfile("storr_")))
 ls(st$envir)
 
 ## Set some key to some data:
+set.seed(2)
 st$set("mykey", runif(100))
 
 ## The environment now includes an object with a *name* that is the

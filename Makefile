@@ -28,11 +28,11 @@ check_all:
 	REMAKE_TEST_INSTALL_PACKAGES=true make check
 
 vignettes/storr.Rmd: vignettes/storr_src.R
-	Rscript -e 'sowsear::sowsear("vignettes/storr_src.R", "Rmd")'
+	${RSCRIPT} -e 'sowsear::sowsear("vignettes/storr_src.R", "Rmd")'
 	mv vignettes/storr_src.Rmd vignettes/storr.Rmd
 
 vignettes: vignettes/storr.Rmd
-	Rscript -e 'library(methods); options(warnPartialMatchArgs=FALSE, warnPartialMatchDollar=FALSE); devtools::build_vignettes()'
+	${RSCRIPT} -e 'library(methods); devtools::build_vignettes()'
 	mv inst/doc/storr_src.R vignettes/storr_src.R
 
 # No real targets!

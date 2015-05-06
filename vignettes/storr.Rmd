@@ -82,6 +82,7 @@ list-like (i.e., things you could throw at `lapply` productively).
 Here's a daft object that we want to serialise but address by index
 later.
 ``` {r }
+set.seed(1)
 obj <- setNames(lapply(1:5, runif), letters[1:5])
 obj
 ```
@@ -258,6 +259,7 @@ ls(st$envir)
 
 Set some key to some data:
 ``` {r }
+set.seed(2)
 st$set("mykey", runif(100))
 ```
 
