@@ -37,7 +37,7 @@ vcapply <- function(X, FUN, ...) {
   vapply(X, FUN, character(1), ...)
 }
 
-assert_scalar <- function (x, name=deparse(substitute(x))) {
+assert_scalar <- function(x, name=deparse(substitute(x))) {
   if (length(x) != 1) {
     stop(sprintf("%s must be a scalar", name), call.=FALSE)
   }
@@ -45,6 +45,12 @@ assert_scalar <- function (x, name=deparse(substitute(x))) {
 assert_length <- function(x, n, name=deparse(substitute(x))) {
   if (length(x) != n) {
     stop(sprintf("%s must have %d elements", name, n), call. = FALSE)
+  }
+}
+
+assert_function <- function(x, name=deparse(substitute(x))) {
+  if (!is.function(x)) {
+    stop(sprintf("%s must be a function", name), call. = FALSE)
   }
 }
 
@@ -81,6 +87,7 @@ string_to_object <- function(str) {
 }
 
 modify_defaults_R6 <- function(cl, name, argname, default) {
+  ## getExportedValue("base", "unlockBinding")(name, cl)
   unlockBinding(name, cl)
   on.exit(lockBinding(name, cl))
   cl[[name]] <- modify_defaults(cl[[name]], "namespace", default)
@@ -101,4 +108,23 @@ replace_formals <- function(fun, value, envir=environment(fun)) {
   formals(fun, envir=envir) <- value
   attributes(fun) <- old_attributes[names(old_attributes) != "srcref"]
   fun
+}
+
+## A file downloader that can (a) handle https and (b) actually fail
+## when the download fails.  Not sure why that combination is so hard,
+## but here it is:
+download_file <- function(url, dest=tempfile(), overwrite=FALSE) {
+  oo <- options(warnPartialMatchArgs=FALSE)
+  if (isTRUE(oo$warnPartialMatchArgs)) {
+    on.exit(options(oo))
+  }
+  ## TODO: replace with gabor's bar, which is way better.
+  content <- httr::GET(url,
+                       httr::write_disk(dest, overwrite),
+                       httr::progress("down"))
+  cat("\n")
+  if (httr::status_code(content) != 200L) {
+    stop(DownloadError(content))
+  }
+  dest
 }

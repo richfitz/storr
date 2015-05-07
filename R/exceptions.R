@@ -5,6 +5,15 @@ KeyError <- function(key, driver) {
             class=c("KeyError", "error", "condition"))
 }
 
+KeyErrorExternal <- function(key, e, driver) {
+  msg <- sprintf("key '%s' not found, with error: %s", key, e$message)
+  structure(list(key=key,
+                 message=msg,
+                 call=NULL,
+                 error=e),
+            class=c("KeyErrorExternal", "KeyError", "error", "condition"))
+}
+
 HashError <- function(hash, driver) {
   structure(list(hash=hash,
                  message=sprintf("hash '%s' not found", hash),
@@ -30,4 +39,13 @@ TypeError <- function(key, expected, recieved, driver) {
                    expected, recieved),
                  call=NULL),
             class=c("TypeError", "error", "condition"))
+}
+
+DownloadError <- function(content) {
+  msg <- sprintf("Downloading %s failed with code %d",
+                 content$url, httr::status_code(content))
+  structure(list(content=content,
+                 message=msg,
+                 call=NULL),
+            class=c("DownloadError", "error", "condition"))
 }

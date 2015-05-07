@@ -126,6 +126,7 @@ storr_environment <- function(default_namespace="objects", mangle_key=FALSE) {
     },
 
     ensure_envir=function(name, namespace) {
+      force(namespace) # avoid obscure missing argument error
       if (is.null(self[[name]][[namespace]])) {
         self[[name]][[namespace]] <- new.env(parent=emptyenv())
       }

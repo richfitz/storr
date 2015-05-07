@@ -11,5 +11,5 @@ LazyData: true
 Author: Rich FitzJohn
 Maintainer: Rich FitzJohn <rich.fitzjohn@gmail.com>
 Imports: R6, digest
-Suggests: testthat, RcppRedis, RedisAPI, rrlite, knitr, microbenchmark
+Suggests: testthat, RcppRedis, RedisAPI, rrlite, knitr, microbenchmark, httr
 VignetteBuilder: knitr

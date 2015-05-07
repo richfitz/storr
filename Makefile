@@ -4,10 +4,10 @@ RSCRIPT = Rscript --no-init-file
 all: install
 
 test:
-	${RSCRIPT} -e 'library(methods); devtools::test()'
+	STORR_SKIP_DOWNLOADS=true make test_all
 
 test_all:
-	REMAKE_TEST_INSTALL_PACKAGES=true make test
+	${RSCRIPT} -e 'library(methods); devtools::test()'
 
 roxygen:
 	@mkdir -p man
@@ -19,13 +19,13 @@ install:
 build:
 	R CMD build .
 
-check: build
+check:
+	STORR_SKIP_DOWNLOADS=true make check_all
+
+check_all: build
 	_R_CHECK_CRAN_INCOMING_=FALSE R CMD check --as-cran --no-manual `ls -1tr ${PACKAGE}*gz | tail -n1`
 	@rm -f `ls -1tr ${PACKAGE}*gz | tail -n1`
 	@rm -rf ${PACKAGE}.Rcheck
-
-check_all:
-	REMAKE_TEST_INSTALL_PACKAGES=true make check
 
 vignettes/storr.Rmd: vignettes/storr_src.R
 	${RSCRIPT} -e 'sowsear::sowsear("vignettes/storr_src.R", "Rmd")'

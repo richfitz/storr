@@ -46,6 +46,7 @@ storr <- function(driver, default_namespace="objects",
     },
 
     set=function(key, value, namespace="objects", use_cache=TRUE) {
+      ## NOTE: duplicated in driver_external::get_hash
       hash <- hash_object(value)
       self$set_value(hash, value, use_cache)
       self$driver$set_key_hash(key, hash, namespace)
@@ -124,6 +125,7 @@ storr <- function(driver, default_namespace="objects",
     },
 
     set_value=function(hash, value, use_cache=TRUE) {
+      ## NOTE: duplicated in driver_external::get_hash
       if (!self$driver$exists_hash(hash)) {
         self$driver$set_hash_value(hash, value)
       }
@@ -279,6 +281,9 @@ storr_mangled_methods <- function() {
 ##
 ## This triggers a NOTE in R CMD check but should be OK here given
 ## we're hitting things that we control directly.
+##
+## TODO: replace this with alternative approach where methods are
+## generated perhaps?
 rewrite_namespace <- function(self, default_namespace) {
   if (default_namespace != "objects") {
     for (m in ls(self)) {
