@@ -4,8 +4,6 @@
 ##' actual storage.
 ##' @param fetch_hook A function to run to fetch data when a key is
 ##' not found in the store.
-##' @param list_hook An optional function to run to fetch a list of
-##' possible keys.
 ##' @export
 driver_external <- function(storage_driver, fetch_hook) {
   .R6_driver_external$new(storage_driver, fetch_hook)
@@ -85,20 +83,13 @@ check_external_fetch_hook <- function(fetch_hook) {
   }
 }
 
-## Need to get this working properly for things where we care only
-## about files and not about reading them; that's going to be pretty
-## easy really, and this helps motivate it quite a bit.  For now, the
-## function `fread` is required to turn the object into an R object.
-fetch_hook_download_fmt <- function(fmt, fread) {
-  force(fmt)
-  furl <- function(key, namespace) {
-    sprintf(fmt, key)
-  }
-  assert_function(fread)
-  fetch_hook_download(furl, fread)
-}
-
-## TODO: Check functions are reasonable
+##' Hook for downloading files as an external resource
+##' @title Hook for downloading files
+##' @param furl Function to convert \code{key, namespace} into a URL.
+##' @param fread Function for converting \code{filename} into an R
+##' object.
+##' @seealso \code{\link{driver_external}}
+##' @export
 fetch_hook_download <- function(furl, fread) {
   assert_function(url)
   assert_function(fread)
@@ -109,11 +100,53 @@ fetch_hook_download <- function(furl, fread) {
   }
 }
 
-## TODO: Check functions are reasonable
+## Need to get this working properly for things where we care only
+## about files and not about reading them; that's going to be pretty
+## easy really, and this helps motivate it quite a bit.  For now, the
+## function `fread` is required to turn the object into an R object.
+##' @export
+##' @param fmt A \code{\link{sprintf}}-style format that \code{key}
+##' can be substituted into to give a URL.
+##' @rdname fetch_hook_download
+fetch_hook_download_fmt <- function(fmt, fread) {
+  force(fmt)
+  furl <- function(key, namespace) {
+    sprintf(fmt, key)
+  }
+  assert_function(fread)
+  fetch_hook_download(furl, fread)
+}
+
+##' @export
+##' @rdname fetch_hook_download
+##' @param fpath Function to convert \code{key, namespace} into a filename
 fetch_hook_read <- function(fpath, fread) {
   assert_function(fread)
   function(key, namespace) {
     filename <- fpath(key, namespace)
     fread(filename)
   }
+}
+
+##' Utility function for extracting versions of github releases.
+##' @title List github releases
+##' @param repo Name of a repo in format username/repository
+##' @param strip_v Strip the leading "v" from version names? (e.g.,
+##' "v1.0.0" becomes "1.0.0"
+##' @export
+github_release_versions <- function(repo, strip_v=TRUE) {
+  oo <- options(warnPartialMatchArgs=FALSE)
+  if (isTRUE(oo$warnPartialMatchArgs)) {
+    on.exit(options(oo))
+  }
+
+  url <- "https://api.github.com/repos/dfalster/baad/releases"
+  content <- httr::GET(url)
+
+  tags <- vcapply(httr::content(content), function(x) x$tag_name)
+  if (strip_v) {
+    tags <- sub("^v", "", tags)
+  }
+
+  rev(tags)
 }
