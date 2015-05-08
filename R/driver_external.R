@@ -117,6 +117,12 @@ fetch_hook_download_fmt <- function(fmt, fread) {
   fetch_hook_download(furl, fread)
 }
 
+fetch_hook_download_github <- function(repo, file, fread, add_v=TRUE) {
+  fmt <- sprintf()
+  assert_function(fread)
+
+}
+
 ##' @export
 ##' @rdname fetch_hook_download
 ##' @param fpath Function to convert \code{key, namespace} into a filename
@@ -149,4 +155,17 @@ github_release_versions <- function(repo, strip_v=TRUE) {
   }
 
   rev(tags)
+}
+
+##' @export
+##' @param file filename within the release
+##' @param add_v Add the leading "v" to the version name (e.g, "1.0.0"
+##' becomes "v1.0.0").
+##' @rdname github_release_versions
+github_release_file <- function(repo, file, add_v=TRUE) {
+  fmt <- sprintf("https://github.com/%s/releases/download/%s%%s/%s",
+                 repo, if(add_v) "v" else "", file)
+  function(version) {
+    sprintf(fmt, version)
+  }
 }
