@@ -2,11 +2,12 @@
 
 [![Build Status](https://travis-ci.org/richfitz/storr.png?branch=master)](https://travis-ci.org/richfitz/storr)
 
-Object caching.  Based on ideas in both [remake](https://github.com/richfitz/remake) and [rrqueue](https://github.com/traitecoevo/rrqueue).  Featuring
+Simple object cacher for R.  `storr` acts as a very simple key-value store (supporting `get`/`set`/`del` for arbitrary R objects as data and as keys).  The actual storage can be transient or persistent, local or distributed without changing the interface.  To allow for distributed access, data is returned by *content* rather than simply by key (with a key/content lookup step) so that if another process changes the data, `storr` will retrieve the current version.
 
-* cached in-memory copies that might be faster to retrieve than on-disk copies
-* content-addressable storage, storing and retrieving potentially fewer copies of identical data
+* Cached in-memory copies that might be faster to retrieve than on-disk copies
+* Content-addressable storage, storing and retrieving potentially fewer copies of identical data (useful if lookup is slow or over a network)
 * Indexable serialisation of list-like objects allow random access reads and writes (suitable for breaking objects up for use across a distributed computing environment).
+* Fetch from an external source (e.g. website) if a key is not found locally
 * Pluggable backends - currently
   - environment (memory)
   - rds (disk)

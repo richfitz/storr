@@ -49,10 +49,19 @@ test_that("basic", {
                 equals_unsorted(c(vcapply(value, hash_object),
                                   hash_object(NULL))))
 
+    expect_that(cache$get_list(key), equals(cache$get(key)))
+    expect_that(cache$get_hash(key), equals(hash_object(value)))
+
+    expect_that(cache$get_list_hash(key),
+                equals(vcapply(value, hash_object)))
+    expect_that(cache$get_list_hash(key, c(1, 3, 5)),
+                equals(vcapply(value[c(1, 3, 5)], hash_object)))
+
     ## Need to control what gets spat out of the return values here;
     ## lots of unnecessary noise.
     cache$set_list_element(key, 1, "a")
     expect_that(cache$get_list_element(key, 1), equals("a"))
+    expect_that(cache$get_list_hash(key, 1), equals(hash_object("a")))
 
     cmp <- value
     cmp[[1]] <- "a"

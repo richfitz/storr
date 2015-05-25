@@ -169,11 +169,10 @@ storr <- function(driver, default_namespace="objects",
     ## invalidate the current list and that requires tweaking get...
     get_list_element=function(key, i, namespace="objects", use_cache=TRUE) {
       assert_scalar(i)
-      hash <- self$driver$get_hash_list(key, i, namespace)
-      self$get_value(hash, use_cache)
+      self$get_value(self$get_list_hash(key, i, namespace), use_cache)
     },
     get_list_elements=function(key, i, namespace="objects", use_cache=TRUE) {
-      hash <- self$driver$get_hash_list(key, i, namespace)
+      hash <- self$get_list_hash(key, i, namespace)
       lapply(hash, self$get_value, use_cache)
     },
     set_list_element=function(key, i, value, namespace="objects", use_cache=TRUE) {
@@ -199,6 +198,12 @@ storr <- function(driver, default_namespace="objects",
       value <- self$get_list_elements(key, i, namespace, use_cache)
       attributes(value) <- self$get(key, namespace="list_attr")
       value
+    },
+    get_list_hash=function(key, i=NULL, namespace="objects") {
+      if (is.null(i)) {
+        i <- seq_len(self$length_list(key))
+      }
+      self$driver$get_hash_list(key, i, namespace)
     },
 
     ## TODO: All of these need to support namespaces.
