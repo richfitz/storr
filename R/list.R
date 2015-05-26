@@ -4,3 +4,7 @@ list_check_range <- function(key, i, len) {
     stop(IndexError(key, i[err]))
   }
 }
+
+list_attr_key <- function(key, namespace) {
+  hash_object(c(namespace, key))
+}

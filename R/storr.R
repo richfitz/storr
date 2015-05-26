@@ -71,7 +71,8 @@ storr <- function(driver, default_namespace="objects",
       ## TODO: This will report the wrong thing for lists being
       ## deleted much of the time.  Possibly drop due to YAGNI?
       if (self$driver$exists_list(key, namespace)) {
-        self$driver$del_key(key, namespace="list_attr")
+        self$driver$del_key(list_attr_key(key, namespace),
+                            namespace="list_attr")
         self$driver$del_hash_list(key, namespace)
       }
       invisible(self$driver$del_key(key, namespace))
@@ -92,9 +93,9 @@ storr <- function(driver, default_namespace="objects",
       lists <- self$driver$list_lists(ns)
       hashes_used2 <- unlist(lapply(lists, self$driver$get_hash_list,
                                     NULL, ns))
-      hashes_used3 <- vcapply(lists, self$driver$get_hash,
-                              "list_attr", USE.NAMES=FALSE)
-
+      hashes_used3 <- vcapply(lists, function(x)
+        self$driver$get_hash(list_attr_key(x, ns), "list_attr"),
+                              USE.NAMES=FALSE)
       hashes_used <- unique(c(hashes_used1, hashes_used2, hashes_used3))
 
       hashes <- self$list_hashes()
@@ -162,7 +163,8 @@ storr <- function(driver, default_namespace="objects",
 
     set_list=function(key, value, namespace="objects", use_cache=TRUE) {
       self$set_list_elements(key, NULL, value, namespace, use_cache)
-      self$set(key, attributes(value), "list_attr", use_cache)
+      self$set(list_attr_key(key, namespace), attributes(value),
+               "list_attr", use_cache)
       self$set(key, value, namespace, use_cache)
     },
     ## "set list element" requires more care because we need to
@@ -196,7 +198,8 @@ storr <- function(driver, default_namespace="objects",
     get_list=function(key, namespace="objects", use_cache=TRUE) {
       i <- seq_len(self$length_list(key))
       value <- self$get_list_elements(key, i, namespace, use_cache)
-      attributes(value) <- self$get(key, namespace="list_attr")
+      attributes(value) <- self$get(list_attr_key(key, namespace),
+                                    "list_attr", use_cache)
       value
     },
     get_list_hash=function(key, i=NULL, namespace="objects") {
