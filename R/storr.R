@@ -64,7 +64,24 @@ storr <- function(driver, default_namespace="objects",
     },
 
     get_hash=function(key, namespace="objects") {
-      self$driver$get_hash(key, namespace)
+      if (self$driver$exists_key(key, namespace)) {
+        self$driver$get_hash(key, namespace)
+      } else if (self$driver$exists_list(key, namespace)) {
+        ## NOTE: This situation happens where a list is modified
+        ## (invalidating the overall hash).  So get_hash above fails
+        ## above, but we can actually recover here.  Unfortunately
+        ## recovery is involved: there's no way of recomputing the
+        ## hash without entirely reconstructing the object.
+        ##
+        ## TODO: Not 100% sure that use_cache here is a good idea.
+        use_cache <- TRUE
+        value <- self$get_list(key, namespace, use_cache)
+        self$set(key, value, namespace, use_cache)
+        self$driver$get_hash(key, namespace)
+      } else {
+        ## This will fall back on the appropriate error:
+        self$driver$get_hash(key, namespace)
+      }
     },
 
     del=function(key, namespace="objects") {

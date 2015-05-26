@@ -66,11 +66,17 @@ test_that("basic", {
     cmp <- value
     cmp[[1]] <- "a"
 
+    expect_that(cache$get_list_hash(key), equals(vcapply(cmp, hash_object)))
+    expect_that(cache$exists(key), is_true())
+    expect_that(cache$driver$exists_key(key, "objects"), is_false())
+    ## This step here requires *recomputing* the hash as we have
+    ## invalidated it.
+    expect_that(cache$get_hash(key), equals(hash_object(cmp)))
+
     expect_that(cache$list(), equals(key))
 
     expect_that(cache$get_list(key), equals(cmp))
     expect_that(cache$exists(key), is_true())
-    expect_that(cache$driver$exists_key(key, "objects"), is_false())
     expect_that(cache$driver$exists_list(key, "objects"), is_true())
 
     expect_that(cache$get(key), equals(cmp))
