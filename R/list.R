@@ -5,6 +5,12 @@ list_check_range <- function(key, i, len) {
   }
 }
 
-list_attr_key <- function(key, namespace) {
-  hash_object(c(namespace, key))
+list_key <- function(type, key, namespace) {
+  hash_object(c(type, namespace, key))
+}
+
+list_attributes <- function(x) {
+  ret <- attributes(x)
+  ret$names <- NULL
+  ret
 }

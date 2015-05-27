@@ -4,7 +4,9 @@
 ##' @param default_namespace Default namespace to store objects in.
 ##' By default \code{"objects"} is used, but this might be useful to
 ##' have two diffent \code{storr} objects pointing at the same store,
-##' but storing things in different namespaces.
+##' but storing things in different namespaces.  Do not use namespaces
+##' beginning with \code{"storr_"} as these are used by storr itself
+##' and your data may get overwritten (unlikely though).
 ##' @param mangle_key Mangle keys?  If TRUE, then the key is run
 ##' through a hash function first; this allows storing keys against
 ##' names that include characters that might not be supported by the
@@ -88,8 +90,10 @@ storr <- function(driver, default_namespace="objects",
       ## TODO: This will report the wrong thing for lists being
       ## deleted much of the time.  Possibly drop due to YAGNI?
       if (self$driver$exists_list(key, namespace)) {
-        self$driver$del_key(list_attr_key(key, namespace),
-                            namespace="list_attr")
+        self$driver$del_key(list_key("attr", key, namespace),
+                            namespace="storr_list")
+        self$driver$del_key(list_key("names", key, namespace),
+                            namespace="storr_list")
         self$driver$del_hash_list(key, namespace)
       }
       invisible(self$driver$del_key(key, namespace))
@@ -107,13 +111,18 @@ storr <- function(driver, default_namespace="objects",
       hashes_used1 <- vcapply(keys, self$driver$get_hash,
                               ns, USE.NAMES=FALSE)
 
+      ## TODO: Tidy this mess up!
       lists <- self$driver$list_lists(ns)
       hashes_used2 <- unlist(lapply(lists, self$driver$get_hash_list,
                                     NULL, ns))
       hashes_used3 <- vcapply(lists, function(x)
-        self$driver$get_hash(list_attr_key(x, ns), "list_attr"),
+        self$driver$get_hash(list_key("attr", x, ns), "storr_list"),
                               USE.NAMES=FALSE)
-      hashes_used <- unique(c(hashes_used1, hashes_used2, hashes_used3))
+      hashes_used4 <- vcapply(lists, function(x)
+        self$driver$get_hash(list_key("names", x, ns), "storr_list"),
+                              USE.NAMES=FALSE)
+      hashes_used <- unique(c(hashes_used1, hashes_used2,
+                              hashes_used3, hashes_used4))
 
       hashes <- self$list_hashes()
       unused <- setdiff(hashes, hashes_used)
@@ -180,8 +189,10 @@ storr <- function(driver, default_namespace="objects",
 
     set_list=function(key, value, namespace="objects", use_cache=TRUE) {
       self$set_list_elements(key, NULL, value, namespace, use_cache)
-      self$set(list_attr_key(key, namespace), attributes(value),
-               "list_attr", use_cache)
+      self$set(list_key("attr", key, namespace), list_attributes(value),
+               "storr_list", use_cache)
+      self$set(list_key("names", key, namespace), names(value),
+               "storr_list", use_cache)
       self$set(key, value, namespace, use_cache)
     },
     ## "set list element" requires more care because we need to
@@ -192,7 +203,11 @@ storr <- function(driver, default_namespace="objects",
     },
     get_list_elements=function(key, i, namespace="objects", use_cache=TRUE) {
       hash <- self$get_list_hash(key, i, namespace)
-      lapply(hash, self$get_value, use_cache)
+      ret <- lapply(hash, self$get_value, use_cache)
+      nms <- self$get(list_key("names", key, namespace),
+                      "storr_list", use_cache)
+      names(ret) <- nms[i]
+      ret
     },
     set_list_element=function(key, i, value, namespace="objects", use_cache=TRUE) {
       assert_scalar(i)
@@ -215,8 +230,10 @@ storr <- function(driver, default_namespace="objects",
     get_list=function(key, namespace="objects", use_cache=TRUE) {
       i <- seq_len(self$length_list(key))
       value <- self$get_list_elements(key, i, namespace, use_cache)
-      attributes(value) <- self$get(list_attr_key(key, namespace),
-                                    "list_attr", use_cache)
+      attributes(value) <- self$get(list_key("attr", key, namespace),
+                                    "storr_list", use_cache)
+      names(value) <- self$get(list_key("names", key, namespace),
+                               "storr_list", use_cache)
       value
     },
     get_list_hash=function(key, i=NULL, namespace="objects") {
@@ -224,6 +241,15 @@ storr <- function(driver, default_namespace="objects",
         i <- seq_len(self$length_list(key))
       }
       self$driver$get_hash_list(key, i, namespace)
+    },
+
+    get_list_names=function(key, namespace="objects", use_cache=TRUE) {
+      self$get(list_key("names", key, namespace),
+               namespace="storr_list", use_cache=use_cache)
+    },
+    set_list_names=function(key, value, namespace="objects", use_cache=TRUE) {
+      self$set(list_key("names", key, namespace), value,
+               namespace="storr_list", use_cache=use_cache)
     },
 
     ## TODO: All of these need to support namespaces.
