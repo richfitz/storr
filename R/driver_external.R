@@ -141,12 +141,13 @@ fetch_hook_read <- function(fpath, fread) {
 ##' "v1.0.0" becomes "1.0.0"
 ##' @export
 github_release_versions <- function(repo, strip_v=TRUE) {
-  oo <- options(warnPartialMatchArgs=FALSE)
+  oo <- options(warnPartialMatchArgs=FALSE, warnPartialMatchDollar=FALSE)
   if (isTRUE(oo$warnPartialMatchArgs)) {
     on.exit(options(oo))
   }
 
-  url <- "https://api.github.com/repos/dfalster/baad/releases"
+  ## TODO: organise caching this in a storr.
+  url <- sprintf("https://api.github.com/repos/%s/releases", repo)
   content <- httr::GET(url)
 
   tags <- vcapply(httr::content(content), function(x) x$tag_name)
