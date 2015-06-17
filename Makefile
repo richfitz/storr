@@ -27,13 +27,11 @@ check_all: build
 	@rm -f `ls -1tr ${PACKAGE}*gz | tail -n1`
 	@rm -rf ${PACKAGE}.Rcheck
 
-vignettes/storr.Rmd: vignettes/storr_src.R
-	${RSCRIPT} -e 'sowsear::sowsear("vignettes/storr_src.R", "Rmd")'
-	mv vignettes/storr_src.Rmd vignettes/storr.Rmd
+vignettes/storr.Rmd: vignettes/src/storr.R
+	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
 
 vignettes: vignettes/storr.Rmd
 	${RSCRIPT} -e 'library(methods); devtools::build_vignettes()'
-	mv inst/doc/storr_src.R vignettes/storr_src.R
 
 # No real targets!
 .PHONY: all test document install vignettes

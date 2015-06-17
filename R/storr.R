@@ -250,6 +250,7 @@ storr <- function(driver, default_namespace="objects",
     set_list_names=function(key, value, namespace="objects", use_cache=TRUE) {
       self$set(list_key("names", key, namespace), value,
                namespace="storr_list", use_cache=use_cache)
+      self$driver$del_key(key, namespace)
     },
 
     ## TODO: All of these need to support namespaces.
