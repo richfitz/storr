@@ -3,6 +3,18 @@
 
 ##' Support for caching results of github releases.
 ##'
+##' This requires a number of things from the underlying github
+##' releases.  Versions must be stored using \emph{numeric} versions;
+##' no \code{v0.1.0-beta2} style tags are allowed (this will currently
+##' throw an error but future versions might allow skipping over
+##' them).  Versions are assumed to start with a leading \code{v}, so
+##' \code{v0.1.0} rather than \code{0.1.0} (but see the
+##' \code{leading_v} argument which relaxes this) Each release is
+##' assumed to have a \emph{single} file that we can load into R.  If
+##' you need multiple files the current workaround is to use a zip
+##' file as the single file to fetch and unpack that as the first
+##' step.
+##'
 ##' This might broaden out to allow uses of other sorts of storr
 ##' objects at some point, but for now it's pretty heavily tailored
 ##' towards the external storr, stored using an rds file in a
@@ -20,7 +32,7 @@ github_release_storr <- function(info) {
   name <- info$name
   path <- info$path
   if (is.null(github_release[[name]]) || !file.exists(path)) {
-    furl <- github_release_file(info$repo, info$file)
+    furl <- github_release_url(info)
     hook <- fetch_hook_download(furl, info$read)
     dr <- driver_external(driver_rds(path), hook)
     st <- storr(dr, name)
@@ -35,6 +47,10 @@ github_release_storr <- function(info) {
 ## R session.  It would probably be better to use a storr directly,
 ## but we can do that easily enough later.
 github_release <- new.env(parent=emptyenv())
+
+## TODO: We should be able to provide a list of additional versions
+## pretty easily here; e.g., ecology -> v1.0.0 for baad.  Or we can
+## just drop the stupid ecology thing.
 
 ##' @export
 ##' @rdname github_release_storr
@@ -51,10 +67,16 @@ github_release <- new.env(parent=emptyenv())
 ##' @param name Name to call this storr.  defaults to the repository
 ##'   name, but can be configured.  This is used to determine the name
 ##'   to save the cached data into.
+##' @param leading_v Logical: indicates if versions contain a leading
+##'   'v' (e.g., \code{v0.1.0} rather than \code{0.1.0}).  The default
+##'   assumes a leading v, following github's suggestions of how to
+##'   make releases, but by specifying \code{leading_v=FALSE} this can
+##'   be relaxed.
 github_release_storr_info <- function(repo, filename, read,
-                                      name=basename(repo)) {
+                                      name=basename(repo),
+                                      leading_v=TRUE) {
   path <- github_release_storr_path(name)
-  structure(list(name=name, path=path, repo=repo,
+  structure(list(name=name, path=path, repo=repo, leading_v=leading_v,
                  filename=filename, read=read),
             class="github_release_storr_info")
 }
@@ -89,7 +111,7 @@ github_release_storr_versions <- function(info, type="local") {
   if (type == "local") {
     st$list()
   } else if (type == "github") {
-    st$get("github_release_versions", "internals")(info$repo)
+    st$get("github_release_versions", "internals")(info)
   } else {
     stop("Unknown type ", type)
   }
@@ -111,20 +133,18 @@ github_release_storr_version_current <- function(info, type="local") {
 ##' @rdname github_release_storr
 github_release_storr_del <- function(info, version) {
   if (is.null(version)) {
-    unlink(github_release_storr_path(name), recursive=TRUE)
+    unlink(github_release_storr_path(info$name), recursive=TRUE)
   } else {
     github_release_storr(info)$del(version)
   }
 }
 
 
-##' Utility function for extracting versions of github releases.
-##' @title List github releases
-##' @param repo Name of a repo in format username/repository
-##' @param strip_v Strip the leading "v" from version names? (e.g.,
-##' "v1.0.0" becomes "1.0.0"
+##' @rdname github_release_storr
 ##' @export
-github_release_versions <- function(repo, strip_v=TRUE) {
+github_release_versions <- function(info) {
+  repo <- info$repo
+  strip_v <- info$leading_v
   oo <- options(warnPartialMatchArgs=FALSE, warnPartialMatchDollar=FALSE)
   if (isTRUE(oo$warnPartialMatchArgs)) {
     on.exit(options(oo))
@@ -142,11 +162,11 @@ github_release_versions <- function(repo, strip_v=TRUE) {
 }
 
 ##' @export
-##' @param filename filename within the release
-##' @param add_v Add the leading "v" to the version name (e.g, "1.0.0"
-##' becomes "v1.0.0").
-##' @rdname github_release_versions
-github_release_file <- function(repo, filename, add_v=TRUE) {
+##' @rdname github_release_storr
+github_release_url <- function(info) {
+  repo <- info$repo
+  filename <- info$filename
+  add_v <- info$leading_v
   fmt <- sprintf("https://github.com/%s/releases/download/%s%%s/%s",
                  repo, if(add_v) "v" else "", filename)
   function(version, namespace) {

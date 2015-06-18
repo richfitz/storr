@@ -1,6 +1,6 @@
 Package: storr
 Title: Simple Object Storer
-Version: 0.1.2
+Version: 0.1.3
 Description: Creates and manages simple key-value stores.  These can
   use a variety of approaches for storing the data, including
   serialisation to file, or using 'Redis' to store the data in a way

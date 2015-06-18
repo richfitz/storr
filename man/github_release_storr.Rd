@@ -7,11 +7,14 @@
 \alias{github_release_storr_info}
 \alias{github_release_storr_version_current}
 \alias{github_release_storr_versions}
+\alias{github_release_url}
+\alias{github_release_versions}
 \title{Fetch and cache github release files}
 \usage{
 github_release_storr(info)
 
-github_release_storr_info(repo, filename, read, name = basename(repo))
+github_release_storr_info(repo, filename, read, name = basename(repo),
+  leading_v = TRUE)
 
 github_release_storr_get(info, version = NULL)
 
@@ -20,6 +23,10 @@ github_release_storr_versions(info, type = "local")
 github_release_storr_version_current(info, type = "local")
 
 github_release_storr_del(info, version)
+
+github_release_versions(info)
+
+github_release_url(info)
 }
 \arguments{
 \item{info}{Result of running \code{github_release_storr}.}
@@ -41,6 +48,12 @@ filename of a downloaded file as an argument.  For example,
 name, but can be configured.  This is used to determine the name
 to save the cached data into.}
 
+\item{leading_v}{Logical: indicates if versions contain a leading
+'v' (e.g., \code{v0.1.0} rather than \code{0.1.0}).  The default
+assumes a leading v, following github's suggestions of how to
+make releases, but by specifying \code{leading_v=FALSE} this can
+be relaxed.}
+
 \item{version}{For \code{github_release_version_get}; version of
 the data to download.  For \code{github_release_del}, the
 version to delete.  \code{NULL} is treated differently for the
@@ -61,6 +74,18 @@ if the local storr is empty.}
 Support for caching results of github releases.
 }
 \details{
+This requires a number of things from the underlying github
+releases.  Versions must be stored using \emph{numeric} versions;
+no \code{v0.1.0-beta2} style tags are allowed (this will currently
+throw an error but future versions might allow skipping over
+them).  Versions are assumed to start with a leading \code{v}, so
+\code{v0.1.0} rather than \code{0.1.0} (but see the
+\code{leading_v} argument which relaxes this) Each release is
+assumed to have a \emph{single} file that we can load into R.  If
+you need multiple files the current workaround is to use a zip
+file as the single file to fetch and unpack that as the first
+step.
+
 This might broaden out to allow uses of other sorts of storr
 objects at some point, but for now it's pretty heavily tailored
 towards the external storr, stored using an rds file in a
