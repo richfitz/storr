@@ -14,7 +14,7 @@
 github_release_storr(info)
 
 github_release_storr_info(repo, filename, read, name = basename(repo),
-  leading_v = TRUE)
+  path = NULL, leading_v = TRUE)
 
 github_release_storr_get(info, version = NULL)
 
@@ -32,21 +32,26 @@ github_release_url(info)
 \item{info}{Result of running \code{github_release_storr}.}
 
 \item{repo}{Name of the github repository, in format
-username/repository (e.g., \code{richfitz/storr}).}
+  username/repository (e.g., \code{richfitz/storr}).}
 
 \item{filename}{Name of the filename on a release.  Future
-versions of this may support multiple filenames - please let me
-know if that would be useful.}
+  versions of this may support multiple filenames - please let me
+  know if that would be useful.}
 
 \item{read}{Function to use to read the file.  Must take the
-filename of a downloaded file as an argument.  For example,
-\code{read.csv} would be appropriate to read in csv file
-(provided you like the default treatment of
-\code{stringsAsFactors}).}
+  filename of a downloaded file as an argument.  For example,
+  \code{read.csv} would be appropriate to read in csv file
+  (provided you like the default treatment of
+  \code{stringsAsFactors}).}
 
 \item{name}{Name to call this storr.  defaults to the repository
-name, but can be configured.  This is used to determine the name
-to save the cached data into.}
+  name, but can be configured.  This is used to determine the name
+  to save the cached data into.}
+
+\item{path}{Optional pathin which to store the data.  If omitted,
+  we use \code{rappdirs} to generate a reasonable path.  See
+  \code{github_release_storr_path(name)} to see what would be
+  used.}
 
 \item{leading_v}{Logical: indicates if versions contain a leading
 'v' (e.g., \code{v0.1.0} rather than \code{0.1.0}).  The default

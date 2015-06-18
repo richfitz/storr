@@ -14,8 +14,17 @@ test_that("github_release", {
   expect_that(info$name, equals("taxonlookup"))
   expect_that(info$path, is_a("character"))
 
-  ## For testing, use a different path:
-  info$path <- path <- tempfile("storr")
+  expect_that(info$path, equals(rappdirs::user_data_dir(info$name)))
+
+  ## for testing use a temporary file
+  path <- tempfile("storr")
+  on.exit(unlink(path, recursive=TRUE))
+  info <- github_release_storr_info("wcornwell/taxonlookup",
+                                "plant_lookup.csv",
+                                read_csv,
+                                path=path)
+  expect_that(info$path, equals(path))
+
   expect_that(file.exists(path), is_false())
 
   st <- github_release_storr(info)
@@ -37,4 +46,11 @@ test_that("github_release", {
 
   expect_that(dat, is_a("data.frame"))
   expect_that(st$list(), equals(tmp))
+
+  github_release_storr_del(info, tmp)
+  expect_that(github_release_storr_versions(info, "local"),
+              equals(character(0)))
+  expect_that(file.exists(path), is_true())
+  github_release_storr_del(info, NULL)
+  expect_that(file.exists(path), is_false())
 })

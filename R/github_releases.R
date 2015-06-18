@@ -56,17 +56,26 @@ github_release <- new.env(parent=emptyenv())
 ##' @rdname github_release_storr
 ##' @param repo Name of the github repository, in format
 ##'   username/repository (e.g., \code{richfitz/storr}).
+##'
 ##' @param filename Name of the filename on a release.  Future
 ##'   versions of this may support multiple filenames - please let me
 ##'   know if that would be useful.
+##'
 ##' @param read Function to use to read the file.  Must take the
 ##'   filename of a downloaded file as an argument.  For example,
 ##'   \code{read.csv} would be appropriate to read in csv file
 ##'   (provided you like the default treatment of
 ##'   \code{stringsAsFactors}).
+##'
 ##' @param name Name to call this storr.  defaults to the repository
 ##'   name, but can be configured.  This is used to determine the name
 ##'   to save the cached data into.
+##'
+##' @param path Optional pathin which to store the data.  If omitted,
+##'   we use \code{rappdirs} to generate a reasonable path.  See
+##'   \code{github_release_storr_path(name)} to see what would be
+##'   used.
+##'
 ##' @param leading_v Logical: indicates if versions contain a leading
 ##'   'v' (e.g., \code{v0.1.0} rather than \code{0.1.0}).  The default
 ##'   assumes a leading v, following github's suggestions of how to
@@ -74,8 +83,11 @@ github_release <- new.env(parent=emptyenv())
 ##'   be relaxed.
 github_release_storr_info <- function(repo, filename, read,
                                       name=basename(repo),
+                                      path=NULL,
                                       leading_v=TRUE) {
-  path <- github_release_storr_path(name)
+  if (is.null(path)) {
+    path <- github_release_storr_path(name)
+  }
   structure(list(name=name, path=path, repo=repo, leading_v=leading_v,
                  filename=filename, read=read),
             class="github_release_storr_info")
@@ -133,7 +145,7 @@ github_release_storr_version_current <- function(info, type="local") {
 ##' @rdname github_release_storr
 github_release_storr_del <- function(info, version) {
   if (is.null(version)) {
-    unlink(github_release_storr_path(info$name), recursive=TRUE)
+    unlink(info$path, recursive=TRUE)
   } else {
     github_release_storr(info)$del(version)
   }
@@ -191,6 +203,7 @@ memoise <- function(fun) {
 }
 
 ##' @importFrom rappdirs user_data_dir
+##' @export
 github_release_storr_path <- function(name) {
   rappdirs::user_data_dir(name)
 }
