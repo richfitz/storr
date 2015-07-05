@@ -305,7 +305,7 @@ storr_mangled_methods <- function() {
               })
 
   public <- .R6_storr$public_methods
-  for (m in setdiff(names(public), "initialize")) {
+  for (m in setdiff(names(public), c("initialize", "clone"))) {
     f <- public[[m]]
     fun_name <- call("$", call("$", quote(self), quote(storr)), as.name(m))
     fun_args <- lapply(names(formals(f)), as.symbol)

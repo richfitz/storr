@@ -10,6 +10,6 @@ License: BSD_2_clause + file LICENSE
 LazyData: true
 Author: Rich FitzJohn
 Maintainer: Rich FitzJohn <rich.fitzjohn@gmail.com>
-Imports: R6, digest, httr, rappdirs
+Imports: R6 (>= 2.1.0), digest, httr, rappdirs
 Suggests: testthat, RedisAPI, rrlite, knitr, microbenchmark
 VignetteBuilder: knitr

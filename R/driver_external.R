@@ -18,7 +18,7 @@ driver_external <- function(storage_driver, fetch_hook) {
 ##   just delete the key before even trying anything.
 .R6_driver_external <- R6::R6Class(
   "driver_external",
-  lock=FALSE,
+  lock_objects=FALSE,
 
   public=list(
     storage_driver=NULL,
