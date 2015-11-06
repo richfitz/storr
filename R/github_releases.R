@@ -203,6 +203,7 @@ memoise <- function(fun) {
 }
 
 ##' @importFrom rappdirs user_data_dir
+##' @rdname github_release_storr
 ##' @export
 github_release_storr_path <- function(name) {
   rappdirs::user_data_dir(name)

@@ -5,6 +5,7 @@
 \alias{github_release_storr_del}
 \alias{github_release_storr_get}
 \alias{github_release_storr_info}
+\alias{github_release_storr_path}
 \alias{github_release_storr_version_current}
 \alias{github_release_storr_versions}
 \alias{github_release_url}
@@ -27,6 +28,8 @@ github_release_storr_del(info, version)
 github_release_versions(info)
 
 github_release_url(info)
+
+github_release_storr_path(name)
 }
 \arguments{
 \item{info}{Result of running \code{github_release_storr}.}
