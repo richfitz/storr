@@ -7,7 +7,7 @@ create_drivers <- function() {
               rlite=driver_rlite(prefix))
   attr(ret, "cleanup") <- function() {
     unlink(path, recursive=TRUE)
-    drop_keys(RedisAPI::hiredis(), paste0(prefix, "*"))
+    drop_keys(redux::hiredis(), paste0(prefix, "*"))
   }
   ret
 }

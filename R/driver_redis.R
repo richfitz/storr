@@ -1,12 +1,12 @@
 ##' Redis object cache driver
 ##' @title Redis object cache driver
 ##' @param prefix Prefix for keys
-##' @param ... Arguments passed through to \code{RedisAPI::hiredis} or
+##' @param ... Arguments passed through to \code{redux::hiredis} or
 ##' \code{rrlite::hirlite}.
 ##' @export
 ##' @author Rich FitzJohn
 driver_redis <- function(prefix, ...) {
-  driver_redis_api(prefix, RedisAPI::hiredis(...))
+  driver_redis_api(prefix, redux::hiredis(...))
 }
 ##' @export
 ##' @rdname driver_redis

@@ -25,7 +25,7 @@ storr_redis_api(prefix, con, default_namespace = "objects",
 \arguments{
 \item{prefix}{Prefix for keys}
 
-\item{...}{Arguments passed through to \code{RedisAPI::hiredis} or
+\item{...}{Arguments passed through to \code{redux::hiredis} or
 \code{rrlite::hirlite}.}
 
 \item{con}{A \code{redis_api} object}
