@@ -17,26 +17,37 @@
 storr <- function(driver, default_namespace="objects",
                   mangle_key=FALSE) {
   if (mangle_key) {
-    .R6_storr_mangled$new(driver, default_namespace)
+    make_storr_mangled(driver, default_namespace)
   } else {
-    .R6_storr$new(driver, default_namespace)
+    make_storr(driver, default_namespace)
   }
 }
 
+## NOTE: See storr_methods for the actual method definitions.  Because
+## I want to rewrite some function arguments here there's a bit of a
+## faff getting these objects constructed.
+
 ##' @importFrom R6 R6Class
-.R6_storr <- R6::R6Class(
-  "storr",
+make_storr <- function(driver, default_namespace) {
+  R6::R6Class(
+    "storr",
+    public=c(list(driver=driver,
+                  envir=new.env(parent=emptyenv())),
+             storr_methods(default_namespace)))$new()
+}
 
-  public=list(
-    driver=NULL,
-    envir=NULL,
+## The way mangled methods work is we have a new class that implements
+## all of the storr methods but mangles the keys and passes them off.
+make_storr_mangled <- function(driver, default_namespace) {
+  R6::R6Class(
+    "storr_mangled",
+    public=c(list(storr=make_storr(driver, default_namespace)),
+             storr_mangled_methods(default_namespace)))$new()
+}
 
-    initialize=function(driver, default_namespace) {
-      self$driver <- driver
-      self$envir  <- new.env(parent=emptyenv())
-      rewrite_namespace(self, default_namespace)
-    },
-
+storr_methods <- function(default_namespace) {
+  self <- NULL # avoid warning; we'll resolve this symbol later.
+  ret <- list(
     type=function(key, namespace="objects") {
       if (!self$driver$exists_key(key, namespace)) {
         "none"
@@ -280,68 +291,58 @@ storr <- function(driver, default_namespace="objects",
     archive_import=function(path, names=NULL, namespace="objects") {
       self$import(storr_rds(path), names, namespace)
     }
-  ))
-
-## This is another version that will arrange to mangle key *names* to
-## their hash.  This results in a store where we cannot determine the
-## keys for what is stored in it!
-##
-## This is pretty evil code generation.  There may be a better way,
-## but this avoids a lot of nasty repetition.
-##
-## It might be better to do this at the *driver* level; the only
-## driver this really matters for is the rds driver, so that could
-## just be an argument passed there.  I think that's more general, so
-## might be better.
-##
-## If that's the case, need some support for suppressing the mangling
-## temporarily.
-storr_mangled_methods <- function() {
-  self <- NULL # avoid false positive NOTE
-  ret <- list(storr=NULL,
-              initialize=function(...) {
-                self$storr <- storr(...)
-                rewrite_namespace(self, formals(self$storr$get)$namespace)
-              })
-
-  public <- .R6_storr$public_methods
-  for (m in setdiff(names(public), c("initialize", "clone"))) {
-    f <- public[[m]]
-    fun_name <- call("$", call("$", quote(self), quote(storr)), as.name(m))
-    fun_args <- lapply(names(formals(f)), as.symbol)
-    if (m %in% c("archive_export", "archive_import")) {
-      fun_args[[match("names", names(formals(f)))]] <-
-        quote(if (is.null(names)) names else hash_string(names))
-    } else if ("key" %in% names(formals(f))) {
-      fun_args[[match("key", names(formals(f)))]] <-
-        quote(hash_string(key))
-    }
-    body(f) <- as.call(c(list(fun_name), fun_args))
-    ret[[m]] <- f
+  )
+  if (!missing(default_namespace)) {
+    ret <- lapply(ret, modify_defaults, "namespace", default_namespace)
   }
-
   ret
 }
 
-.R6_storr_mangled <- R6::R6Class(
-  "storr_mangled",
-  public=storr_mangled_methods())
-
-## This trades off (little) initialization speed for (little)
-## execution speed, but also provides a clearer UI because the
-## actual default namespace will be the function argument.
+## Regarding key mangling:
 ##
-## This triggers a NOTE in R CMD check but should be OK here given
-## we're hitting things that we control directly.
+##   This is another version that will arrange to mangle key *names*
+##   to their hash.  This results in a store where we cannot determine
+##   the keys for what is stored in it!
 ##
-## TODO: replace this with alternative approach where methods are
-## generated perhaps?
-rewrite_namespace <- function(self, default_namespace) {
-  if (default_namespace != "objects") {
-    for (m in ls(self)) {
-      if ("namespace" %in% names(formals(self[[m]]))) {
-        modify_defaults_R6(self, m, "namespace", default_namespace)
-      }
+##   This is pretty evil code generation.  There may be a better way,
+##   but this avoids a lot of nasty repetition.  What it does is looks
+##   at the body of the call and adds a hash_string(key) around all
+##   keys that are used.
+##
+##   It might be better to do this at the *driver* level; the only
+##   driver this really matters for is the rds driver, so that could
+##   just be an argument passed there.  I think that's more general,
+##   so might be better.
+##
+##   If that's the case, need some support for suppressing the mangling
+##   temporarily.
+##
+## NOTE: This needs to be done via composition rather than inheritence
+## because we only want to mangle each key once.  Otherwise we could
+## make the first line of each method a string mangle.  Issue with
+## that is we'd need to track whether or not we'd already digested a
+## string and that requires a new class, etc, etc.  In short; this is
+## not ideal, but should work.
+##
+## TODO: Store a set of key/hash mappings somewhere so we can look
+## them up?  Or use base64 to *encode* the keys into something safe
+## for filenames.  That might be better actually.  Leave it be for now.
+storr_mangled_methods <- function(default_namespace) {
+  public <- storr_methods(default_namespace)
+  expr <- list(names=quote(if (is.null(names)) names else hash_string(names)),
+               key=bquote(hash_string(key)))
+  for (i in names(public)) {
+    f <- public[[i]]
+    fun_name <- call("$", call("$", quote(self), quote(storr)), as.name(i))
+    fun_args <- lapply(names(formals(f)), as.symbol)
+    t <- if (i %in% c("archive_export", "archive_export")) "names" else "key"
+    j <- match(t, names(formals(f)))
+    if (!is.na(j)) {
+      fun_args[[j]] <- expr[[t]]
     }
+    body(f) <- as.call(c(list(fun_name), fun_args))
+    attr(f, "srcref") <- NULL
+    public[[i]] <- f
   }
+  public
 }

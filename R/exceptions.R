@@ -40,12 +40,3 @@ TypeError <- function(key, expected, recieved, driver) {
                  call=NULL),
             class=c("TypeError", "error", "condition"))
 }
-
-DownloadError <- function(content) {
-  msg <- sprintf("Downloading %s failed with code %d",
-                 content$url, httr::status_code(content))
-  structure(list(content=content,
-                 message=msg,
-                 call=NULL),
-            class=c("DownloadError", "error", "condition"))
-}

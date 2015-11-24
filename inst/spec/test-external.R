@@ -1,4 +1,7 @@
-context("driver_external")
+## This requires
+##   .driver_name: character(1)
+##   .driver_create: function()
+context(sprintf("external [%s]", .driver_name))
 
 test_that("simple", {
   ## Set up some data:
@@ -17,8 +20,10 @@ test_that("simple", {
     file.path(path, key)
   }
 
-  d <- driver_rds(tempfile())
-  dd <- driver_external(d, fetch_hook_read(f_fetch, readLines))
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+
+  dd <- driver_external(dr, fetch_hook_read(f_fetch, readLines))
 
   expect_that(dd$exists_key(key, ns), is_false())
   expect_that(dd$exists_hash(hash), is_false())
@@ -33,27 +38,4 @@ test_that("simple", {
   expect_that(dd$exists_key("z", ns), is_false())
   expect_that(suppressWarnings(dd$get_hash("z", ns)),
               throws_error("key 'z' not found, with error:"))
-})
-
-test_that("download", {
-  fmt <- "https://raw.githubusercontent.com/%s/master/DESCRIPTION"
-
-  d <- driver_environment()
-  dd <- driver_external(d, fetch_hook_download_fmt(fmt, read.dcf))
-
-  key <- "richfitz/storr"
-  ns <- "objects"
-  expect_that(dd$exists_key(key, ns), is_false())
-
-  skip_if_no_downloads()
-  tmp <- dd$get_hash(key, ns)
-  expect_that(dd$exists_key(key, ns), is_true())
-  expect_that(dd$get_hash(key, ns), equals(tmp))
-
-  dat <- dd$get_value(tmp)
-  expect_that(dat, is_a("matrix"))
-  expect_that(unname(dat[, "Package"]), equals("storr"))
-
-  expect_that(dd$get_hash("xxx", ns),
-              throws_error("key 'xxx' not found, with error"))
 })

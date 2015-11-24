@@ -75,29 +75,14 @@ count_lines <- function(filename) {
   length(readLines(filename))
 }
 
-## NOTE: these come from RedisAPI; they're directly here rather than
-## as an @import diretive because I want to keep the dependency chain
-## polite.  But it means that if either package improves how these are
-## handled that needs backporting.
-object_to_string <- function(obj) {
-  rawToChar(serialize(obj, NULL, TRUE))
-}
-string_to_object <- function(str) {
-  unserialize(charToRaw(str))
-}
-
-modify_defaults_R6 <- function(cl, name, argname, default) {
-  ## getExportedValue("base", "unlockBinding")(name, cl)
-  unlockBinding(name, cl)
-  on.exit(lockBinding(name, cl))
-  cl[[name]] <- modify_defaults(cl[[name]], "namespace", default)
-  invisible()
-}
-
 modify_defaults <- function(fun, argname, default) {
   ff <- formals(fun)
-  ff[argname] <- default
-  replace_formals(fun, ff)
+  if (argname %in% names(ff)) {
+    ff[argname] <- default
+    replace_formals(fun, ff)
+  } else {
+    fun
+  }
 }
 
 ## This replaces forms, but preserves attributes except for srcref,
@@ -108,23 +93,4 @@ replace_formals <- function(fun, value, envir=environment(fun)) {
   formals(fun, envir=envir) <- value
   attributes(fun) <- old_attributes[names(old_attributes) != "srcref"]
   fun
-}
-
-## A file downloader that can (a) handle https and (b) actually fail
-## when the download fails.  Not sure why that combination is so hard,
-## but here it is:
-download_file <- function(url, dest=tempfile(), overwrite=FALSE) {
-  oo <- options(warnPartialMatchArgs=FALSE)
-  if (isTRUE(oo$warnPartialMatchArgs)) {
-    on.exit(options(oo))
-  }
-  ## TODO: replace with gabor's bar, which is way better.
-  content <- httr::GET(url,
-                       httr::write_disk(dest, overwrite),
-                       httr::progress("down"))
-  cat("\n")
-  if (httr::status_code(content) != 200L) {
-    stop(DownloadError(content))
-  }
-  dest
 }

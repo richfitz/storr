@@ -1,45 +1,30 @@
 ##' Redis object cache driver
 ##' @title Redis object cache driver
-##' @param prefix Prefix for keys
-##' @param ... Arguments passed through to \code{redux::hiredis} or
-##' \code{rrlite::hirlite}.
+##'
+##' @param prefix Prefix for keys.  We'll generate a number of keys
+##'   that start with this string.  Probably terminating the string
+##'   with a punctuation character (e.g., ":") will make created
+##'   strings nicer to deal with.
+##'
+##' @param con A \code{redis_api} connection object, as created by the
+##'   RedisAPI package.  This package does not actually provide the
+##'   tools to create a connection; you need to provide one that is
+##'   good to go.
+##'
 ##' @export
 ##' @author Rich FitzJohn
-driver_redis <- function(prefix, ...) {
-  driver_redis_api(prefix, redux::hiredis(...))
-}
-##' @export
-##' @rdname driver_redis
-driver_rlite <- function(prefix, ...) {
-  driver_redis_api(prefix, rrlite::hirlite(...))
-}
-##' @export
-##' @rdname driver_redis
-##' @param con A \code{redis_api} object
 driver_redis_api <- function(prefix, con) {
   .R6_driver_redis_api$new(prefix, con)
 }
+
 ##' @export
-##' @rdname driver_redis
+##' @rdname driver_redis_api
 ##' @param default_namespace Default namespace (see \code{\link{storr}})
-##' @param mangle_key Mangle keys? (see  \code{\link{storr}})
-storr_redis <- function(prefix, ..., default_namespace="objects",
-                        mangle_key=FALSE) {
-  storr(driver_redis(prefix, ...), default_namespace, mangle_key)
-}
-##' @export
-##' @rdname driver_redis
-storr_rlite <- function(prefix, ..., default_namespace="objects",
-                        mangle_key=FALSE) {
-  storr(driver_rlite(prefix, ...), default_namespace, mangle_key)
-}
-##' @export
-##' @rdname driver_redis
-storr_redis_api <- function(prefix, con, default_namespace="objects",
-                            mangle_key=FALSE) {
+##' @param mangle_key Mangle key? (see \code{\link{storr}})
+storr_redis_api <- function(prefix, con,
+                      default_namespace="objects", mangle_key=FALSE) {
   storr(driver_redis_api(prefix, con), default_namespace, mangle_key)
 }
-
 .R6_driver_redis_api <- R6::R6Class(
   "driver_redis_api",
 
@@ -51,10 +36,12 @@ storr_redis_api <- function(prefix, con, default_namespace="objects",
       self$con <- con
       self$prefix <- prefix
     },
-
-    ## TODO: This will change!
-    flush=function() {
-      drop_keys(self$con, paste0(self$prefix, "*"))
+    destroy=function() {
+      redis_drop_keys(self$con, paste0(self$prefix, "*"))
+      self$con <- NULL
+    },
+    copy=function() {
+      driver_redis_api(self$prefix, self$con)
     },
 
     exists_hash=function(hash) {
@@ -66,7 +53,8 @@ storr_redis_api <- function(prefix, con, default_namespace="objects",
 
     ## Write some data into its hash value
     set_hash_value=function(hash, value) {
-      self$con$SET(self$name_data(hash), object_to_string(value))
+      ## TODO: Once RedisAPI is on CRAN, use object
+      self$con$SET(self$name_data(hash), object_to_bin(value))
     },
     ## Associate a key with some data
     set_key_hash=function(key, hash, namespace) {
@@ -77,7 +65,7 @@ storr_redis_api <- function(prefix, con, default_namespace="objects",
     get_value=function(hash) {
       name <- self$name_data(hash)
       if (self$con$EXISTS(name)) {
-        string_to_object(self$con$GET(name))
+        bin_to_object(self$con$GET(name))
       } else {
         stop(HashError(hash))
       }
@@ -160,10 +148,17 @@ storr_redis_api <- function(prefix, con, default_namespace="objects",
     name_list=function(key, namespace) {
       sprintf("%s:lists:%s:%s", self$prefix, namespace, key)
     }
-  ))
+    ))
 
-## TODO: Merge into RedisAPI with a best-practice based on SCAN.
-drop_keys <- function(con, pattern) {
+## TODO: Once RedisAPI is on CRAN we can import these directly.
+object_to_bin <- function(x) serialize(x, NULL)
+bin_to_object <- function(x) unserialize(x)
+
+## TODO: Merge into RedisAPI with a best-practice based on SCAN,
+## though doing that while being able to test for SCAN is hard, and
+## getting that without invoking RedisAPI is harder.  This is a rare
+## operation and only used in tests so it should be OK.
+redis_drop_keys <- function(con, pattern) {
   del <- as.character(con$KEYS(pattern))
   if (length(del) > 0) {
     con$DEL(del)

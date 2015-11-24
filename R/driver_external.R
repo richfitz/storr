@@ -83,53 +83,18 @@ check_external_fetch_hook <- function(fetch_hook) {
   }
 }
 
-##' Hook for downloading files as an external resource
-##' @title Hook for downloading files
-##' @param furl Function to convert \code{key, namespace} into a URL.
-##' @param fread Function for converting \code{filename} into an R
-##' object.
-##' @seealso \code{\link{driver_external}}
+##' Hook to fetch a resource from a file, for use with driver_external
+##' @title Hook to fetch a resource from a file.
+##' @param fpath Function to convert \code{key, namespace} into a file path
+##' @param fread Function for converting \code{filename} into an R pobject
 ##' @export
-fetch_hook_download <- function(furl, fread) {
-  assert_function(url)
-  assert_function(fread)
-  function(key, namespace) {
-    url <- furl(key, namespace)
-    dest <- download_file(url)
-    fread(dest)
-  }
-}
-
-## Need to get this working properly for things where we care only
-## about files and not about reading them; that's going to be pretty
-## easy really, and this helps motivate it quite a bit.  For now, the
-## function `fread` is required to turn the object into an R object.
-##' @export
-##' @param fmt A \code{\link{sprintf}}-style format that \code{key}
-##' can be substituted into to give a URL.
-##' @rdname fetch_hook_download
-fetch_hook_download_fmt <- function(fmt, fread) {
-  force(fmt)
-  furl <- function(key, namespace) {
-    sprintf(fmt, key)
-  }
-  assert_function(fread)
-  fetch_hook_download(furl, fread)
-}
-
-fetch_hook_download_github <- function(repo, file, fread, add_v=TRUE) {
-  fmt <- sprintf()
-  assert_function(fread)
-
-}
-
-##' @export
-##' @rdname fetch_hook_download
-##' @param fpath Function to convert \code{key, namespace} into a filename
+##' @examples
+##' hook <- fetch_hook_read(
+##'     function(key, namespace) paste0(key, ".csv"),
+##'     function(filename) read.csv(filename, stringsAsFactors=FALSE))
 fetch_hook_read <- function(fpath, fread) {
   assert_function(fread)
   function(key, namespace) {
-    filename <- fpath(key, namespace)
-    fread(filename)
+    fread(fpath(key, namespace))
   }
 }

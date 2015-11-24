@@ -2,9 +2,6 @@ language: c
 
 sudo: required
 
-services:
-  - redis-server
-
 before_install:
   - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
   - chmod 755 ./travis-tool.sh
@@ -12,9 +9,6 @@ before_install:
 
 install:
   - ./travis-tool.sh install_deps
-  - ./travis-tool.sh github_package ropensci/RedisAPI
-  - ./travis-tool.sh github_package ropensci/rrlite
-  - ./travis-tool.sh github_package richfitz/redux
 
 script: ./travis-tool.sh run_tests
 
@@ -25,4 +19,3 @@ notifications:
   email:
     on_success: change
     on_failure: change
-  slack: bdkd:hY2eBCaH3bbsvNwlWwOfFdfr

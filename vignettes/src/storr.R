@@ -135,8 +135,8 @@ st2$list()
 ## will suffer under high concurrency because there is no file
 ## locking.
 ## * Redis (`driver_redis`) - uses
-## [`RcppRedis`](https://github.com/eddelbuettel/rcppredis) to store
-## the data in a [Redis](http://redis.io) database.  Slower than rds,
+## [`redux`](https://github.com/richfitz/redux) to store
+## the data in a Redis (`http://redis.io`) database.  Slower than rds,
 ## but can allow multiple R processes to share the same set of objects.
 ## * rlite (`driver_rlite`) - stores data in an
 ## [rlite](https://github.com/seppo0010/rlite) using

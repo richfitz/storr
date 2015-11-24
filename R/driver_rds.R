@@ -22,12 +22,14 @@ storr_rds <- function(path, compress=FALSE,
   "driver_rds",
 
   public=list(
+    path=NULL,
     path_data=NULL,
     path_keys=NULL,
     path_list=NULL,
     compress=NULL,
 
     initialize=function(path, compress) {
+      self$path <- path
       self$path_data <- file.path(path, "data")
       self$path_keys <- file.path(path, "keys")
       self$path_list <- file.path(path, "list")
@@ -36,6 +38,13 @@ storr_rds <- function(path, compress=FALSE,
       dir_create(self$path_data)
       dir_create(self$path_keys)
       dir_create(self$path_list)
+    },
+    destroy=function() {
+      unlink(self$path, recursive=TRUE)
+    },
+
+    copy=function() {
+      driver_rds(self$path)
     },
 
     exists_hash=function(hash) {
