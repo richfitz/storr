@@ -5,14 +5,17 @@
 \alias{storr_environment}
 \title{Environment object cache driver}
 \usage{
-driver_environment(envir = new.env(parent = emptyenv()))
+driver_environment(envir = NULL)
 
-storr_environment(default_namespace = "objects", mangle_key = FALSE)
+storr_environment(envir = NULL, default_namespace = "objects",
+  mangle_key = FALSE)
 }
 \arguments{
 \item{envir}{The environment to point the storr at.  The default
 creates an new empty environment which is generally the right
-choice.}
+choice.  However, if you want multiple environment storrs
+pointing at the same environment then pass the \code{envir}
+argument along.}
 
 \item{default_namespace}{Default namespace (see \code{\link{storr}})}
 

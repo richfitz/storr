@@ -34,6 +34,8 @@ storr_rds <- function(path, compress=FALSE,
       self$path_keys <- file.path(path, "keys")
       self$path_list <- file.path(path, "list")
       self$compress <- compress
+      ## NOTE: These are safe to repeat and will not destroy an
+      ## existing storr.
       dir_create(path)
       dir_create(self$path_data)
       dir_create(self$path_keys)

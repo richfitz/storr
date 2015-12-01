@@ -3,20 +3,24 @@
 ##'
 ##' @param envir The environment to point the storr at.  The default
 ##'   creates an new empty environment which is generally the right
-##'   choice.
+##'   choice.  However, if you want multiple environment storrs
+##'   pointing at the same environment then pass the \code{envir}
+##'   argument along.
 ##'
 ##' @export
-driver_environment <- function(envir=new.env(parent=emptyenv())) {
-  ## TODO: might regig this so that different environment drivers can
-  ## share pointers to the same environment.
+driver_environment <- function(envir=NULL) {
+  if (is.null(envir)) {
+    envir <- new.env(parent=emptyenv())
+  }
   .R6_driver_environment$new(envir)
 }
 ##' @export
 ##' @rdname driver_environment
 ##' @param default_namespace Default namespace (see \code{\link{storr}})
 ##' @param mangle_key Mangle key? (see \code{\link{storr}})
-storr_environment <- function(default_namespace="objects", mangle_key=FALSE) {
-  storr(driver_environment(), default_namespace, mangle_key)
+storr_environment <- function(envir=NULL, default_namespace="objects",
+                              mangle_key=FALSE) {
+  storr(driver_environment(envir), default_namespace, mangle_key)
 }
 
 ## TODO: Something that makes it possible for two environment storrs
@@ -29,10 +33,22 @@ storr_environment <- function(default_namespace="objects", mangle_key=FALSE) {
     envir=NULL,
 
     initialize=function(envir) {
+      if (is.null(envir)) {
+        envir <- new.env(parent=emptyenv())
+      } else {
+        assert_environment(envir)
+      }
       self$envir <- envir
-      self$envir$data <- new.env(parent=emptyenv())
-      self$envir$keys <- list()
-      self$envir$list <- list()
+      if (is.null(self$envir$data)) {
+        self$envir$keys <- list()
+        self$envir$list <- list()
+        self$envir$data <- new.env(parent=emptyenv())
+      } else {
+        ## NOTE: not using self for mildly nicer error messages.
+        assert_environment(envir$data)
+        assert_list(envir$keys)
+        assert_list(envir$list)
+      }
     },
     destroy=function() {
       self$envir <- NULL
