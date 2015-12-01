@@ -2,9 +2,13 @@
 % Please edit documentation in R/driver_external.R
 \name{driver_external}
 \alias{driver_external}
+\alias{storr_external}
 \title{Driver for fetching exernal resources}
 \usage{
 driver_external(storage_driver, fetch_hook)
+
+storr_external(storage_driver, fetch_hook, default_namespace = "objects",
+  mangle_key = FALSE)
 }
 \arguments{
 \item{storage_driver}{Another \code{storr} driver to handle the
@@ -12,6 +16,10 @@ actual storage.}
 
 \item{fetch_hook}{A function to run to fetch data when a key is
 not found in the store.}
+
+\item{default_namespace}{Default namespace (see \code{\link{storr}})}
+
+\item{mangle_key}{Mangle key? (see \code{\link{storr}})}
 }
 \description{
 storr driver for fetching external resources

@@ -9,6 +9,17 @@ driver_external <- function(storage_driver, fetch_hook) {
   .R6_driver_external$new(storage_driver, fetch_hook)
 }
 
+##' @export
+##' @rdname driver_external
+##' @param default_namespace Default namespace (see \code{\link{storr}})
+##' @param mangle_key Mangle key? (see \code{\link{storr}})
+storr_external <- function(storage_driver, fetch_hook,
+                           default_namespace="objects", mangle_key=FALSE) {
+  storr(driver_external(path, compress), default_namespace, mangle_key)
+}
+
+## TODO: Support listing possible keys in externals.
+
 ## TODO: Support "expiring" external data sources:
 ## - time to expire (specified in seconds but also with some more
 ##   user friendly way but probably not lubridate)
