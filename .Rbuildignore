@@ -2,3 +2,6 @@
 ^Makefile$
 ^notes\.md$
 ^storr_.*\.tar.gz$
+^update_web\.sh$
+^inst/web$
+^inst/staticdocs$

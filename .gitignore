@@ -3,3 +3,5 @@
 .RData
 notes.md
 inst/doc
+inst/staticdocs
+inst/web

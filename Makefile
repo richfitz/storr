@@ -33,5 +33,13 @@ vignettes/storr.Rmd: vignettes/src/storr.R
 vignettes: vignettes/storr.Rmd
 	${RSCRIPT} -e 'library(methods); devtools::build_vignettes()'
 
+staticdocs:
+	@mkdir -p inst/staticdocs
+	Rscript -e "library(methods); staticdocs::build_site()"
+	rm -f vignettes/*.html
+	@rmdir inst/staticdocs
+website: staticdocs
+	./update_web.sh
+
 # No real targets!
 .PHONY: all test document install vignettes
