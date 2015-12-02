@@ -89,3 +89,16 @@ test_that("default namespace", {
   expect_that(st0$get("foo"), equals(letters))
   expect_that(st$get("foo"), equals(1:10))
 })
+
+## Little helper:
+test_that("set_by_value", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  st <- storr(dr)
+  x <- runif(10)
+  h <- st$set_by_value(x)
+  expect_identical(h, hash_object(x))
+  expect_identical(st$list_hashes(), h)
+  expect_identical(st$list(), h)
+  expect_equal(st$get(h), x)
+})

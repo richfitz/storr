@@ -64,6 +64,12 @@ storr_methods <- function(default_namespace) {
       self$set_value(hash, value, use_cache)
       self$driver$set_key_hash(key, hash, namespace)
     },
+    set_by_value=function(value, namespace="objects", use_cache=TRUE) {
+      hash <- hash_object(value)
+      self$set_value(hash, value, use_cache)
+      self$driver$set_key_hash(hash, hash, namespace)
+      invisible(hash)
+    },
 
     get=function(key, namespace="objects", use_cache=TRUE) {
       if (self$driver$exists_list(key, namespace) &&
