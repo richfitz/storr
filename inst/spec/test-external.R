@@ -4,9 +4,12 @@
 context(sprintf("external [%s]", .driver_name))
 
 test_that("simple", {
-  ## Set up some data:
+  dr <- .driver_create()
+  on.exit(dr$destroy())
   path <- tempfile()
+  on.exit(unlink(path, recursive=TRUE), add=TRUE)
 
+  ## Set up some data:
   dat <- "aaa"
   key <- "a"
   hash <- hash_object(dat)
@@ -15,13 +18,9 @@ test_that("simple", {
   dir.create(path)
   writeLines(dat, file.path(path, key))
 
-  f_read <- readLines
   f_fetch <- function(key, namespace) {
     file.path(path, key)
   }
-
-  dr <- .driver_create()
-  on.exit(dr$destroy())
 
   dd <- driver_external(dr, fetch_hook_read(f_fetch, readLines))
 
@@ -38,4 +37,31 @@ test_that("simple", {
   expect_that(dd$exists_key("z", ns), is_false())
   expect_that(suppressWarnings(dd$get_hash("z", ns)),
               throws_error("key 'z' not found, with error:"))
+})
+
+test_that("storr", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  path <- tempfile()
+  on.exit(unlink(path, recursive=TRUE), add=TRUE)
+
+  ## Set up some data:
+  dat <- "aaa"
+  key <- "a"
+  hash <- hash_object(dat)
+
+  dir.create(path)
+  writeLines(dat, file.path(path, key))
+
+  f_fetch <- function(key, namespace) {
+    file.path(path, key)
+  }
+
+  st <- storr_external(dr, fetch_hook_read(f_fetch, readLines))
+  expect_that(st$list(), equals(character(0)))
+  tmp <- st$get(key)
+  expect_that(tmp, is_identical_to(dat))
+
+  expect_that(suppressWarnings(st$get("z")),
+              throws_error("not found, with error"))
 })
