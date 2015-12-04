@@ -36,6 +36,20 @@ test_that("export", {
   expect_that(env$dat, equals(iris))
 })
 
+## This is pretty minimal:
+test_that("import", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  cache <- storr(dr)
+
+  cache2 <- storr(driver_environment())
+  cache2$set("d", mtcars)
+
+  cache2$export(cache)
+  expect_that(cache$list(), equals("d"))
+  expect_that(cache$get("d"), equals(mtcars))
+})
+
 test_that("namespace", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -67,18 +81,20 @@ test_that("import / export", {
   expect_that(st$list(), equals(c("a", "b")))
 
   path <- tempfile("export_")
+  on.exit(unlink(path, recursive=TRUE), add=TRUE)
   expect_that(dir(path), equals(character(0)))
   st$archive_export(path)
-  expect_that(dir(path), equals_unsorted(c("data", "keys", "list")))
+  expect_that(dir(path), equals_unsorted(c("data", "keys")))
 
   ## Load into an rds storr:
-  tmp <- storr_rds(path)
-  expect_that(tmp$list(), equals(c("a", "b")))
+  tmp <- storr_rds(path, mangle_key=TRUE)
+  expect_that(tmp$list(), equals_unsorted(c("a", "b")))
   expect_that(tmp$get("a"), equals(mtcars))
 
   path2 <- tempfile("export_")
+  on.exit(unlink(path2, recursive=TRUE), add=TRUE)
   st$archive_export(path2, c(bar="b"))
-  tmp2 <- storr_rds(path2)
+  tmp2 <- storr_rds(path2, mangle_key=TRUE)
   expect_that(tmp2$list(), equals("bar"))
   expect_that(tmp2$get("bar"), equals(iris))
 
@@ -108,9 +124,10 @@ test_that("namespace", {
   st$set("b", iris,   namespace="ns2")
 
   path <- tempfile("export_")
+  on.exit(unlink(path, recursive=TRUE), add=TRUE)
   expect_that(dir(path), equals(character(0)))
 
-  tmp <- storr_rds(path)
+  tmp <- storr_rds(path, mangle_key=TRUE)
 
   st$archive_export(path)
   expect_that(tmp$list(), equals(character(0)))

@@ -9,8 +9,11 @@ test_that("simple mangling", {
   st <- storr(dr, default_namespace="foo", mangle_key=TRUE)
   st$set("foo", "bar")
   expect_that(st$get("foo"), equals("bar"))
-  expect_that(st$list(), equals(hash_string("foo")))
-  expect_that(st$storr$get(hash_string("foo")), equals("bar"))
+  expect_that(st$list(), equals("foo"))
+
+  st2 <- storr(st$driver)
+  expect_that(st2$list("foo"), equals(unclass(mangle("foo"))))
+  expect_that(st2$get(mangle("foo"), "foo"), equals("bar"))
 })
 
 test_that("export", {
@@ -28,11 +31,15 @@ test_that("export", {
   st2 <- storr(dr2, mangle_key=TRUE)
   ## TODO: this does not import all namespaces, which seems like a bug to me.
   st2$archive_import(path2, namespace="foo")
-  expect_that(st2$list("foo"), equals(hash_string("foo")))
+  ## This has hashed keys on the way into the object which is not
+  ## ideal; we have saved the objects as not the right thing.
+  expect_that(st2$list("foo"), equals("foo"))
   expect_that(st2$get("foo", "foo"), equals(mtcars))
 
-  ## Case 2: export by name.  This one actually requires mangling iff
-  ## names=NULL
+  ## Can actually connect a storr to this path:
+  expect_that(storr_rds(path2, mangle_key=TRUE)$list("foo"), equals("foo"))
+
+  ## Case 2: export by name.
   dr3 <- .driver_create()
   on.exit(dr3$destroy(), add=TRUE)
   st3 <- storr(dr3, mangle_key=TRUE)
@@ -41,6 +48,6 @@ test_that("export", {
   st$archive_export(path3, "foo")
 
   st3$archive_import(path3, namespace="foo")
-  expect_that(st3$list("foo"), equals(hash_string("foo")))
+  expect_that(st3$list("foo"), equals("foo"))
   expect_that(st3$get("foo", "foo"), equals(mtcars))
 })

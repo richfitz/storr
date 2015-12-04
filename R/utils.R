@@ -105,3 +105,18 @@ replace_formals <- function(fun, value, envir=environment(fun)) {
   attributes(fun) <- old_attributes[names(old_attributes) != "srcref"]
   fun
 }
+
+## Might be useful for performance.
+declass_R6 <- function(x) {
+  if (!is.null(class(x)) && inherits(x, "R6") && !is.null(x$clone)) {
+    x <- x$clone()
+    class(x) <- NULL
+  }
+  x
+}
+reclass_R6 <- function(x, cl) {
+  if (is.environment(x) && is.null(class(x))) {
+    class(x) <- cl
+  }
+  x
+}

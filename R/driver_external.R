@@ -1,92 +1,59 @@
-##' storr driver for fetching external resources
-##' @title Driver for fetching exernal resources
+##' storr for fetching external resources.  This does not do a full
+##' cascade (that will be implemented elsewhere) but does a very
+##' simple pattern where if a key cannot be found in the storr we go
+##' out to some external source to find it.
+##' @title Storr that kooks for external resources
 ##' @param storage_driver Another \code{storr} driver to handle the
-##' actual storage.
+##'   actual storage.
 ##' @param fetch_hook A function to run to fetch data when a key is
-##' not found in the store.
-##' @export
-driver_external <- function(storage_driver, fetch_hook) {
-  .R6_driver_external$new(storage_driver, fetch_hook)
-}
-
-##' @export
-##' @rdname driver_external
-##' @param default_namespace Default namespace (see \code{\link{storr}})
+##'   not found in the store.  This function must throw an error (of
+##'   any type) if the external resource cannot be resolved.
+##' @param default_namespace Default namespace (see
+##'   \code{\link{storr}})
 ##' @param mangle_key Mangle key? (see \code{\link{storr}})
+##' @export
 storr_external <- function(storage_driver, fetch_hook,
                            default_namespace="objects", mangle_key=FALSE) {
-  storr(driver_external(storage_driver, fetch_hook),
-        default_namespace, mangle_key)
+  .R6_storr_external(storage_driver, fetch_hook,
+                     default_namespace, mangle_key)$new()
 }
 
-## TODO: Support listing possible keys in externals.
-
-## TODO: Support "expiring" external data sources:
-## - time to expire (specified in seconds but also with some more
-##   user friendly way but probably not lubridate)
-## - support soft / hard expiring: for soft expiring we'll try and
-##   refetch but fall back on old values with a warning if we can't
-##   get it (this is the dockertest model).  For hard expiry we'll
-##   just delete the key before even trying anything.
-.R6_driver_external <- R6::R6Class(
-  "driver_external",
-  lock_objects=FALSE,
-
-  public=list(
-    storage_driver=NULL,
-    fetch_hook=NULL,
-
-    initialize=function(storage_driver, fetch_hook) {
-      check_external_fetch_hook(fetch_hook)
-
-      self$storage_driver <- storage_driver
-      self$fetch_hook <- fetch_hook
-
-      public <- ls(storage_driver)
-      funs <- vlapply(public, function(i) is.function(storage_driver[[i]]))
-      funs <- setdiff(names(funs[funs]), ls(self))
-      make_method <- function(name) {
-        force(name)
-        function(...) storage_driver[[name]](...)
-      }
-      for (f in funs) {
-        self[[f]] <- make_method(f)
-        lockBinding(substitute(f), self)
-      }
-      ## Lock up after ourselves so that things are immutable:
-      lockEnvironment(self)
-    },
-
-    get_hash=function(key, namespace) {
-      if (self$storage_driver$exists_key(key, namespace)) {
-        self$storage_driver$get_hash(key, namespace)
-      } else {
-        catch_key_error <- function(e) {
-          stop(KeyErrorExternal(key, e, self))
+.R6_storr_external <- function(storage_driver, fetch_hook,
+                               default_namespace, mangle_key) {
+  ## NOTE: This uses inheritence.  I actually think that this might be
+  ## the right call here.  This could be implemented as a has-a
+  ## relationship but we fundamentally want to interact with this as
+  ## an is-a.  Unlike the previous implementation of external storr
+  ## objects this one does not suffer the cache miss which is nice.
+  ##
+  ## At the same time I think there would be a nice symmetry if we did
+  ## this with composition so that the initializer takes a storr
+  ## object and replaces methods.  That would allow for arbitrarily
+  ## deep nesting at the cost of some not-very-standard R6 code.
+  ##
+  ## NOTE: A downside of implementing this as a storr not a driver is
+  ## that if the TTL support turns up in the driver it won't necessarily
+  ## carry across.
+  super <- self <- NULL # resolved later
+  st <- .R6_storr(storage_driver, default_namespace, mangle_key)
+  check_external_fetch_hook(fetch_hook)
+  R6::R6Class(
+    "storr_external",
+    inherit=st,
+    public=list(
+      get_hash=function(key, namespace, use_cache=TRUE) {
+        if (!self$exists(key, namespace)) {
+          value <- tryCatch(fetch_hook(key, namespace),
+                            error=function(e)
+                              stop(KeyErrorExternal(key, namespace, e)))
+          hash <- self$set(key, value, namespace, use_cache)
+          hash
+        } else {
+          super$get_hash(key, namespace, use_cache)
         }
-        value <- tryCatch(self$fetch_hook(key, namespace),
-                          error=catch_key_error)
-        ## Then we have to set things up; this is copied from
-        ## storr::set() and from storr:set_value().  This would be
-        ## heaps easier if we could access the underlying storr but
-        ## that's OK.  This *will* result in a cache miss
-        ## unfortunately but the driver does not know about that.
-        ##
-        ## This does make me wonder if I'm implementing this at the
-        ## wrong level (e.g., the external lookup goes in storr).  The
-        ## difficulty there is that we have to generate user-friendly
-        ## interfaces rather than the "..." interfaces used above.
-        hash <- hash_object(value)
-        if (!self$storage_driver$exists_hash(hash)) {
-          self$storage_driver$set_hash_value(hash, value)
-        }
-        self$storage_driver$set_key_hash(key, hash, namespace)
-        ## We should be fine returning `hash` here, but this acts as a
-        ## check that reading from the underlying driver is fine as
-        ## subsequent calls will route through the driver.
-        self$storage_driver$get_hash(key, namespace)
       }
-    }))
+    ))
+}
 
 check_external_fetch_hook <- function(fetch_hook) {
   assert_function(fetch_hook)

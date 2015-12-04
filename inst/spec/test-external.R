@@ -6,6 +6,8 @@ context(sprintf("external [%s]", .driver_name))
 test_that("simple", {
   dr <- .driver_create()
   on.exit(dr$destroy())
+
+  ## Set up some data:
   path <- tempfile()
   on.exit(unlink(path, recursive=TRUE), add=TRUE)
 
@@ -22,21 +24,31 @@ test_that("simple", {
     file.path(path, key)
   }
 
-  dd <- driver_external(dr, fetch_hook_read(f_fetch, readLines))
+  st <- storr_external(dr, fetch_hook_read(f_fetch, readLines))
+  expect_that(st, is_a("storr"))
+  expect_that(st, is_a("storr_external"))
 
-  expect_that(dd$exists_key(key, ns), is_false())
-  expect_that(dd$exists_hash(hash), is_false())
+  expect_that(st$driver$exists_key(key, ns), is_false())
+  expect_that(st$driver$exists_hash(hash), is_false())
 
-  tmp <- dd$get_hash(key, ns)
-  expect_that(tmp, equals(hash))
-  expect_that(dd$exists_hash(hash), is_true())
-  expect_that(dd$exists_key(key, ns), is_true())
-  expect_that(dd$get_value(hash), equals(dat))
+  expect_that(st$exists(key, ns), is_false())
+  expect_that(st$exists_hash(hash), is_false())
+
+  expect_that(st$list(ns), equals(character(0)))
+
+  d <- st$get(key, ns)
+  expect_that(d, equals(dat))
+
+  expect_that(st$driver$exists_key(key, ns), is_true())
+  expect_that(st$driver$exists_hash(hash), is_true())
+  expect_that(st$exists(key, ns), is_true())
+  expect_that(st$exists_hash(hash), is_true())
 
   ## Out of bounds:
-  expect_that(dd$exists_key("z", ns), is_false())
-  expect_that(suppressWarnings(dd$get_hash("z", ns)),
-              throws_error("key 'z' not found, with error:"))
+  expect_that(st$exists("z", ns), is_false())
+  expect_that(suppressWarnings(st$get("z", ns)),
+              throws_error("key 'z' ('objects') not found, with error:",
+                           fixed=TRUE))
 })
 
 test_that("storr", {

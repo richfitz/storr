@@ -10,7 +10,7 @@
 
 <meta name="author" content="Rich FitzJohn" />
 
-<meta name="date" content="2015-11-14" />
+<meta name="date" content="2015-12-07" />
 
 <title>storr</title>
 
@@ -72,18 +72,19 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">storr</h1>
 <h4 class="author"><em>Rich FitzJohn</em></h4>
-<h4 class="date"><em>2015-11-14</em></h4>
+<h4 class="date"><em>2015-12-07</em></h4>
 </div>
 
 
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(storr)</code></pre></div>
-<p>At the moment, <code>storr</code> requires a driver to be explicitly given; that will change to be a bit more user-friendly shortly.</p>
-<p>The idea with different drivers is that different ways of storing data have different trade-offs in terms of speed, size, concurrency, etc; the approach here should allow different backends to be switched in and out while keeping the same user-facing interface.</p>
-<p><code>driver_rds</code> stores contents at some path by saving out to rds files. Here I’m using a temporary directory for the path; the driver will create a number of subdirectories here.</p>
+<p><code>storr</code> provides very simple key/value stores for R. They attempt to provide the most basic set of key/value lookup functionality that is completely consistent across a range of different underlying storage drivers (in memory storage, filesystem and proper database). All the storage is <em>content addressable</em>, so keys map onto hashes and hashes map onto data.</p>
+<p>The <code>rds</code> driver stores contents at some path by saving out to rds files. Here I’m using a temporary directory for the path; the driver will create a number of subdirectories here.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">path &lt;-<span class="st"> </span><span class="kw">tempfile</span>(<span class="st">&quot;storr_&quot;</span>)
-dr &lt;-<span class="st"> </span>storr::<span class="kw">driver_rds</span>(path)</code></pre></div>
+st &lt;-<span class="st"> </span>storr::<span class="kw">storr_rds</span>(path)</code></pre></div>
+<p>Alternatively you can create the driver explicitly:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dr &lt;-<span class="st"> </span>storr::<span class="kw">driver_rds</span>(path)
+st &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(dr)</code></pre></div>
 <p>With this driver object we can create the <code>storr</code> object which is what we actually interact with:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(<span class="dt">driver=</span>dr)</code></pre></div>
 <div id="key-value-store" class="section level1">
 <h1>Key-value store:</h1>
 <p>The most simple way of interacting with a <code>storr</code> object is <code>get</code>/<code>set</code>/<code>del</code> for getting, setting and deleting data stored at some key. To store data:</p>
@@ -110,90 +111,23 @@ dr &lt;-<span class="st"> </span>storr::<span class="kw">driver_rds</span>(path)
 <p>It’s gone!</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list</span>()</code></pre></div>
 <pre><code>## character(0)</code></pre>
-</div>
-<div id="lists-and-indexable-serialisation" class="section level1">
-<h1>Lists and indexable serialisation</h1>
-<p>A disadvantage of saving R objects to disk is you have to read the entire thing in at once. <code>storr</code> addresses one specific solution to this problem; allowing simple indexing of objects that are list-like (i.e., things you could throw at <code>lapply</code> productively).</p>
-<p>Here’s a daft object that we want to serialise but address by index later.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1</span>)
-obj &lt;-<span class="st"> </span><span class="kw">setNames</span>(<span class="kw">lapply</span>(<span class="dv">1</span>:<span class="dv">5</span>, runif), letters[<span class="dv">1</span>:<span class="dv">5</span>])
-obj</code></pre></div>
-<pre><code>## $a
-## [1] 0.2655087
-## 
-## $b
-## [1] 0.3721239 0.5728534
-## 
-## $c
-## [1] 0.9082078 0.2016819 0.8983897
-## 
-## $d
-## [1] 0.94467527 0.66079779 0.62911404 0.06178627
-## 
-## $e
-## [1] 0.2059746 0.1765568 0.6870228 0.3841037 0.7698414</code></pre>
-<p>Rather than use <code>set</code>, use <code>set_list</code> to assign the object against a key.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">set_list</span>(<span class="st">&quot;mylist&quot;</span>, obj)</code></pre></div>
-<p>The object appears in the <code>storr</code> as before</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list</span>()</code></pre></div>
-<pre><code>## [1] &quot;mylist&quot;</code></pre>
-<p>and can be accessed in its entirety:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get</span>(<span class="st">&quot;mylist&quot;</span>)</code></pre></div>
-<pre><code>## $a
-## [1] 0.2655087
-## 
-## $b
-## [1] 0.3721239 0.5728534
-## 
-## $c
-## [1] 0.9082078 0.2016819 0.8983897
-## 
-## $d
-## [1] 0.94467527 0.66079779 0.62911404 0.06178627
-## 
-## $e
-## [1] 0.2059746 0.1765568 0.6870228 0.3841037 0.7698414</code></pre>
-<p>but it has a different type:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">type</span>(<span class="st">&quot;mylist&quot;</span>)</code></pre></div>
-<pre><code>## [1] &quot;list&quot;</code></pre>
-<p>Can be queried on length:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">length_list</span>(<span class="st">&quot;mylist&quot;</span>)</code></pre></div>
-<pre><code>## [1] 5</code></pre>
-<p>To access an individual element:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get_list_element</span>(<span class="st">&quot;mylist&quot;</span>, <span class="dv">2</span>)</code></pre></div>
-<pre><code>## [1] 0.3721239 0.5728534</code></pre>
-<p>To access multiple elements (names are dropped at present, but might be retrieveable as an option in future)</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get_list_elements</span>(<span class="st">&quot;mylist&quot;</span>, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>))</code></pre></div>
-<pre><code>## $a
-## [1] 0.2655087
-## 
-## $c
-## [1] 0.9082078 0.2016819 0.8983897
-## 
-## $e
-## [1] 0.2059746 0.1765568 0.6870228 0.3841037 0.7698414</code></pre>
-<p>To assign to individual elements:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">set_list_element</span>(<span class="st">&quot;mylist&quot;</span>, <span class="dv">3</span>, <span class="st">&quot;a different value&quot;</span>)
-st$<span class="kw">get_list_element</span>(<span class="st">&quot;mylist&quot;</span>, <span class="dv">3</span>)</code></pre></div>
-<pre><code>## [1] &quot;a different value&quot;</code></pre>
-<p>Retrieve the whole list again; names are still there but the value of the 3rd element has changed.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get</span>(<span class="st">&quot;mylist&quot;</span>)</code></pre></div>
-<pre><code>## $a
-## [1] 0.2655087
-## 
-## $b
-## [1] 0.3721239 0.5728534
-## 
-## $c
-## [1] &quot;a different value&quot;
-## 
-## $d
-## [1] 0.94467527 0.66079779 0.62911404 0.06178627
-## 
-## $e
-## [1] 0.2059746 0.1765568 0.6870228 0.3841037 0.7698414</code></pre>
-<p>Lists can be deleted as before</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">del</span>(<span class="st">&quot;mylist&quot;</span>)</code></pre></div>
+<p>though the actual data is still stored in the database:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list_hashes</span>()</code></pre></div>
+<pre><code>## [1] &quot;a63c70e73b58d0823ab3bcbd3b543d6f&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(st$<span class="kw">get_value</span>(digest::<span class="kw">digest</span>(mtcars)))</code></pre></div>
+<pre><code>##                    mpg cyl disp  hp drat    wt  qsec vs am gear carb
+## Mazda RX4         21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+## Mazda RX4 Wag     21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+## Datsun 710        22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+## Hornet 4 Drive    21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+## Hornet Sportabout 18.7   8  360 175 3.15 3.440 17.02  0  0    3    2
+## Valiant           18.1   6  225 105 2.76 3.460 20.22  1  0    3    1</code></pre>
+<p>though now that there are no keys pointing at the data is is subject to garbage collection:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">del &lt;-<span class="st"> </span>st$<span class="kw">gc</span>()
+del</code></pre></div>
+<pre><code>## [1] &quot;a63c70e73b58d0823ab3bcbd3b543d6f&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list_hashes</span>()</code></pre></div>
+<pre><code>## character(0)</code></pre>
 </div>
 <div id="import-export" class="section level1">
 <h1>Import / export</h1>
@@ -229,7 +163,7 @@ st2$<span class="kw">list</span>()</code></pre></div>
 <ul>
 <li>environments (<code>driver_environment</code>) - mostly for debugging and transient storage, but by far the fastest.</li>
 <li>on disk with rds (<code>driver_rds</code>) - zero dependencies, quite fast, will suffer under high concurrency because there is no file locking.</li>
-<li>Redis (<code>driver_redis</code>) - uses <a href="https://github.com/richfitz/redux"><code>redux</code></a> to store the data in a <a href="http://redis.io">Redis</a> database. Slower than rds, but can allow multiple R processes to share the same set of objects.</li>
+<li>Redis (<code>driver_redis</code>) - uses <a href="https://github.com/richfitz/redux"><code>redux</code></a> to store the data in a Redis (<code>http://redis.io</code>) database. Slower than rds, but can allow multiple R processes to share the same set of objects.</li>
 <li>rlite (<code>driver_rlite</code>) - stores data in an <a href="https://github.com/seppo0010/rlite">rlite</a> using <a href="https://github.com/ropensci/rrlite"><code>rrlite</code></a>. This is the slowest at present and does not support concurrency at all. But rlite has the potential to be as useful as SQLite is so this will improve.</li>
 </ul>
 </div>
@@ -239,44 +173,19 @@ st2$<span class="kw">list</span>()</code></pre></div>
 <div id="content-addressable-lookup" class="section level2">
 <h2>Content addressable lookup</h2>
 <p>The only thing that is stored against a key is the hash of some object. Each driver does this a different way, but for the rds driver it stores small text files that list the hash in them. So:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="kw">file.path</span>(st$driver$path_keys, <span class="st">&quot;objects&quot;</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="kw">file.path</span>(path, <span class="st">&quot;keys&quot;</span>, <span class="st">&quot;objects&quot;</span>))</code></pre></div>
 <pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">readLines</span>(<span class="kw">file.path</span>(st$driver$path_keys, <span class="st">&quot;objects&quot;</span>, <span class="st">&quot;a&quot;</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">readLines</span>(<span class="kw">file.path</span>(path, <span class="st">&quot;keys&quot;</span>, <span class="st">&quot;objects&quot;</span>, <span class="st">&quot;a&quot;</span>))</code></pre></div>
 <pre><code>## [1] &quot;6717f2823d3202449301145073ab8719&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get_hash</span>(<span class="st">&quot;a&quot;</span>)</code></pre></div>
 <pre><code>## [1] &quot;6717f2823d3202449301145073ab8719&quot;</code></pre>
 <p>Then there is one big pool of hash / value pairs:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list_hashes</span>()</code></pre></div>
-<pre><code>##  [1] &quot;067388ede97a84d789029a46474f1a59&quot; &quot;07c144ad9ce6f3cc93753f0d9b263dc2&quot;
-##  [3] &quot;0ee41d724a288da677db8c7289b18439&quot; &quot;4697e48a88c354742109da507ab018ca&quot;
-##  [5] &quot;5a2cb1e91526ac1708d2ea3a5f1ee3dc&quot; &quot;614b2fe52c705051ff330592533e312b&quot;
-##  [7] &quot;6717f2823d3202449301145073ab8719&quot; &quot;8d0112c8aa5eb6db2dfa0fe57214cd09&quot;
-##  [9] &quot;a63c70e73b58d0823ab3bcbd3b543d6f&quot; &quot;ace5481926963d58fc8e43b2171415d8&quot;
-## [11] &quot;cbb08035fe48046c880906c572bf0be9&quot; &quot;db8e490a925a60e62212cefc7674ca02&quot;
-## [13] &quot;e53d6fe61209ea6b8d4336f85ede7bb7&quot;</code></pre>
-<p>in the rds driver these are stored like so:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="kw">file.path</span>(st$driver$path_data))</code></pre></div>
-<pre><code>##  [1] &quot;067388ede97a84d789029a46474f1a59.rds&quot;
-##  [2] &quot;07c144ad9ce6f3cc93753f0d9b263dc2.rds&quot;
-##  [3] &quot;0ee41d724a288da677db8c7289b18439.rds&quot;
-##  [4] &quot;4697e48a88c354742109da507ab018ca.rds&quot;
-##  [5] &quot;5a2cb1e91526ac1708d2ea3a5f1ee3dc.rds&quot;
-##  [6] &quot;614b2fe52c705051ff330592533e312b.rds&quot;
-##  [7] &quot;6717f2823d3202449301145073ab8719.rds&quot;
-##  [8] &quot;8d0112c8aa5eb6db2dfa0fe57214cd09.rds&quot;
-##  [9] &quot;a63c70e73b58d0823ab3bcbd3b543d6f.rds&quot;
-## [10] &quot;ace5481926963d58fc8e43b2171415d8.rds&quot;
-## [11] &quot;cbb08035fe48046c880906c572bf0be9.rds&quot;
-## [12] &quot;db8e490a925a60e62212cefc7674ca02.rds&quot;
-## [13] &quot;e53d6fe61209ea6b8d4336f85ede7bb7.rds&quot;</code></pre>
-<p>This is going to need garbage collecting every so often - no reference counting is done so stale objects can build up.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">gc</span>()
-st$<span class="kw">list_hashes</span>()</code></pre></div>
 <pre><code>## [1] &quot;6717f2823d3202449301145073ab8719&quot; &quot;db8e490a925a60e62212cefc7674ca02&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="kw">file.path</span>(st$driver$path_data))</code></pre></div>
+<p>in the rds driver these are stored like so:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="kw">file.path</span>(path, <span class="st">&quot;data&quot;</span>))</code></pre></div>
 <pre><code>## [1] &quot;6717f2823d3202449301145073ab8719.rds&quot;
 ## [2] &quot;db8e490a925a60e62212cefc7674ca02.rds&quot;</code></pre>
-<p>Eventually this might be automated but for now it’s not.</p>
 </div>
 <div id="environment-based-caching" class="section level2">
 <h2>Environment-based caching</h2>
@@ -310,28 +219,31 @@ st$<span class="kw">set</span>(<span class="st">&quot;mykey&quot;</span>, <span 
 ## {
 ##     envir &lt;- self$envir
 ##     if (use_cache &amp;&amp; exists0(hash, envir)) {
-##         envir[[hash]]
+##         value &lt;- envir[[hash]]
 ##     }
 ##     else {
-##         value &lt;- self$driver$get_value(hash)
+##         if (!self$driver$exists_hash(hash)) {
+##             stop(HashError(hash))
+##         }
+##         value &lt;- self$driver$get_object(hash)
 ##         if (use_cache) {
 ##             envir[[hash]] &lt;- value
 ##         }
-##         value
 ##     }
+##     value
 ## }
-## &lt;environment: 0x7fd38e2b30e0&gt;</code></pre>
+## &lt;environment: 0x7f8db220acd8&gt;</code></pre>
 <p>The speed up is going to be fairly context dependent, but 10x seems pretty good in this case (some of the overhead is simply a longer code path as we call out to the driver).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hash &lt;-<span class="st"> </span>st$<span class="kw">get_hash</span>(<span class="st">&quot;mykey&quot;</span>)
 microbenchmark::<span class="kw">microbenchmark</span>(st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">TRUE</span>),
                                st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">FALSE</span>))</code></pre></div>
 <pre><code>## Unit: microseconds
-##                                   expr    min     lq     mean median
-##   st$get_value(hash, use_cache = TRUE)  4.568  4.997  6.68611  6.583
-##  st$get_value(hash, use_cache = FALSE) 47.901 48.698 51.88963 49.132
+##                                   expr    min     lq     mean  median
+##   st$get_value(hash, use_cache = TRUE)  4.955  5.378  7.15170  6.9885
+##  st$get_value(hash, use_cache = FALSE) 61.666 62.483 65.67776 62.9560
 ##       uq     max neval
-##   6.7915  36.660   100
-##  49.7635 133.118   100</code></pre>
+##   7.2375  39.439   100
+##  63.7580 156.523   100</code></pre>
 </div>
 </div>
 

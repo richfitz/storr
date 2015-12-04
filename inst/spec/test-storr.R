@@ -3,6 +3,11 @@
 ##   .driver_create: function()
 context(sprintf("storr [%s]", .driver_name))
 
+## With the refactor, the aim here is to change storr files only by
+## *addition*; that means that we've kept a compatible framework.
+## Deletions and modifications are to be avoided, though they might
+## get done at a later point.
+
 ## I know that klmr is doing similar testing framework things with
 ## DBI; might be worth seeing what he's up to and if there's any
 ## shared infrastructure there.
@@ -13,10 +18,19 @@ test_that("basic", {
   cache <- storr(dr)
   expect_that(cache, is_a("storr"))
 
+  ## At this point no namespaces (this might be relaxed)
+  expect_that(cache$list_namespaces(), equals(character(0)))
+
   expect_that(cache$list(), equals(character(0)))
   expect_that(cache$list_hashes(), equals(character(0)))
+  ## The objects namespace is allowed here because it's the storr
+  ## default namespace; simply querying it above may allow it to come
+  ## into being.
+  expect_that(setdiff(cache$list_namespaces(), "objects"),
+              equals(character(0)))
 
-  expect_that(cache$get("aaa"), throws_error("key 'aaa' not found"))
+  expect_that(cache$get("aaa"),
+              throws_error("key 'aaa' ('objects') not found", fixed=TRUE))
 
   d <- runif(100)
   hash <- hash_object(d)
@@ -30,6 +44,7 @@ test_that("basic", {
   expect_that(cache$get("aaa", use_cache=FALSE), equals(d))
   expect_that(cache$get_value(hash), equals(d))
   expect_that(ls(cache$envir), equals(hash))
+  expect_that(cache$list_namespaces(), equals("objects"))
 
   ## Set a second key to to the same value:
   cache$set("bbb", d)
@@ -67,7 +82,7 @@ test_that("default namespace", {
   on.exit(dr$destroy())
 
   st0 <- storr(dr)
-  st <- storr(dr$copy(), default_namespace="storr")
+  st <- storr(dr, default_namespace="storr")
   st1 <- storr(dr)
 
   expect_that(formals(st0$type)$namespace, equals("objects"))

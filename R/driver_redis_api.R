@@ -25,142 +25,98 @@ storr_redis_api <- function(prefix, con,
                       default_namespace="objects", mangle_key=FALSE) {
   storr(driver_redis_api(prefix, con), default_namespace, mangle_key)
 }
+
 .R6_driver_redis_api <- R6::R6Class(
   "driver_redis_api",
-
   public=list(
     con=NULL,
     prefix=NULL,
-
     initialize=function(prefix, con) {
-      self$con <- con
       self$prefix <- prefix
+      self$con <- con
+    },
+    type=function() {
+      paste("redis_api", self$con$type(), sep="/")
     },
     destroy=function() {
       redis_drop_keys(self$con, paste0(self$prefix, "*"))
       self$con <- NULL
     },
-    copy=function() {
-      driver_redis_api(self$prefix, self$con)
+
+    get_hash=function(key, namespace) {
+      self$con$GET(self$name_key(key, namespace))
+    },
+    set_hash=function(key, namespace, hash) {
+      self$con$SET(self$name_key(key, namespace), hash)
+    },
+    get_object=function(hash) {
+      bin_to_object(self$con$GET(self$name_hash(hash)))
+    },
+    set_object=function(hash, value) {
+      self$con$SET(self$name_hash(hash), object_to_bin(value))
     },
 
-    exists_hash=function(hash) {
-      self$con$EXISTS(self$name_data(hash)) == 1L
-    },
     exists_key=function(key, namespace) {
       self$con$EXISTS(self$name_key(key, namespace)) == 1L
     },
-
-    ## Write some data into its hash value
-    set_hash_value=function(hash, value) {
-      ## TODO: Once RedisAPI is on CRAN, use object
-      self$con$SET(self$name_data(hash), object_to_bin(value))
-    },
-    ## Associate a key with some data
-    set_key_hash=function(key, hash, namespace) {
-      self$con$SET(self$name_key(key, namespace), hash)
+    exists_hash=function(hash) {
+      self$con$EXISTS(self$name_hash(hash)) == 1L
     },
 
-    ## Get value, given hash
-    get_value=function(hash) {
-      name <- self$name_data(hash)
-      if (self$con$EXISTS(name)) {
-        bin_to_object(self$con$GET(name))
-      } else {
-        stop(HashError(hash))
-      }
-    },
-    ## Get hash, given key
-    get_hash=function(key, namespace) {
-      name <- self$name_key(key, namespace)
-      if (self$con$EXISTS(name)) {
-        self$con$GET(name)
-      } else {
-        stop(KeyError(key))
-      }
-    },
-
-    del_hash=function(hash) {
-      self$con$DEL(self$name_data(hash)) == 1L
-    },
     del_key=function(key, namespace) {
       self$con$DEL(self$name_key(key, namespace)) == 1L
     },
+    del_hash=function(hash) {
+      self$con$DEL(self$name_hash(hash)) == 1L
+    },
 
-    ## Potentially expensive!
+    ## This suggests that dir(), ls(), etc could all work with these in
+    ## the same way pretty easily.  But the str_drop_start is a pretty big
+    ## assumption.
     list_hashes=function() {
-      keys_minus_prefix(self$con, self$name_data(""))
+      start <- sprintf("%s:data:%s", self$prefix, "")
+      str_drop_start(redis_list_keys(self$con, paste0(start, "*")), start)
     },
     list_keys=function(namespace) {
-      keys_minus_prefix(self$con, self$name_key("", namespace))
+      start <- self$name_key("", namespace)
+      str_drop_start(redis_list_keys(self$con, paste0(start, "*")), start)
+    },
+    list_namespaces=function() {
+      ## For this to work, consider disallowing ":" in namespace
+      ## names, or sanitising them on the way in?
+      pattern <- self$name_key("*", "*")
+      re <- self$name_key(".*", "([^:]*)")
+      unique(sub(re, "\\1", redis_list_keys(self$con, pattern)))
     },
 
-    ## List support:
-    exists_list=function(key, namespace) {
-      self$con$EXISTS(self$name_list(key, namespace)) == 1L
-    },
-    list_lists=function(namespace) {
-      keys_minus_prefix(self$con, self$name_list("", namespace))
-    },
-    length_list=function(key, namespace) {
-      self$con$LLEN(self$name_list(key, namespace))
-    },
-
-    set_key_hash_list=function(key, i, hash, namespace) {
-      name <- self$name_list(key, namespace)
-      if (is.null(i)) {
-        self$con$DEL(name)
-        self$con$RPUSH(name, hash)
-      } else if (self$exists_list(key, namespace)) {
-        list_check_range(key, i, self$length_list(key, namespace))
-        for (j in i) {
-          self$con$LSET(name, i - 1L, hash[[j]])
-        }
-      } else {
-        stop(TypeError(key, "list", self$con$TYPE(key)))
-      }
-    },
-
-    ## TODO: Getting good error messages without a billion calls back
-    ## to Redis is going to be difficult here.  Can fail because:
-    ##   - key does not exist (KeyError?)
-    ##   - key is not a list (TypeError?)
-    ##   - index is out of bounds (RangeError?)
-    get_hash_list=function(key, i, namespace) {
-      name <- self$name_list(key, namespace)
-      if (is.null(i)) {
-        as.character(self$con$LRANGE(name, 0, -1))
-      } else {
-        list_check_range(key, i, self$length_list(key, namespace))
-        vcapply(i - 1L, self$con$LINDEX, key=name)
-      }
-    },
-    del_hash_list=function(key, namespace) {
-      self$con$DEL(self$name_list(key, namespace))
-    },
-
-    name_data=function(hash) {
+    name_hash=function(hash) {
       sprintf("%s:data:%s", self$prefix, hash)
     },
     name_key=function(key, namespace) {
+      ## TODO: document why lists have to be separate to namespaces.
+      ## There is a reason but I forget what it is.
       sprintf("%s:keys:%s:%s", self$prefix, namespace, key)
-    },
-    name_list=function(key, namespace) {
-      sprintf("%s:lists:%s:%s", self$prefix, namespace, key)
     }
-    ))
+  ))
 
 ## TODO: Once RedisAPI is on CRAN we can import these directly.
+## TODO: Allow string serialisation here optionally.
 object_to_bin <- function(x) serialize(x, NULL)
 bin_to_object <- function(x) unserialize(x)
-
+redis_drop_keys <- function(con, pattern) {
+  del <- redis_list_keys(con, pattern)
+  if (length(del) > 0) {
+    con$DEL(del)
+  }
+}
 ## TODO: Merge into RedisAPI with a best-practice based on SCAN,
 ## though doing that while being able to test for SCAN is hard, and
 ## getting that without invoking RedisAPI is harder.  This is a rare
 ## operation and only used in tests so it should be OK.
-redis_drop_keys <- function(con, pattern) {
-  del <- as.character(con$KEYS(pattern))
-  if (length(del) > 0) {
-    con$DEL(del)
-  }
+##
+## TODO: on entry, try to detect if we have SCAN support and drop the
+## KEYS call if so.  Or switch on the type.  Or I can try and patch
+## rrlite.
+redis_list_keys <- function(con, pattern) {
+  as.character(con$KEYS(pattern))
 }

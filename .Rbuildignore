@@ -5,3 +5,5 @@
 ^update_web\.sh$
 ^inst/web$
 ^inst/staticdocs$
+^ignore$
+^TODO\.md$

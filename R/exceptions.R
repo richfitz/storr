@@ -1,12 +1,13 @@
-KeyError <- function(key, driver) {
+KeyError <- function(key, namespace, driver) {
   structure(list(key=key,
-                 message=sprintf("key '%s' not found", key),
+                 message=sprintf("key '%s' ('%s') not found", key, namespace),
                  call=NULL),
             class=c("KeyError", "error", "condition"))
 }
 
-KeyErrorExternal <- function(key, e, driver) {
-  msg <- sprintf("key '%s' not found, with error: %s", key, e$message)
+KeyErrorExternal <- function(key, namespace, e) {
+  msg <- sprintf("key '%s' ('%s') not found, with error: %s",
+                 key, namespace, e$message)
   structure(list(key=key,
                  message=msg,
                  call=NULL,

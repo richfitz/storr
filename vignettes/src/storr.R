@@ -11,24 +11,26 @@
 
 library(storr)
 
-## At the moment, `storr` requires a driver to be explicitly given;
-## that will change to be a bit more user-friendly shortly.
+## `storr` provides very simple key/value stores for R.  They attempt
+## to provide the most basic set of key/value lookup functionality
+## that is completely consistent across a range of different
+## underlying storage drivers (in memory storage, filesystem and
+## proper database).  All the storage is _content addressable_, so
+## keys map onto hashes and hashes map onto data.
 
-## The idea with different drivers is that different ways of storing
-## data have different trade-offs in terms of speed, size,
-## concurrency, etc; the approach here should allow different
-## backends to be switched in and out while keeping the same
-## user-facing interface.
-
-## `driver_rds` stores contents at some path by saving out to rds
+## The `rds` driver stores contents at some path by saving out to rds
 ## files.  Here I'm using a temporary directory for the path; the
 ## driver will create a number of subdirectories here.
 path <- tempfile("storr_")
+st <- storr::storr_rds(path)
+
+## Alternatively you can create the driver explicitly:
+###+ eval=FALSE
 dr <- storr::driver_rds(path)
+st <- storr::storr(dr)
 
 ## With this driver object we can create the `storr` object which is
 ## what we actually interact with:
-st <- storr::storr(driver=dr)
 
 ## # Key-value store:
 
@@ -54,52 +56,16 @@ st$del("mykey")
 ## It's gone!
 st$list()
 
-## # Lists and indexable serialisation
+## though the actual data is still stored in the database:
+st$list_hashes()
+head(st$get_value(digest::digest(mtcars)))
 
-## A disadvantage of saving R objects to disk is you have to read the
-## entire thing in at once.  `storr` addresses one specific solution
-## to this problem; allowing simple indexing of objects that are
-## list-like (i.e., things you could throw at `lapply` productively).
+## though now that there are no keys pointing at the data is is
+## subject to garbage collection:
+del <- st$gc()
+del
 
-## Here's a daft object that we want to serialise but address by index
-## later.
-set.seed(1)
-obj <- setNames(lapply(1:5, runif), letters[1:5])
-obj
-
-## Rather than use `set`, use `set_list` to assign the object against
-## a key.
-st$set_list("mylist", obj)
-
-## The object appears in the `storr` as before
-st$list()
-
-## and can be accessed in its entirety:
-st$get("mylist")
-
-## but it has a different type:
-st$type("mylist")
-
-## Can be queried on length:
-st$length_list("mylist")
-
-## To access an individual element:
-st$get_list_element("mylist", 2)
-
-## To access multiple elements (names are dropped at present, but
-## might be retrieveable as an option in future)
-st$get_list_elements("mylist", c(1, 3, 5))
-
-## To assign to individual elements:
-st$set_list_element("mylist", 3, "a different value")
-st$get_list_element("mylist", 3)
-
-## Retrieve the whole list again; names are still there but the value
-## of the 3rd element has changed.
-st$get("mylist")
-
-## Lists can be deleted as before
-st$del("mylist")
+st$list_hashes()
 
 ## # Import / export
 
@@ -155,23 +121,15 @@ st2$list()
 ## The only thing that is stored against a key is the hash of some
 ## object.  Each driver does this a different way, but for the rds
 ## driver it stores small text files that list the hash in them.  So:
-dir(file.path(st$driver$path_keys, "objects"))
-readLines(file.path(st$driver$path_keys, "objects", "a"))
+dir(file.path(path, "keys", "objects"))
+readLines(file.path(path, "keys", "objects", "a"))
 st$get_hash("a")
 
 ## Then there is one big pool of hash / value pairs:
 st$list_hashes()
 
 ## in the rds driver these are stored like so:
-dir(file.path(st$driver$path_data))
-
-## This is going to need garbage collecting every so often - no
-## reference counting is done so stale objects can build up.
-st$gc()
-st$list_hashes()
-dir(file.path(st$driver$path_data))
-
-## Eventually this might be automated but for now it's not.
+dir(file.path(path, "data"))
 
 ## ## Environment-based caching
 
