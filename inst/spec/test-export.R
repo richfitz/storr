@@ -1,12 +1,12 @@
 ## This requires
 ##   .driver_name: character(1)
 ##   .driver_create: function()
-context(sprintf("export [%s]", .driver_name))
+testthat::context(sprintf("export [%s]", .driver_name))
 
 ## TODO: not tested properly; *importing* from a cache; the inverse of
 ## this with dr being the recipient and environment being the source.
 
-test_that("export", {
+testthat::test_that("export", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   cache <- storr(dr)
@@ -17,27 +17,26 @@ test_that("export", {
   ## Need a function to generate a bunch of objects
   cache$set("d", mtcars)
   e <- cache$to_environment()
-  expect_that(ls(e), equals("d"))
-  expect_that(e[["d"]], equals(mtcars))
+  testthat::expect_identical(ls(e), "d")
+  testthat::expect_equal(e[["d"]], mtcars)
 
   cache$export(cache2)
-  expect_that(cache2$list(), equals("d"))
-  expect_that(cache2$get("d"), equals(mtcars))
+  testthat::expect_identical(cache2$list(), "d")
+  testthat::expect_equal(cache2$get("d"), mtcars)
 
   e$dat <- iris
   nms <- cache$import(e)
-  expect_that(nms, equals(c("d", "dat")))
-  expect_that(cache$get("dat"), equals(iris))
+  testthat::expect_identical(nms, c("d", "dat"))
+  testthat::expect_equal(cache$get("dat"), iris)
 
-  env <- new.env(parent=emptyenv())
-  nms <- cache$export(env)
-  expect_that(nms, equals(c("d", "dat")))
-  expect_that(env$d, equals(mtcars))
-  expect_that(env$dat, equals(iris))
+  env <- cache$export(new.env(parent=emptyenv()))
+  testthat::expect_identical(ls(e), c("d", "dat"))
+  testthat::expect_equal(env$d, mtcars)
+  testthat::expect_equal(env$dat, iris)
 })
 
 ## This is pretty minimal:
-test_that("import", {
+testthat::test_that("import", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   cache <- storr(dr)
@@ -46,11 +45,11 @@ test_that("import", {
   cache2$set("d", mtcars)
 
   cache2$export(cache)
-  expect_that(cache$list(), equals("d"))
-  expect_that(cache$get("d"), equals(mtcars))
+  testthat::expect_identical(cache$list(), "d")
+  testthat::expect_equal(cache$get("d"), mtcars)
 })
 
-test_that("namespace", {
+testthat::test_that("namespace", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   cache <- storr(dr)
@@ -61,61 +60,61 @@ test_that("namespace", {
   cache$set("d", iris,  namespace="ns2")
 
   cache$export(cache2)
-  expect_that(cache2$list(), equals(character(0)))
+  testthat::expect_identical(cache2$list(), character(0))
 
   cache$export(cache2, namespace="ns1")
-  expect_that(cache2$list("ns1"), equals("d"))
-  expect_that(cache2$get("d", "ns1"), equals(mtcars))
+  testthat::expect_identical(cache2$list("ns1"), "d")
+  testthat::expect_equal(cache2$get("d", "ns1"), mtcars)
 
   cache$export(cache2, namespace="ns2")
-  expect_that(cache2$list("ns2"), equals("d"))
-  expect_that(cache2$get("d", "ns2"), equals(iris))
+  testthat::expect_identical(cache2$list("ns2"), "d")
+  testthat::expect_equal(cache2$get("d", "ns2"), iris)
 })
 
-test_that("import / export", {
+testthat::test_that("import / export", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   st <- storr(dr)
   st$set("a", mtcars)
   st$set("b", iris)
-  expect_that(st$list(), equals(c("a", "b")))
+  testthat::expect_identical(st$list(), c("a", "b"))
 
   path <- tempfile("export_")
   on.exit(unlink(path, recursive=TRUE), add=TRUE)
-  expect_that(dir(path), equals(character(0)))
+  testthat::expect_identical(dir(path), character(0))
   st$archive_export(path)
-  expect_that(dir(path), equals_unsorted(c("data", "keys")))
+  testthat::expect_identical(sort(dir(path)), c("data", "keys"))
 
   ## Load into an rds storr:
   tmp <- storr_rds(path, mangle_key=TRUE)
-  expect_that(tmp$list(), equals_unsorted(c("a", "b")))
-  expect_that(tmp$get("a"), equals(mtcars))
+  testthat::expect_identical(sort(tmp$list()), c("a", "b"))
+  testthat::expect_equal(tmp$get("a"), mtcars, tolerance=1e-15)
 
   path2 <- tempfile("export_")
   on.exit(unlink(path2, recursive=TRUE), add=TRUE)
   st$archive_export(path2, c(bar="b"))
   tmp2 <- storr_rds(path2, mangle_key=TRUE)
-  expect_that(tmp2$list(), equals("bar"))
-  expect_that(tmp2$get("bar"), equals(iris))
+  testthat::expect_identical(tmp2$list(), "bar")
+  testthat::expect_equal(tmp2$get("bar"), iris, tolerance=1e-15)
 
   dr2 <- .driver_create()
   on.exit(dr2$destroy(), add=TRUE)
   st2 <- storr(dr2)
-  expect_that(st2$list(), equals(character(0)))
+  testthat::expect_identical(st2$list(), character(0))
 
   st2$archive_import(path)
-  expect_that(st2$list(), equals(c("a", "b")))
+  testthat::expect_identical(sort(st2$list()), c("a", "b"))
 
   dr3 <- .driver_create()
   on.exit(dr3$destroy(), add=TRUE)
   st3 <- storr(dr3)
 
   st3$archive_import(path, c(foo="a"))
-  expect_that(st3$list(), equals("foo"))
-  expect_that(st3$get("foo"), equals(st2$get("a")))
+  testthat::expect_identical(st3$list(), "foo")
+  testthat::expect_identical(st3$get("foo"), st2$get("a"))
 })
 
-test_that("namespace", {
+testthat::test_that("namespace", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   st <- storr(dr)
@@ -125,18 +124,18 @@ test_that("namespace", {
 
   path <- tempfile("export_")
   on.exit(unlink(path, recursive=TRUE), add=TRUE)
-  expect_that(dir(path), equals(character(0)))
+  testthat::expect_identical(dir(path), character(0))
 
   tmp <- storr_rds(path, mangle_key=TRUE)
 
   st$archive_export(path)
-  expect_that(tmp$list(), equals(character(0)))
+  testthat::expect_identical(tmp$list(), character(0))
 
   st$archive_export(path, namespace="ns1")
-  expect_that(tmp$list(), equals(character(0)))
-  expect_that(tmp$list("ns1"), equals("a"))
+  testthat::expect_identical(tmp$list(), character(0))
+  testthat::expect_identical(tmp$list("ns1"), "a")
 
   st$archive_export(path, namespace="ns2")
-  expect_that(tmp$list(), equals(character(0)))
-  expect_that(tmp$list("ns2"), equals("b"))
+  testthat::expect_identical(tmp$list(), character(0))
+  testthat::expect_identical(tmp$list("ns2"), "b")
 })

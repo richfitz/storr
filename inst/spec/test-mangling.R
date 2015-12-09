@@ -1,22 +1,22 @@
 ## This requires
 ##   .driver_name: character(1)
 ##   .driver_create: function()
-context(sprintf("mangling [%s]", .driver_name))
+testthat::context(sprintf("mangling [%s]", .driver_name))
 
-test_that("simple mangling", {
+testthat::test_that("simple mangling", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   st <- storr(dr, default_namespace="foo", mangle_key=TRUE)
   st$set("foo", "bar")
-  expect_that(st$get("foo"), equals("bar"))
-  expect_that(st$list(), equals("foo"))
+  testthat::expect_identical(st$get("foo"), "bar")
+  testthat::expect_identical(st$list(), "foo")
 
   st2 <- storr(st$driver)
-  expect_that(st2$list("foo"), equals(unclass(mangle("foo"))))
-  expect_that(st2$get(mangle("foo"), "foo"), equals("bar"))
+  testthat::expect_identical(st2$list("foo"), unclass(mangle("foo")))
+  testthat::expect_identical(st2$get(mangle("foo"), "foo"), "bar")
 })
 
-test_that("export", {
+testthat::test_that("export", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   st <- storr(dr, default_namespace="foo", mangle_key=TRUE)
@@ -33,11 +33,12 @@ test_that("export", {
   st2$archive_import(path2, namespace="foo")
   ## This has hashed keys on the way into the object which is not
   ## ideal; we have saved the objects as not the right thing.
-  expect_that(st2$list("foo"), equals("foo"))
-  expect_that(st2$get("foo", "foo"), equals(mtcars))
+  testthat::expect_identical(st2$list("foo"), "foo")
+  testthat::expect_equal(st2$get("foo", "foo"), mtcars, tolerance=1e-15)
 
   ## Can actually connect a storr to this path:
-  expect_that(storr_rds(path2, mangle_key=TRUE)$list("foo"), equals("foo"))
+  testthat::expect_identical(storr_rds(path2, mangle_key=TRUE)$list("foo"),
+                             "foo")
 
   ## Case 2: export by name.
   dr3 <- .driver_create()
@@ -48,6 +49,6 @@ test_that("export", {
   st$archive_export(path3, "foo")
 
   st3$archive_import(path3, namespace="foo")
-  expect_that(st3$list("foo"), equals("foo"))
-  expect_that(st3$get("foo", "foo"), equals(mtcars))
+  testthat::expect_identical(st3$list("foo"), "foo")
+  testthat::expect_equal(st3$get("foo", "foo"), mtcars, tolerance=1e-15)
 })

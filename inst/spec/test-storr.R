@@ -1,7 +1,7 @@
 ## This requires
 ##   .driver_name: character(1)
 ##   .driver_create: function()
-context(sprintf("storr [%s]", .driver_name))
+testthat::context(sprintf("storr [%s]", .driver_name))
 
 ## With the refactor, the aim here is to change storr files only by
 ## *addition*; that means that we've kept a compatible framework.
@@ -11,73 +11,73 @@ context(sprintf("storr [%s]", .driver_name))
 ## I know that klmr is doing similar testing framework things with
 ## DBI; might be worth seeing what he's up to and if there's any
 ## shared infrastructure there.
-test_that("basic", {
+testthat::test_that("basic", {
   dr <- .driver_create()
   on.exit(dr$destroy())
 
   cache <- storr(dr)
-  expect_that(cache, is_a("storr"))
+  testthat::expect_is(cache, "storr")
 
   ## At this point no namespaces (this might be relaxed)
-  expect_that(cache$list_namespaces(), equals(character(0)))
+  testthat::expect_identical(cache$list_namespaces(), character(0))
 
-  expect_that(cache$list(), equals(character(0)))
-  expect_that(cache$list_hashes(), equals(character(0)))
+  testthat::expect_identical(cache$list(), character(0))
+  testthat::expect_identical(cache$list_hashes(), character(0))
   ## The objects namespace is allowed here because it's the storr
   ## default namespace; simply querying it above may allow it to come
   ## into being.
-  expect_that(setdiff(cache$list_namespaces(), "objects"),
-              equals(character(0)))
+  testthat::expect_identical(setdiff(cache$list_namespaces(), "objects"),
+                             character(0))
 
-  expect_that(cache$get("aaa"),
-              throws_error("key 'aaa' ('objects') not found", fixed=TRUE))
+  testthat::expect_error(cache$get("aaa"),
+                         "key 'aaa' ('objects') not found", fixed=TRUE)
 
   d <- runif(100)
   hash <- hash_object(d)
 
   cache$set("aaa", d)
 
-  expect_that(cache$list(), equals("aaa"))
-  expect_that(cache$list_hashes(), equals(hash))
-  expect_that(cache$get_hash("aaa"), equals(hash))
-  expect_that(cache$get("aaa"), equals(d))
-  expect_that(cache$get("aaa", use_cache=FALSE), equals(d))
-  expect_that(cache$get_value(hash), equals(d))
-  expect_that(ls(cache$envir), equals(hash))
-  expect_that(cache$list_namespaces(), equals("objects"))
+  testthat::expect_identical(cache$list(), "aaa")
+  testthat::expect_identical(cache$list_hashes(), hash)
+  testthat::expect_identical(cache$get_hash("aaa"), hash)
+  testthat::expect_equal(cache$get("aaa"), d, tolerance=1e-15)
+  testthat::expect_equal(cache$get("aaa", use_cache=FALSE), d, tolerance=1e-15)
+  testthat::expect_equal(cache$get_value(hash), d, tolerance=1e-15)
+  testthat::expect_identical(ls(cache$envir), hash)
+  testthat::expect_identical(cache$list_namespaces(), "objects")
 
   ## Set a second key to to the same value:
   cache$set("bbb", d)
-  expect_that(sort(cache$list()), equals(c("aaa", "bbb")))
-  expect_that(cache$list_hashes(), equals(hash))
-  expect_that(cache$get_hash("bbb"), equals(hash))
-  expect_that(cache$get("bbb"), equals(d))
-  expect_that(cache$get("bbb", use_cache=FALSE), equals(d))
+  testthat::expect_identical(sort(cache$list()), c("aaa", "bbb"))
+  testthat::expect_identical(cache$list_hashes(), hash)
+  testthat::expect_identical(cache$get_hash("bbb"), hash)
+  testthat::expect_equal(cache$get("bbb"), d, tolerance=1e-15)
+  testthat::expect_equal(cache$get("bbb", use_cache=FALSE), d, tolerance=1e-15)
 
   ## Drop key:
-  expect_that(cache$del("aaa"), is_true())
-  expect_that(cache$list(), equals("bbb"))
-  expect_that(cache$list_hashes(), equals(hash))
-  expect_that(cache$get("bbb"), equals(d))
+  testthat::expect_true(cache$del("aaa"))
+  testthat::expect_identical(cache$list(), "bbb")
+  testthat::expect_identical(cache$list_hashes(), hash)
+  testthat::expect_equal(cache$get("bbb"), d, tolerance=1e-15)
 
   ## Drop the other key:
-  expect_that(cache$del("bbb"), is_true())
-  expect_that(cache$list(), equals(character(0)))
-  expect_that(cache$list_hashes(), equals(hash))
+  testthat::expect_true(cache$del("bbb"))
+  testthat::expect_identical(cache$list(), character(0))
+  testthat::expect_identical(cache$list_hashes(), hash)
 
   drop <- cache$gc()
-  expect_that(drop, equals(hash))
-  expect_that(cache$list_hashes(), equals(character(0)))
-  expect_that(ls(cache$envir), equals(character(0)))
+  testthat::expect_identical(drop, hash)
+  testthat::expect_identical(cache$list_hashes(), character(0))
+  testthat::expect_identical(ls(cache$envir), character(0))
 
   ## Skip the cache on the way in:
   cache$set("bbb", d, use_cache=FALSE)
-  expect_that(ls(cache$envir), equals(character(0)))
-  expect_that(cache$get("bbb"), equals(d))
-  expect_that(cache$get("bbb", use_cache=FALSE), equals(d))
+  testthat::expect_identical(ls(cache$envir), character(0))
+  testthat::expect_equal(cache$get("bbb"), d, tolerance=1e-15)
+  testthat::expect_equal(cache$get("bbb", use_cache=FALSE), d, tolerance=1e-15)
 })
 
-test_that("default namespace", {
+testthat::test_that("default namespace", {
   dr <- .driver_create()
   on.exit(dr$destroy())
 
@@ -85,35 +85,35 @@ test_that("default namespace", {
   st <- storr(dr, default_namespace="storr")
   st1 <- storr(dr)
 
-  expect_that(formals(st0$type)$namespace, equals("objects"))
-  expect_that(formals(st$type)$namespace, equals("storr"))
-  expect_that(formals(st1$type)$namespace, equals("objects"))
+  testthat::expect_identical(formals(st0$type)$namespace, "objects")
+  testthat::expect_identical(formals(st$type)$namespace, "storr")
+  testthat::expect_identical(formals(st1$type)$namespace, "objects")
 
   for (m in ls(st)) {
     ff <- formals(st[[m]])
     if ("namespace" %in% names(ff)) {
-      expect_that(ff$namespace, equals("storr"))
+      testthat::expect_identical(ff$namespace, "storr")
     }
   }
 
   st$set("foo", 1:10)
-  expect_that(st$list("objects"), equals(character(0)))
-  expect_that(st$list("storr"), equals("foo"))
+  testthat::expect_identical(st$list("objects"), character(0))
+  testthat::expect_identical(st$list("storr"), "foo")
 
   st0$set("foo", letters)
-  expect_that(st0$get("foo"), equals(letters))
-  expect_that(st$get("foo"), equals(1:10))
+  testthat::expect_identical(st0$get("foo"), letters)
+  testthat::expect_identical(st$get("foo"), 1:10)
 })
 
 ## Little helper:
-test_that("set_by_value", {
+testthat::test_that("set_by_value", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   st <- storr(dr)
   x <- runif(10)
   h <- st$set_by_value(x)
-  expect_identical(h, hash_object(x))
-  expect_identical(st$list_hashes(), h)
-  expect_identical(st$list(), h)
-  expect_equal(st$get(h), x)
+  testthat::expect_identical(h, hash_object(x))
+  testthat::expect_identical(st$list_hashes(), h)
+  testthat::expect_identical(st$list(), h)
+  testthat::expect_equal(st$get(h), x)
 })

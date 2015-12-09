@@ -6,7 +6,17 @@ test_driver <- function(name, create) {
     stop("create must be a function of zero arguments")
   }
   loadNamespace("testthat")
+
   reporter <- testthat::get_reporter()
+  if (inherits(reporter, "StopReporter")) {
+    old_reporter <- reporter
+    reporter <- testthat::SummaryReporter()
+    reporter$start_reporter()
+    on.exit({
+      reporter$end_reporter()
+      testthat::set_reporter(old_reporter)
+    })
+  }
 
   files <- dir(system.file("spec", package="storr"),
                pattern="^test-", full.names=TRUE)
@@ -15,12 +25,5 @@ test_driver <- function(name, create) {
     env$.driver_name <- name
     env$.driver_create <- create
     testthat::test_file(f, env=env, reporter=reporter, start_end_reporter=FALSE)
-  }
-}
-
-equals_unsorted <- function(expected, ...) {
-  eq <- testthat::equals(sort(expected), ...)
-  function(actual) {
-    eq(sort(actual))
   }
 }

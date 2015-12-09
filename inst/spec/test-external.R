@@ -1,13 +1,12 @@
 ## This requires
 ##   .driver_name: character(1)
 ##   .driver_create: function()
-context(sprintf("external [%s]", .driver_name))
+testthat::context(sprintf("external [%s]", .driver_name))
 
-test_that("simple", {
+testthat::test_that("simple", {
   dr <- .driver_create()
   on.exit(dr$destroy())
 
-  ## Set up some data:
   path <- tempfile()
   on.exit(unlink(path, recursive=TRUE), add=TRUE)
 
@@ -25,55 +24,28 @@ test_that("simple", {
   }
 
   st <- storr_external(dr, fetch_hook_read(f_fetch, readLines))
-  expect_that(st, is_a("storr"))
-  expect_that(st, is_a("storr_external"))
+  testthat::expect_is(st, "storr")
+  testthat::expect_is(st, "storr_external")
 
-  expect_that(st$driver$exists_key(key, ns), is_false())
-  expect_that(st$driver$exists_hash(hash), is_false())
+  testthat::expect_false(st$driver$exists_key(key, ns))
+  testthat::expect_false(st$driver$exists_hash(hash))
 
-  expect_that(st$exists(key, ns), is_false())
-  expect_that(st$exists_hash(hash), is_false())
+  testthat::expect_false(st$exists(key, ns))
+  testthat::expect_false(st$exists_hash(hash))
 
-  expect_that(st$list(ns), equals(character(0)))
+  testthat::expect_identical(st$list(ns), character(0))
 
   d <- st$get(key, ns)
-  expect_that(d, equals(dat))
+  testthat::expect_equal(d, dat, tolerance=1e-15)
 
-  expect_that(st$driver$exists_key(key, ns), is_true())
-  expect_that(st$driver$exists_hash(hash), is_true())
-  expect_that(st$exists(key, ns), is_true())
-  expect_that(st$exists_hash(hash), is_true())
+  testthat::expect_true(st$driver$exists_key(key, ns))
+  testthat::expect_true(st$driver$exists_hash(hash))
+  testthat::expect_true(st$exists(key, ns))
+  testthat::expect_true(st$exists_hash(hash))
 
   ## Out of bounds:
-  expect_that(st$exists("z", ns), is_false())
-  expect_that(suppressWarnings(st$get("z", ns)),
-              throws_error("key 'z' ('objects') not found, with error:",
-                           fixed=TRUE))
-})
-
-test_that("storr", {
-  dr <- .driver_create()
-  on.exit(dr$destroy())
-  path <- tempfile()
-  on.exit(unlink(path, recursive=TRUE), add=TRUE)
-
-  ## Set up some data:
-  dat <- "aaa"
-  key <- "a"
-  hash <- hash_object(dat)
-
-  dir.create(path)
-  writeLines(dat, file.path(path, key))
-
-  f_fetch <- function(key, namespace) {
-    file.path(path, key)
-  }
-
-  st <- storr_external(dr, fetch_hook_read(f_fetch, readLines))
-  expect_that(st$list(), equals(character(0)))
-  tmp <- st$get(key)
-  expect_that(tmp, is_identical_to(dat))
-
-  expect_that(suppressWarnings(st$get("z")),
-              throws_error("not found, with error"))
+  testthat::expect_false(st$exists("z", ns))
+  testthat::expect_error(suppressWarnings(st$get("z", ns)),
+                         "key 'z' ('objects') not found, with error:",
+                         fixed=TRUE)
 })

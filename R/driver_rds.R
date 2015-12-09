@@ -70,11 +70,11 @@ storr_rds <- function(path, compress=TRUE,
     list_hashes=function() {
       sub("\\.rds$", "", dir(file.path(self$path, "data")))
     },
-    list_keys=function(namespace) {
-      dir(file.path(self$path, "keys", namespace))
-    },
     list_namespaces=function() {
       dir(file.path(self$path, "keys"))
+    },
+    list_keys=function(namespace) {
+      dir(file.path(self$path, "keys", namespace))
     },
 
     name_hash=function(hash) {

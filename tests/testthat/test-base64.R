@@ -29,6 +29,6 @@ test_that("base64", {
       }
     }
   }
-  expect_equal(length(err1), 0L)
-  expect_equal(length(err2), 0L)
+  expect_identical(length(err1), 0L)
+  expect_identical(length(err2), 0L)
 })
