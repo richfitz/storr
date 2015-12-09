@@ -43,6 +43,11 @@ testthat::test_that("set", {
   dr$set_hash(k, ns, h)
   testthat::expect_identical(dr$get_hash(k, ns), h)
 
+  ## Check that *updating* a hash works.
+  h2 <- hash_object(h)
+  dr$set_hash(k, ns, h2)
+  testthat::expect_identical(dr$get_hash(k, ns), h2)
+
   testthat::expect_true(dr$exists_hash(h))
   testthat::expect_true(dr$exists_key(k, ns))
 
