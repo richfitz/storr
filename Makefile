@@ -32,8 +32,9 @@ autodoc:
 
 vignettes/storr.Rmd: vignettes/src/storr.R
 	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
-
-vignettes: vignettes/storr.Rmd
+vignettes/drivers.Rmd: vignettes/src/drivers.R
+	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
+vignettes: vignettes/storr.Rmd vignettes/drivers.Rmd
 	${RSCRIPT} -e 'library(methods); devtools::build_vignettes()'
 
 staticdocs:

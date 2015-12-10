@@ -3,8 +3,9 @@ Title: Simple Object Storer
 Version: 0.4.0
 Description: Creates and manages simple key-value stores.  These can
     use a variety of approaches for storing the data.  This package
-    implements the base methods and support for filesystem and in-memory
-    stores.
+    implements the base methods and support for filesystem and
+    in-memory stores.  A vignette shows how additional drivers can be
+    created, and stubs exist for supporting 'Redis' databases.
 Depends:
     R (>= 3.1.0)
 License: MIT + file LICENSE
@@ -15,6 +16,8 @@ Imports:
     R6 (>= 2.1.0),
     digest
 Suggests:
+    DBI,
+    RSQLite,
     knitr,
     microbenchmark,
     testthat
