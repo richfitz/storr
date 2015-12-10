@@ -26,50 +26,50 @@ storr_copy <- function(dest, src, list, namespace) {
   }
 
   names_dest <- export_names(list)
-
-  do_get <- make_get(src, namespace)
-  do_set <- make_set(dest, namespace)
   for (i in seq_along(list)) {
-    do_set(names_dest[[i]], do_get(list[[i]]))
+    dest <- do_set(dest, names_dest[[i]], namespace,
+                   do_get(src, list[[i]], namespace))
   }
-
-  invisible(names_dest)
+  list(names=names_dest, dest=dest)
 }
 
-make_get <- function(x, ...) {
-  UseMethod("make_get")
+do_get <- function(x, key, namespace) {
+  UseMethod("do_get")
 }
 ##' @export
-make_get.default <- function(x, namespace, ...) {
+do_get.default <- function(x, key, namespace) {
   if (!is.function(x$get)) {
     stop("No suitable method found")
   }
-  force(namespace)
-  function(i) x$get(i, namespace=namespace)
+  x$get(key, namespace=namespace)
 }
 ##' @export
-make_get.environment <- function(x, ...) {
-  force(x)
-  function(i) x[[i]]
+do_get.environment <- function(x, key, namespace) {
+  x[[key]]
 }
 ##' @export
-make_get.list <- make_get.environment
+do_get.list <- do_get.environment
 
-make_set <- function(x, ...) {
-  UseMethod("make_set")
+do_set <- function(x, key, namespace, value) {
+  UseMethod("do_set")
 }
 ##' @export
-make_set.default <- function(x, namespace, ...) {
+do_set.default <- function(x, key, namespace, value) {
   if (!is.function(x$set)) {
     stop("No suitable method found")
   }
-  force(namespace)
-  function(i, value) x$set(i, value, namespace=namespace)
+  x$set(key, value, namespace=namespace)
+  x
 }
 ##' @export
-make_set.environment <- function(x, ...) {
-  force(x)
-  function(i, value) assign(i, value, x)
+do_set.environment <- function(x, key, namespace, value) {
+  assign(key, value, x)
+  x
+}
+##' @export
+do_set.list <- function(x, key, namespace, value) {
+  x[[key]] <- value
+  x
 }
 
 ## Organise a set of source / destination names.

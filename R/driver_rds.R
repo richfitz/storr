@@ -1,4 +1,5 @@
-##' RDS object cache driver
+##' RDS object cache driver.  This driver saves objects in a number of
+##' rds files (see \code{\link{saveRDS}}) on the filesystem.
 ##'
 ##' The \code{mangle_key} argument will run each key that is created
 ##' through a "base 64" encoding.  This means that keys that include
@@ -21,14 +22,46 @@
 ##'
 ##' @title RDS object cache driver
 ##' @param path Path for the store.  \code{tempdir()} is a good choice
-##'   for ephemeral storage, \code{rappdirs} might be nice for
-##'   application data.
+##'   for ephemeral storage, The \code{rappdirs} package (on CRAN)
+##'   might be nice for persistent application data.
 ##' @param compress Compress the generated file?  This saves a small
 ##'   amount of space for a reasonable amount of time.
 ##' @param mangle_key Mangle keys?  If TRUE, then the key is encoded
 ##'   using base64 before saving to the filesystem.  See Details.
-##' @param default_namespace Default namespace (see \code{\link{storr}}).
+##' @param default_namespace Default namespace (see
+##'   \code{\link{storr}}).
 ##' @export
+##' @examples
+##'
+##' # Create an rds storr in R's temporary directory:
+##' st <- storr_rds(tempfile())
+##'
+##' # Store some data (10 random numbers against the key "foo")
+##' st$set("foo", runif(10))
+##' st$list()
+##'
+##' # And retrieve the data:
+##' st$get("foo")
+##'
+##' # Keys that are not valid filenames will cause issues.  This will
+##' # cause an error:
+##' \dontrun{
+##' st$set("foo/bar", letters)
+##' }
+##'
+##' # The solution to this is to "mangle" the key names.  Storr can do
+##' # this for you:
+##' st2 <- storr_rds(tempfile(), mangle_key=TRUE)
+##' st2$set("foo/bar", letters)
+##' st2$list()
+##' st2$get("foo/bar")
+##'
+##' # Behind the scenes, storr is safely encoding the filenames with base64:
+##' dir(file.path(st2$driver$path, "keys", "objects"))
+##'
+##' # Clean up the two storrs:
+##' st$destroy()
+##' st2$destroy()
 storr_rds <- function(path, compress=TRUE, mangle_key=NULL,
                       default_namespace="objects") {
   storr(driver_rds(path, compress, mangle_key), default_namespace)

@@ -12,8 +12,8 @@ driver_rds(path, compress = TRUE, mangle_key = NULL)
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice
-for ephemeral storage, \code{rappdirs} might be nice for
-application data.}
+for ephemeral storage, The \code{rappdirs} package (on CRAN)
+might be nice for persistent application data.}
 
 \item{compress}{Compress the generated file?  This saves a small
 amount of space for a reasonable amount of time.}
@@ -21,10 +21,12 @@ amount of space for a reasonable amount of time.}
 \item{mangle_key}{Mangle keys?  If TRUE, then the key is encoded
 using base64 before saving to the filesystem.  See Details.}
 
-\item{default_namespace}{Default namespace (see \code{\link{storr}}).}
+\item{default_namespace}{Default namespace (see
+\code{\link{storr}}).}
 }
 \description{
-RDS object cache driver
+RDS object cache driver.  This driver saves objects in a number of
+rds files (see \code{\link{saveRDS}}) on the filesystem.
 }
 \details{
 The \code{mangle_key} argument will run each key that is created
@@ -45,5 +47,37 @@ not safe to use the same path for a storr with and without
 mangling.  So once an rds storr has been created its "mangledness"
 is set.  Using \code{mangle_key=NULL} uses whatever mangledness
 exists (or no mangledness if creating a new storr).
+}
+\examples{
+
+# Create an rds storr in R's temporary directory:
+st <- storr_rds(tempfile())
+
+# Store some data (10 random numbers against the key "foo")
+st$set("foo", runif(10))
+st$list()
+
+# And retrieve the data:
+st$get("foo")
+
+# Keys that are not valid filenames will cause issues.  This will
+# cause an error:
+\dontrun{
+st$set("foo/bar", letters)
+}
+
+# The solution to this is to "mangle" the key names.  Storr can do
+# this for you:
+st2 <- storr_rds(tempfile(), mangle_key=TRUE)
+st2$set("foo/bar", letters)
+st2$list()
+st2$get("foo/bar")
+
+# Behind the scenes, storr is safely encoding the filenames with base64:
+dir(file.path(st2$driver$path, "keys", "objects"))
+
+# Clean up the two storrs:
+st$destroy()
+st2$destroy()
 }
 

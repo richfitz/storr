@@ -139,13 +139,13 @@ storr <- function(driver, default_namespace="objects") {
       storr_gc(self$driver, self$envir)
     },
 
+    ## TODO: Allow drivers to declare that they will throw on
+    ## invalid access to save two lookups here.
     get_value=function(hash, use_cache=TRUE) {
       envir <- self$envir
       if (use_cache && exists0(hash, envir)) {
         value <- envir[[hash]]
       } else {
-        ## TODO: Allow drivers to declare that they will throw on
-        ## invalid access to save two lookups here.
         if (!self$driver$exists_hash(hash)) {
           stop(HashError(hash))
         }
@@ -183,14 +183,13 @@ storr <- function(driver, default_namespace="objects") {
 
     ## To/from R environments (distinct from the environment driver)
     import=function(src, list=NULL, namespace=self$default_namespace) {
-      storr_copy(self, src, list, namespace)
+      storr_copy(self, src, list, namespace)$names
     },
 
     ## The logic here is taken from remake's object_store, which is
     ## useful as this is destined to replace that object.
     export=function(dest, list=NULL, namespace=self$default_namespace) {
-      storr_copy(dest, self, list, namespace)
-      invisible(dest)
+      invisible(storr_copy(dest, self, list, namespace)$dest)
     },
 
     ## TODO: Deal with all the namespaces at once perhaps, or at least

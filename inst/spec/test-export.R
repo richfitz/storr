@@ -139,3 +139,36 @@ testthat::test_that("namespace", {
   testthat::expect_identical(tmp$list(), character(0))
   testthat::expect_identical(tmp$list("ns2"), "b")
 })
+
+testthat::test_that("export list", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  st <- storr(dr)
+
+  vals <- runif(10)
+  st$set("foo", vals)
+  x <- st$export(list())
+  expect_equal(x, list(foo=vals), tolerance=1e-15)
+  expect_is(x, "list")
+
+  y <- st$export(list(foo=1, bar=2))
+  expect_equal(y, list(foo=vals, bar=2), tolerance=1e-15)
+})
+
+testthat::test_that("export environment", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  st <- storr(dr)
+
+  vals <- runif(10)
+  st$set("foo", vals)
+  x <- st$export(new.env(parent=emptyenv()))
+  expect_is(x, "environment")
+  expect_identical(ls(x), "foo")
+  expect_equal(x$foo, vals, tolerance=1e-15)
+
+  y <- st$export(list2env(list(foo=1, bar=2), parent=emptyenv()))
+  expect_identical(ls(y), c("bar", "foo"))
+  expect_equal(y$foo, vals, tolerance=1e-15)
+  expect_identical(y$bar, 2)
+})
