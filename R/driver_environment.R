@@ -7,19 +7,20 @@
 ##'   pointing at the same environment then pass the \code{envir}
 ##'   argument along.
 ##'
+##' @param default_namespace Default namespace (see \code{\link{storr}}).
+##'
 ##' @export
+storr_environment <- function(envir=NULL, default_namespace="objects") {
+  storr(driver_environment(envir), default_namespace)
+}
+
+##' @export
+##' @rdname storr_environment
 driver_environment <- function(envir=NULL) {
   if (is.null(envir)) {
     envir <- new.env(parent=emptyenv())
   }
   .R6_driver_environment$new(envir)
-}
-
-##' @export
-##' @rdname driver_environment
-##' @param default_namespace Default namespace (see \code{\link{storr}})
-storr_environment <- function(envir=NULL, default_namespace="objects") {
-  storr(driver_environment(envir), default_namespace)
 }
 
 .R6_driver_environment <- R6::R6Class(

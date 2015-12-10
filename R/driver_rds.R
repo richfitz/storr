@@ -27,17 +27,17 @@
 ##'   amount of space for a reasonable amount of time.
 ##' @param mangle_key Mangle keys?  If TRUE, then the key is encoded
 ##'   using base64 before saving to the filesystem.  See Details.
+##' @param default_namespace Default namespace (see \code{\link{storr}}).
 ##' @export
-driver_rds <- function(path, compress=TRUE, mangle_key=NULL) {
-  .R6_driver_rds$new(path, compress, mangle_key)
-}
-
-##' @export
-##' @rdname driver_rds
-##' @param default_namespace Default namespace (see \code{\link{storr}})
 storr_rds <- function(path, compress=TRUE, mangle_key=NULL,
                       default_namespace="objects") {
   storr(driver_rds(path, compress, mangle_key), default_namespace)
+}
+
+##' @export
+##' @rdname storr_rds
+driver_rds <- function(path, compress=TRUE, mangle_key=NULL) {
+  .R6_driver_rds$new(path, compress, mangle_key)
 }
 
 .R6_driver_rds <- R6::R6Class(

@@ -11,17 +11,17 @@
 ##'   tools to create a connection; you need to provide one that is
 ##'   good to go.
 ##'
+##' @param default_namespace Default namespace (see \code{\link{storr}}).
 ##' @export
 ##' @author Rich FitzJohn
-driver_redis_api <- function(prefix, con) {
-  .R6_driver_redis_api$new(prefix, con)
+storr_redis_api <- function(prefix, con, default_namespace="objects") {
+  storr(driver_redis_api(prefix, con), default_namespace)
 }
 
 ##' @export
-##' @rdname driver_redis_api
-##' @param default_namespace Default namespace (see \code{\link{storr}})
-storr_redis_api <- function(prefix, con, default_namespace="objects") {
-  storr(driver_redis_api(prefix, con), default_namespace)
+##' @rdname storr_redis_api
+driver_redis_api <- function(prefix, con) {
+  .R6_driver_redis_api$new(prefix, con)
 }
 
 .R6_driver_redis_api <- R6::R6Class(
@@ -97,8 +97,6 @@ storr_redis_api <- function(prefix, con, default_namespace="objects") {
     }
   ))
 
-## TODO: Once RedisAPI is on CRAN we can import these directly.
-##
 ## TODO: Allow string serialisation here optionally, and set that in
 ## the config part of the driver (similar to to the way that mangling
 ## is done in the rds driver).
