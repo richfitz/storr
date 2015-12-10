@@ -8,7 +8,8 @@ test_driver <- function(name, create) {
   loadNamespace("testthat")
 
   reporter <- testthat::get_reporter()
-  if (inherits(reporter, "StopReporter")) {
+  standalone <- inherits(reporter, "StopReporter")
+  if (standalone) {
     old_reporter <- reporter
     reporter <- testthat::SummaryReporter()
     reporter$start_reporter()
@@ -20,10 +21,24 @@ test_driver <- function(name, create) {
 
   files <- dir(system.file("spec", package="storr"),
                pattern="^test-", full.names=TRUE)
-  for (f in files) {
-    env <- new.env(parent=environment(test_driver))
-    env$.driver_name <- name
-    env$.driver_create <- create
-    testthat::test_file(f, env=env, reporter=reporter, start_end_reporter=FALSE)
+  env <- new.env(parent=environment(test_driver))
+  env$.driver_name <- name
+  env$.driver_create <- create
+  res <- lapply(files, testthat::test_file, env=env,
+                reporter=reporter, start_end_reporter=FALSE)
+
+  if (standalone) {
+    res <- do.call("rbind", lapply(res, as.data.frame))
+    ntest <- sum(res$nb)
+    nfail <- sum(res$failed) > 0
+    nerr <- sum(res$error)
+    ok <- nfail == 0L && nerr == 0L
+    msg <- sprintf("%s: %d %s, %d %s / %s tests total",
+                   if (ok) "PASS" else "FAIL",
+                   nerr, ngettext(nerr, "error", "errors"),
+                   nfail, ngettext(nfail, "failure", "failures"),
+                   ntest)
+    if (ok) message(msg) else stop(msg, call.=FALSE)
+    invisible(res)
   }
 }
