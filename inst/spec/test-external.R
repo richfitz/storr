@@ -43,6 +43,15 @@ testthat::test_that("simple", {
   testthat::expect_true(st$exists(key, ns))
   testthat::expect_true(st$exists_hash(hash))
 
+  ## We hit the cache on the way in:
+  testthat::expect_equal(ls(st$envir), hash)
+
+  ## Second time around will not hit the object:
+  expect_identical(st$get(key, ns), d)
+  ## So we can delete the actual remote object:
+  file.remove(file.path(path, key))
+  expect_identical(st$get(key, ns), d)
+
   ## Out of bounds:
   testthat::expect_false(st$exists("z", ns))
   testthat::expect_error(suppressWarnings(st$get("z", ns)),

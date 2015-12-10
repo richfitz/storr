@@ -30,15 +30,19 @@ storr_external <- function(storage_driver, fetch_hook,
       super$initialize(storage_driver, default_namespace)
       self$fetch_hook <- check_external_fetch_hook(fetch_hook)
     },
-    get_hash=function(key, namespace, use_cache=TRUE) {
+    ## NOTE: This is *always* using use_cache=TRUE in the set phase.
+    ## I think that's OK because it doesn't make a great deal of sense
+    ## to expose use_cache in the get_hash function which generally
+    ## will not touch the cache.
+    get_hash=function(key, namespace) {
       if (!self$exists(key, namespace)) {
         value <- tryCatch(self$fetch_hook(key, namespace),
                           error=function(e)
                             stop(KeyErrorExternal(key, namespace, e)))
-        hash <- self$set(key, value, namespace, use_cache)
+        hash <- self$set(key, value, namespace)
         hash
       } else {
-        super$get_hash(key, namespace, use_cache)
+        super$get_hash(key, namespace)
       }
     }))
 
