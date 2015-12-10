@@ -386,9 +386,9 @@ storr:::test_driver("DBI/sqlite", function() driver_sqlite(":memory:"))
 ## Now that the driver works, we can write the wrapper function:
 storr_sqlite <- function(path,
                          tbl_data="storr_data", tbl_keys="storr_keys",
-                         default_namespace="objects", mangle_key=FALSE) {
+                         default_namespace="objects") {
   storr::storr(driver_sqlite(path, tbl_data, tbl_keys),
-               default_namespace, mangle_key)
+               default_namespace)
 }
 
 ## and construct a `storr` with it:

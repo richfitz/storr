@@ -98,7 +98,10 @@ storr_redis_api <- function(prefix, con, default_namespace="objects") {
   ))
 
 ## TODO: Once RedisAPI is on CRAN we can import these directly.
-## TODO: Allow string serialisation here optionally.
+##
+## TODO: Allow string serialisation here optionally, and set that in
+## the config part of the driver (similar to to the way that mangling
+## is done in the rds driver).
 object_to_bin <- function(x) serialize(x, NULL)
 bin_to_object <- function(x) unserialize(x)
 redis_drop_keys <- function(con, pattern) {

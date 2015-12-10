@@ -12,10 +12,7 @@ storr(driver, default_namespace = "objects")
 \item{default_namespace}{Default namespace to store objects in.
 By default \code{"objects"} is used, but this might be useful to
 have two diffent \code{storr} objects pointing at the same
-store, but storing things in different namespaces.  Do not use
-namespaces beginning with \code{"storr_"} as these are used by
-storr itself and your data may get overwritten (unlikely
-though).}
+underlying storage, but storing things in different namespaces.}
 }
 \description{
 Create an object cache; a "storr".  A storr is a simple key-value
@@ -41,12 +38,10 @@ method is accessed by using \code{$} on a storr object (see the
 examples).  The methods are described below in the "Methods"
 section.
 
-The \code{default_namespace} argument changes the methods of the
-storr object.  Setting the \code{default_namespace} argument will
-mean that in the generated storr, the default namespace will be
-something other than "objects".  This can save typing.  The method
-that is used here (currently argument rewriting) may change in
-future versions of storr.
+The \code{default_namespace} affects all methods of the storr
+object that refer to namespaces; if a namespace is not given, then
+the action (get, set, del, list, import, export) will affect the
+\code{default_namespace}.  By default this is \code{"objects"}.
 }
 \section{Methods}{
 

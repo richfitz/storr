@@ -8,3 +8,4 @@
 ^ignore$
 ^TODO\.md$
 ^autodoc\.R$
+^man-roxygen$

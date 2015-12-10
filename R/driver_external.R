@@ -13,50 +13,41 @@
 ##' @export
 storr_external <- function(storage_driver, fetch_hook,
                            default_namespace="objects") {
-  .R6_storr_external(storage_driver, fetch_hook, default_namespace)$new()
+  .R6_storr_external$new(storage_driver, fetch_hook, default_namespace)
 }
 
-.R6_storr_external <- function(storage_driver, fetch_hook, default_namespace) {
-  ## NOTE: This uses inheritence.  I actually think that this might be
-  ## the right call here.  This could be implemented as a has-a
-  ## relationship but we fundamentally want to interact with this as
-  ## an is-a.  Unlike the previous implementation of external storr
-  ## objects this one does not suffer the cache miss which is nice.
-  ##
-  ## At the same time I think there would be a nice symmetry if we did
-  ## this with composition so that the initializer takes a storr
-  ## object and replaces methods.  That would allow for arbitrarily
-  ## deep nesting at the cost of some not-very-standard R6 code.
-  ##
-  ## NOTE: A downside of implementing this as a storr not a driver is
-  ## that if the TTL support turns up in the driver it won't necessarily
-  ## carry across.
-  super <- self <- NULL # resolved later
-  st <- .R6_storr(storage_driver, default_namespace)
-  check_external_fetch_hook(fetch_hook)
-  R6::R6Class(
-    "storr_external",
-    inherit=st,
-    public=list(
-      get_hash=function(key, namespace, use_cache=TRUE) {
-        if (!self$exists(key, namespace)) {
-          value <- tryCatch(fetch_hook(key, namespace),
-                            error=function(e)
-                              stop(KeyErrorExternal(key, namespace, e)))
-          hash <- self$set(key, value, namespace, use_cache)
-          hash
-        } else {
-          super$get_hash(key, namespace, use_cache)
-        }
+## NOTE: This uses inheritence.  I actually think that this might be
+## the right call here.  This could be implemented as a has-a
+## relationship but we fundamentally want to interact with this as an
+## is-a.  Unlike the previous implementation of external storr objects
+## this one does not suffer the cache miss which is nice.
+.R6_storr_external <- R6::R6Class(
+  "storr_external",
+  inherit=.R6_storr,
+  public=list(
+    fetch_hook=NULL,
+    initialize=function(storage_driver, fetch_hook, default_namespace) {
+      super$initialize(storage_driver, default_namespace)
+      self$fetch_hook <- check_external_fetch_hook(fetch_hook)
+    },
+    get_hash=function(key, namespace, use_cache=TRUE) {
+      if (!self$exists(key, namespace)) {
+        value <- tryCatch(self$fetch_hook(key, namespace),
+                          error=function(e)
+                            stop(KeyErrorExternal(key, namespace, e)))
+        hash <- self$set(key, value, namespace, use_cache)
+        hash
+      } else {
+        super$get_hash(key, namespace, use_cache)
       }
-    ))
-}
+    }))
 
 check_external_fetch_hook <- function(fetch_hook) {
   assert_function(fetch_hook)
   if (!identical(names(formals(fetch_hook)), c("key", "namespace"))) {
     stop("Function arguments must be 'key', 'namespace'")
   }
+  fetch_hook
 }
 
 ##' Hook to fetch a resource from a file, for use with driver_external

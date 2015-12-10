@@ -85,16 +85,7 @@ testthat::test_that("default namespace", {
   st <- storr(dr, default_namespace="storr")
   st1 <- storr(dr)
 
-  testthat::expect_identical(formals(st0$type)$namespace, "objects")
-  testthat::expect_identical(formals(st$type)$namespace, "storr")
-  testthat::expect_identical(formals(st1$type)$namespace, "objects")
-
-  for (m in ls(st)) {
-    ff <- formals(st[[m]])
-    if ("namespace" %in% names(ff)) {
-      testthat::expect_identical(ff$namespace, "storr")
-    }
-  }
+  testthat::expect_identical(st$default_namespace, "storr")
 
   st$set("foo", 1:10)
   testthat::expect_identical(st$list("objects"), character(0))
