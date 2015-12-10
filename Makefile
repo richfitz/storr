@@ -27,6 +27,9 @@ check_all: build
 	@rm -f `ls -1tr ${PACKAGE}*gz | tail -n1`
 	@rm -rf ${PACKAGE}.Rcheck
 
+autodoc:
+	${RSCRIPT} autodoc.R process
+
 vignettes/storr.Rmd: vignettes/src/storr.R
 	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
 

@@ -37,9 +37,9 @@ st <- storr::storr(dr)
 With this driver object we can create the `storr` object which is
 what we actually interact with:
 
-# Key-value store:
+# Key-value store
 
-The most simple way of interacting with a `storr` object is
+The main way of interacting with a `storr` object is
 `get`/`set`/`del` for getting, setting and deleting data stored at
 some key.  To store data:
 ``` {r }
@@ -99,20 +99,15 @@ st$list()
 st$get("a")
 ```
 
-Export to an environment or another `storr`
+Export to an environment (or another `storr`)
 ``` {r }
-e <- new.env(parent=emptyenv())
-st$export(e)
+e <- st$export(new.env(parent=emptyenv()))
 ls(e)
 e$a
-```
 
-Convenience function that does the same as the above (exports to a
-new environment that has `.GlobalEnv` as its parent)
-``` {r }
-e2 <- st$to_environment()
-ls(e2)
-parent.env(e2)
+st_copy <- st$export(storr_environment())
+st_copy$list()
+st$get("a")
 
 st2 <- storr::storr(driver=storr::driver_rds(tempfile("storr_")))
 st2$list()
@@ -128,13 +123,14 @@ transient storage, but by far the fastest.
 will suffer under high concurrency because there is no file
 locking.
 * Redis (`driver_redis`) - uses
-[`redux`](https://github.com/richfitz/redux) to store
-the data in a Redis (`http://redis.io`) database.  Slower than rds,
-but can allow multiple R processes to share the same set of objects.
+[`redux`](https://github.com/richfitz/redux) to store the data in a
+Redis (`http://redis.io`) database.  About the same speed as rds
+(faster write, slower read at present), but can allow multiple R
+processes to share the same set of objects.
 * rlite (`driver_rlite`) - stores data in an
-[rlite](https://github.com/seppo0010/rlite) using
+[rlite](https://github.com/seppo0010/rlite) database using
 [`rrlite`](https://github.com/ropensci/rrlite).  This is the
-slowest at present and does not support concurrency at all.  But
+slowest at present but does also support concurrency.  But
 rlite has the potential to be as useful as SQLite is so this will
 improve.
 

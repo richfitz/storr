@@ -7,3 +7,4 @@
 ^inst/staticdocs$
 ^ignore$
 ^TODO\.md$
+^autodoc\.R$

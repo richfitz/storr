@@ -16,7 +16,7 @@ testthat::test_that("export", {
 
   ## Need a function to generate a bunch of objects
   cache$set("d", mtcars)
-  e <- cache$to_environment()
+  e <- cache$export(new.env())
   testthat::expect_identical(ls(e), "d")
   testthat::expect_equal(e[["d"]], mtcars)
 

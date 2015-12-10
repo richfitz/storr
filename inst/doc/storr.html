@@ -10,7 +10,7 @@
 
 <meta name="author" content="Rich FitzJohn" />
 
-<meta name="date" content="2015-12-07" />
+<meta name="date" content="2015-12-10" />
 
 <title>storr</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">storr</h1>
 <h4 class="author"><em>Rich FitzJohn</em></h4>
-<h4 class="date"><em>2015-12-07</em></h4>
+<h4 class="date"><em>2015-12-10</em></h4>
 </div>
 
 
@@ -86,8 +86,8 @@ st &lt;-<span class="st"> </span>storr::<span class="kw">storr_rds</span>(path)<
 st &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(dr)</code></pre></div>
 <p>With this driver object we can create the <code>storr</code> object which is what we actually interact with:</p>
 <div id="key-value-store" class="section level1">
-<h1>Key-value store:</h1>
-<p>The most simple way of interacting with a <code>storr</code> object is <code>get</code>/<code>set</code>/<code>del</code> for getting, setting and deleting data stored at some key. To store data:</p>
+<h1>Key-value store</h1>
+<p>The main way of interacting with a <code>storr</code> object is <code>get</code>/<code>set</code>/<code>del</code> for getting, setting and deleting data stored at some key. To store data:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">set</span>(<span class="st">&quot;mykey&quot;</span>, mtcars)</code></pre></div>
 <p>To get the data back</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(st$<span class="kw">get</span>(<span class="st">&quot;mykey&quot;</span>))</code></pre></div>
@@ -138,19 +138,17 @@ st$<span class="kw">list</span>()</code></pre></div>
 <pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get</span>(<span class="st">&quot;a&quot;</span>)</code></pre></div>
 <pre><code>## [1] 1</code></pre>
-<p>Export to an environment or another <code>storr</code></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">e &lt;-<span class="st"> </span><span class="kw">new.env</span>(<span class="dt">parent=</span><span class="kw">emptyenv</span>())
-st$<span class="kw">export</span>(e)
+<p>Export to an environment (or another <code>storr</code>)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">e &lt;-<span class="st"> </span>st$<span class="kw">export</span>(<span class="kw">new.env</span>(<span class="dt">parent=</span><span class="kw">emptyenv</span>()))
 <span class="kw">ls</span>(e)</code></pre></div>
 <pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">e$a</code></pre></div>
 <pre><code>## [1] 1</code></pre>
-<p>Convenience function that does the same as the above (exports to a new environment that has <code>.GlobalEnv</code> as its parent)</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">e2 &lt;-<span class="st"> </span>st$<span class="kw">to_environment</span>()
-<span class="kw">ls</span>(e2)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st_copy &lt;-<span class="st"> </span>st$<span class="kw">export</span>(<span class="kw">storr_environment</span>())
+st_copy$<span class="kw">list</span>()</code></pre></div>
 <pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">parent.env</span>(e2)</code></pre></div>
-<pre><code>## &lt;environment: R_GlobalEnv&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get</span>(<span class="st">&quot;a&quot;</span>)</code></pre></div>
+<pre><code>## [1] 1</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st2 &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(<span class="dt">driver=</span>storr::<span class="kw">driver_rds</span>(<span class="kw">tempfile</span>(<span class="st">&quot;storr_&quot;</span>)))
 st2$<span class="kw">list</span>()</code></pre></div>
 <pre><code>## character(0)</code></pre>
@@ -163,8 +161,8 @@ st2$<span class="kw">list</span>()</code></pre></div>
 <ul>
 <li>environments (<code>driver_environment</code>) - mostly for debugging and transient storage, but by far the fastest.</li>
 <li>on disk with rds (<code>driver_rds</code>) - zero dependencies, quite fast, will suffer under high concurrency because there is no file locking.</li>
-<li>Redis (<code>driver_redis</code>) - uses <a href="https://github.com/richfitz/redux"><code>redux</code></a> to store the data in a Redis (<code>http://redis.io</code>) database. Slower than rds, but can allow multiple R processes to share the same set of objects.</li>
-<li>rlite (<code>driver_rlite</code>) - stores data in an <a href="https://github.com/seppo0010/rlite">rlite</a> using <a href="https://github.com/ropensci/rrlite"><code>rrlite</code></a>. This is the slowest at present and does not support concurrency at all. But rlite has the potential to be as useful as SQLite is so this will improve.</li>
+<li>Redis (<code>driver_redis</code>) - uses <a href="https://github.com/richfitz/redux"><code>redux</code></a> to store the data in a Redis (<code>http://redis.io</code>) database. About the same speed as rds (faster write, slower read at present), but can allow multiple R processes to share the same set of objects.</li>
+<li>rlite (<code>driver_rlite</code>) - stores data in an <a href="https://github.com/seppo0010/rlite">rlite</a> database using <a href="https://github.com/ropensci/rrlite"><code>rrlite</code></a>. This is the slowest at present but does also support concurrency. But rlite has the potential to be as useful as SQLite is so this will improve.</li>
 </ul>
 </div>
 <div id="implementation-details" class="section level1">
@@ -232,18 +230,19 @@ st$<span class="kw">set</span>(<span class="st">&quot;mykey&quot;</span>, <span 
 ##     }
 ##     value
 ## }
-## &lt;environment: 0x7f8db220acd8&gt;</code></pre>
+## &lt;environment: 0x7f875bbf4c78&gt;</code></pre>
 <p>The speed up is going to be fairly context dependent, but 10x seems pretty good in this case (some of the overhead is simply a longer code path as we call out to the driver).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hash &lt;-<span class="st"> </span>st$<span class="kw">get_hash</span>(<span class="st">&quot;mykey&quot;</span>)
 microbenchmark::<span class="kw">microbenchmark</span>(st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">TRUE</span>),
                                st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">FALSE</span>))</code></pre></div>
 <pre><code>## Unit: microseconds
-##                                   expr    min     lq     mean  median
-##   st$get_value(hash, use_cache = TRUE)  4.955  5.378  7.15170  6.9885
-##  st$get_value(hash, use_cache = FALSE) 61.666 62.483 65.67776 62.9560
-##       uq     max neval
-##   7.2375  39.439   100
-##  63.7580 156.523   100</code></pre>
+##                                   expr    min      lq     mean  median
+##   st$get_value(hash, use_cache = TRUE)  4.909  5.8765  12.1767  7.1870
+##  st$get_value(hash, use_cache = FALSE) 69.455 71.5430 104.6250 83.5565
+##        uq     max neval
+##   10.0745 142.088   100
+##  110.3710 550.577   100</code></pre>
+</div>
 </div>
 </div>
 
