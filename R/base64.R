@@ -1,3 +1,20 @@
+##' Base64 encoding.  By default uses the RFC 4648 dialect (file/url
+##' encoding) where characters 62 and 63 are "-" and "_".  Pass in "+"
+##' and "/" to get the RFC 1421 variant (as in other R packages that
+##' do base64 encoding).
+##' @title Base64 encoding and decoding
+##' @param x A string or vector of strings to encode/decode
+##' @param char62 Character to use for the 62nd index
+##' @param char63 Character to use for the 63rd index
+##' @export
+##' @examples
+##' x <- encode64("hello")
+##' x
+##' decode64(x)
+##'
+##' # Encoding things into filename-safe strings is the reason for
+##' # this function:
+##' encode64("unlikely/to be @ valid filename")
 encode64 <- function(x, char62="-", char63="_") {
   if (length(x) != 1L) {
     return(vcapply(x, encode64,char62, char63, USE.NAMES=FALSE))
@@ -26,6 +43,8 @@ encode64 <- function(x, char62="-", char63="_") {
   paste0(z, collapse="")
 }
 
+##' @export
+##' @rdname encode64
 decode64 <- function(x, char62="-", char63="_") {
   if (length(x) != 1L) {
     return(vcapply(x, decode64,char62, char63, USE.NAMES=FALSE))
