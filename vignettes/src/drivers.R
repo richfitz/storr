@@ -376,7 +376,7 @@ dr$list_keys(namespace)
 ## OK, so this *seems* to be working.  But how do we test if it is
 ## actually working?  `storr` provides an automatic testing facility
 ## based on `testthat`.
-storr:::test_driver("DBI/sqlite", function() driver_sqlite(":memory:"))
+storr::test_driver("DBI/sqlite", function() driver_sqlite(":memory:"))
 
 ## The first argument is the name of the driver (needs to be what is
 ## returned by `type()` above) and the second is a function that
