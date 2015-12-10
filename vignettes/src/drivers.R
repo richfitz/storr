@@ -112,8 +112,9 @@ RSQLite::dbGetPreparedQuery(con, sql, bind.data=dat)
 ## drivers.  With the new development version of DBI/RSQLite this will
 ## change to using `DBI::dbBind`:
 
-###+ eval=FALSE
+## ```{r, eval=FALSE}
 ## DBI::dbGetQuery(con, sql, bind.data=dat)
+## ```
 
 ## which is great because it means that the driver below would work
 ## for other DBI-compliant backends (development versions of RPostgres
@@ -376,12 +377,11 @@ dr$list_keys(namespace)
 ## OK, so this *seems* to be working.  But how do we test if it is
 ## actually working?  `storr` provides an automatic testing facility
 ## based on `testthat`.
-storr::test_driver("DBI/sqlite", function() driver_sqlite(":memory:"))
+storr::test_driver(function() driver_sqlite(":memory:"))
 
-## The first argument is the name of the driver (needs to be what is
-## returned by `type()` above) and the second is a function that
-## generates a database that we are allowed to write anything to and
-## then destroy when complete.  So `:memory:` is a good path here!
+## The argument a function that generates a database that we are
+## allowed to write anything to and then destroy when complete.  So
+## `:memory:` is a good path here!
 
 ## Now that the driver works, we can write the wrapper function:
 storr_sqlite <- function(path,

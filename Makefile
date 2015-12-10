@@ -39,7 +39,7 @@ vignettes: vignettes/storr.Rmd vignettes/drivers.Rmd
 
 staticdocs:
 	@mkdir -p inst/staticdocs
-	Rscript -e "library(methods); staticdocs::build_site()"
+	${RSCRIPT} -e "library(methods); staticdocs::build_site()"
 	rm -f vignettes/*.html
 	@rmdir inst/staticdocs
 website: staticdocs

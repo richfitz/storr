@@ -133,8 +133,9 @@ del</code></pre></div>
 <h1>Import / export</h1>
 <p>Objects can be imported in and exported out of a <code>storr</code>;</p>
 <p>Import from a list, environment or another <code>storr</code></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">import</span>(<span class="kw">list</span>(<span class="dt">a=</span><span class="dv">1</span>, <span class="dt">b=</span><span class="dv">2</span>))
-st$<span class="kw">list</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">import</span>(<span class="kw">list</span>(<span class="dt">a=</span><span class="dv">1</span>, <span class="dt">b=</span><span class="dv">2</span>))</code></pre></div>
+<pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list</span>()</code></pre></div>
 <pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">get</span>(<span class="st">&quot;a&quot;</span>)</code></pre></div>
 <pre><code>## [1] 1</code></pre>
@@ -152,8 +153,9 @@ st_copy$<span class="kw">list</span>()</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st2 &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(<span class="dt">driver=</span>storr::<span class="kw">driver_rds</span>(<span class="kw">tempfile</span>(<span class="st">&quot;storr_&quot;</span>)))
 st2$<span class="kw">list</span>()</code></pre></div>
 <pre><code>## character(0)</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st2$<span class="kw">import</span>(st)
-st2$<span class="kw">list</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st2$<span class="kw">import</span>(st)</code></pre></div>
+<pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st2$<span class="kw">list</span>()</code></pre></div>
 <pre><code>## [1] &quot;a&quot; &quot;b&quot;</code></pre>
 </div>
 <div id="supported-backends" class="section level1">
@@ -230,19 +232,18 @@ st$<span class="kw">set</span>(<span class="st">&quot;mykey&quot;</span>, <span 
 ##     }
 ##     value
 ## }
-## &lt;environment: 0x7f875bbf4c78&gt;</code></pre>
+## &lt;environment: 0x7fd55d460008&gt;</code></pre>
 <p>The speed up is going to be fairly context dependent, but 10x seems pretty good in this case (some of the overhead is simply a longer code path as we call out to the driver).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hash &lt;-<span class="st"> </span>st$<span class="kw">get_hash</span>(<span class="st">&quot;mykey&quot;</span>)
 microbenchmark::<span class="kw">microbenchmark</span>(st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">TRUE</span>),
                                st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">FALSE</span>))</code></pre></div>
 <pre><code>## Unit: microseconds
 ##                                   expr    min      lq     mean  median
-##   st$get_value(hash, use_cache = TRUE)  4.909  5.8765  12.1767  7.1870
-##  st$get_value(hash, use_cache = FALSE) 69.455 71.5430 104.6250 83.5565
-##        uq     max neval
-##   10.0745 142.088   100
-##  110.3710 550.577   100</code></pre>
-</div>
+##   st$get_value(hash, use_cache = TRUE)  4.649  5.0225  6.84595  6.7760
+##  st$get_value(hash, use_cache = FALSE) 68.691 69.7800 74.21882 70.6515
+##       uq     max neval
+##   6.9795  36.381   100
+##  71.8075 200.879   100</code></pre>
 </div>
 </div>
 
