@@ -20,13 +20,12 @@
 ##' examples).  The methods are described below in the "Methods"
 ##' section.
 ##'
-##' The \code{default_namespace} and \code{mangle_key} argument change
-##' the methods of the storr object.  Setting the
-##' \code{default_namespace} argument will mean that in the generated
-##' storr, the default namespace will be something other than
-##' "objects".  This can save typing.  The method that is used here
-##' (currently argument rewriting) may change in future versions of
-##' storr.
+##' The \code{default_namespace} argument changes the methods of the
+##' storr object.  Setting the \code{default_namespace} argument will
+##' mean that in the generated storr, the default namespace will be
+##' something other than "objects".  This can save typing.  The method
+##' that is used here (currently argument rewriting) may change in
+##' future versions of storr.
 ##'
 ##' @template storr_methods
 ##'
@@ -42,12 +41,6 @@
 ##'   storr itself and your data may get overwritten (unlikely
 ##'   though).
 ##'
-##' @param mangle_key Mangle keys?  If TRUE, then the key is run
-##'   through a hash function first; this allows storing keys against
-##'   names that include characters that might not be supported by the
-##'   underlying driver.  At present the hash function mangles the
-##'   \emph{string} \code{key} but future versions might allow
-##'   mangling the \code{value} of \code{key}.
 ##' @export
 ##' @examples
 ##' st <- storr(driver_environment())
@@ -79,19 +72,19 @@
 ##' st2$list()
 ##' st2$del("x")
 ##' st2$del("y")
-storr <- function(driver, default_namespace="objects", mangle_key=FALSE) {
-  .R6_storr(driver, default_namespace, mangle_key)$new()
+storr <- function(driver, default_namespace="objects") {
+  .R6_storr(driver, default_namespace)$new()
 }
 
-.R6_storr <- function(driver, default_namespace, mangle_key) {
+.R6_storr <- function(driver, default_namespace) {
   R6::R6Class(
     "storr",
     public=c(list(driver=driver,
                   envir=new.env(parent=emptyenv())),
-             storr_methods(default_namespace, mangle_key)))
+             storr_methods(default_namespace)))
 }
 
-storr_methods <- function(default_namespace, mangle_key) {
+storr_methods <- function(default_namespace) {
   self <- NULL # avoid warning; we'll resolve this symbol later.
   ret <- list(
     destroy=function() {
@@ -191,10 +184,6 @@ storr_methods <- function(default_namespace, mangle_key) {
     },
 
     ## TODO: Deal with all the namespaces at once perhaps
-    ##
-    ## TODO: decide on default for mangle_key; I *think* mangle makes
-    ## most sense because of the possibility of non-filename names, but
-    ## not sure in general...
     archive_export=function(path, names=NULL, namespace="objects") {
       self$export(storr_rds(path, mangle_key=TRUE), names, namespace)
     },
@@ -204,9 +193,6 @@ storr_methods <- function(default_namespace, mangle_key) {
     })
   if (!missing(default_namespace)) {
     ret <- lapply(ret, modify_defaults, "namespace", default_namespace)
-  }
-  if (mangle_key) {
-    ret <- create_mangled(ret)
   }
   ret
 }
@@ -227,33 +213,4 @@ storr_gc <- function(driver, envir) {
   }
   rm0(unused, envir)
   invisible(unused)
-}
-
-create_mangled <- function(dat) {
-  brace <- quote(`{`)
-  for (i in names(dat)) {
-    f <- dat[[i]]
-    fun_args <- names(formals(f))
-    t <- if (i %in% c("archive_export", "archive_export")) "names" else "key"
-    if (t %in% fun_args) {
-      if (t == "names") {
-        expr <- quote(names <- if (is.null(names)) names else mangle(names))
-      } else {
-        expr <- quote(key <- mangle(key))
-      }
-      fun_body <- body(f)
-      if (identical(fun_body[[1]], brace)) {
-        body(f) <- as.call(c(list(brace, expr), as.list(fun_body[-1])))
-      } else {
-        body(f) <- as.call(c(list(brace, expr), fun_body))
-      }
-      dat[[i]] <- f
-    } else if (i == "list") {
-      fun_body <- body(f)
-      fun_body[[2]] <- call("unmangle", fun_body[[2]], TRUE)
-      body(f) <- fun_body
-      dat[[i]] <- f
-    }
-  }
-  dat
 }

@@ -7,8 +7,7 @@
 \usage{
 driver_redis_api(prefix, con)
 
-storr_redis_api(prefix, con, default_namespace = "objects",
-  mangle_key = FALSE)
+storr_redis_api(prefix, con, default_namespace = "objects")
 }
 \arguments{
 \item{prefix}{Prefix for keys.  We'll generate a number of keys
@@ -22,8 +21,6 @@ tools to create a connection; you need to provide one that is
 good to go.}
 
 \item{default_namespace}{Default namespace (see \code{\link{storr}})}
-
-\item{mangle_key}{Mangle key? (see \code{\link{storr}})}
 }
 \description{
 Redis object cache driver

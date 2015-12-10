@@ -1,33 +1,7 @@
-is_mangled <- function(x) {
-  inherits(x, "mangled")
-}
-mangle <- function(x) {
-  if (is_mangled(x)) {
-    x
-  } else {
-    set_mangled(vcapply(x, encode64, USE.NAMES=FALSE))
-  }
-}
-## If this is only used in list via create_mangled then we can
-## unconditionally unmangle.
-unmangle <- function(x, force=FALSE) {
-  if (force || is_mangled(x)) {
-    vcapply(x, decode64, USE.NAMES=FALSE)
-  } else {
-    x
-  }
-}
-set_mangled <- function(x) {
-  class(x) <- "mangled"
-  x
-}
-
-##' @export
-`[[.mangled` <- function(x, i, ...) {
-  set_mangled(NextMethod("[["))
-}
-
 encode64 <- function(x, char62="-", char63="_") {
+  if (length(x) != 1L) {
+    return(vcapply(x, encode64,char62, char63, USE.NAMES=FALSE))
+  }
   tr <- c(LETTERS, letters, 0:9, char62, char63)
   x <- as.integer(charToRaw(x))
   n_bytes <- length(x)
@@ -53,6 +27,9 @@ encode64 <- function(x, char62="-", char63="_") {
 }
 
 decode64 <- function(x, char62="-", char63="_") {
+  if (length(x) != 1L) {
+    return(vcapply(x, decode64,char62, char63, USE.NAMES=FALSE))
+  }
   ## TODO: check that the string is correctly encoded before doing
   ## anything.
   tr <- c(LETTERS, letters, 0:9, char62, char63)

@@ -7,8 +7,7 @@
 \usage{
 driver_environment(envir = NULL)
 
-storr_environment(envir = NULL, default_namespace = "objects",
-  mangle_key = FALSE)
+storr_environment(envir = NULL, default_namespace = "objects")
 }
 \arguments{
 \item{envir}{The environment to point the storr at.  The default
@@ -18,8 +17,6 @@ pointing at the same environment then pass the \code{envir}
 argument along.}
 
 \item{default_namespace}{Default namespace (see \code{\link{storr}})}
-
-\item{mangle_key}{Mangle key? (see \code{\link{storr}})}
 }
 \description{
 Fast but transient environment driver

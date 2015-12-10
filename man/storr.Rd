@@ -4,7 +4,7 @@
 \alias{storr}
 \title{Object cache}
 \usage{
-storr(driver, default_namespace = "objects", mangle_key = FALSE)
+storr(driver, default_namespace = "objects")
 }
 \arguments{
 \item{driver}{A driver object}
@@ -16,13 +16,6 @@ store, but storing things in different namespaces.  Do not use
 namespaces beginning with \code{"storr_"} as these are used by
 storr itself and your data may get overwritten (unlikely
 though).}
-
-\item{mangle_key}{Mangle keys?  If TRUE, then the key is run
-through a hash function first; this allows storing keys against
-names that include characters that might not be supported by the
-underlying driver.  At present the hash function mangles the
-\emph{string} \code{key} but future versions might allow
-mangling the \code{value} of \code{key}.}
 }
 \description{
 Create an object cache; a "storr".  A storr is a simple key-value
@@ -48,13 +41,12 @@ method is accessed by using \code{$} on a storr object (see the
 examples).  The methods are described below in the "Methods"
 section.
 
-The \code{default_namespace} and \code{mangle_key} argument change
-the methods of the storr object.  Setting the
-\code{default_namespace} argument will mean that in the generated
-storr, the default namespace will be something other than
-"objects".  This can save typing.  The method that is used here
-(currently argument rewriting) may change in future versions of
-storr.
+The \code{default_namespace} argument changes the methods of the
+storr object.  Setting the \code{default_namespace} argument will
+mean that in the generated storr, the default namespace will be
+something other than "objects".  This can save typing.  The method
+that is used here (currently argument rewriting) may change in
+future versions of storr.
 }
 \section{Methods}{
 

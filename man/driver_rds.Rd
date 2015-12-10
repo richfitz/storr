@@ -5,10 +5,10 @@
 \alias{storr_rds}
 \title{RDS object cache driver}
 \usage{
-driver_rds(path, compress = TRUE)
+driver_rds(path, compress = TRUE, mangle_key = NULL)
 
-storr_rds(path, compress = TRUE, default_namespace = "objects",
-  mangle_key = FALSE)
+storr_rds(path, compress = TRUE, mangle_key = NULL,
+  default_namespace = "objects")
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice
@@ -18,11 +18,32 @@ application data.}
 \item{compress}{Compress the generated file?  This saves a small
 amount of space for a reasonable amount of time.}
 
-\item{default_namespace}{Default namespace (see \code{\link{storr}})}
+\item{mangle_key}{Mangle keys?  If TRUE, then the key is encoded
+using base64 before saving to the filesystem.  See Details.}
 
-\item{mangle_key}{Mangle key? (see \code{\link{storr}})}
+\item{default_namespace}{Default namespace (see \code{\link{storr}})}
 }
 \description{
 RDS object cache driver
+}
+\details{
+The \code{mangle_key} argument will run each key that is created
+through a "base 64" encoding.  This means that keys that include
+symbols that are invalid on filesystems (e.g, "/", ":") will be
+replaced by harmless characters.  The RFC 4648 dialect is used
+where "-" and "_" are used for character 62 and 63 (this differs
+from most R base64 encoders).  This mangling is designed to be
+transparent to the user -- the storr will appear to store things
+with unmangled keys but the names of the stored files will be
+different.
+
+Note that the \emph{namespace} is not mangled (at least not yet)
+so needs to be a valid filename.
+
+Because the actual file will be stored with mangled names it is
+not safe to use the same path for a storr with and without
+mangling.  So once an rds storr has been created its "mangledness"
+is set.  Using \code{mangle_key=NULL} uses whatever mangledness
+exists (or no mangledness if creating a new storr).
 }
 

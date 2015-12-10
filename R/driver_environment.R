@@ -18,10 +18,8 @@ driver_environment <- function(envir=NULL) {
 ##' @export
 ##' @rdname driver_environment
 ##' @param default_namespace Default namespace (see \code{\link{storr}})
-##' @param mangle_key Mangle key? (see \code{\link{storr}})
-storr_environment <- function(envir=NULL, default_namespace="objects",
-                              mangle_key=FALSE) {
-  storr(driver_environment(envir), default_namespace, mangle_key)
+storr_environment <- function(envir=NULL, default_namespace="objects") {
+  storr(driver_environment(envir), default_namespace)
 }
 
 .R6_driver_environment <- R6::R6Class(

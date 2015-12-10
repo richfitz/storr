@@ -20,10 +20,8 @@ driver_redis_api <- function(prefix, con) {
 ##' @export
 ##' @rdname driver_redis_api
 ##' @param default_namespace Default namespace (see \code{\link{storr}})
-##' @param mangle_key Mangle key? (see \code{\link{storr}})
-storr_redis_api <- function(prefix, con,
-                      default_namespace="objects", mangle_key=FALSE) {
-  storr(driver_redis_api(prefix, con), default_namespace, mangle_key)
+storr_redis_api <- function(prefix, con, default_namespace="objects") {
+  storr(driver_redis_api(prefix, con), default_namespace)
 }
 
 .R6_driver_redis_api <- R6::R6Class(

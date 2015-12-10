@@ -4,8 +4,7 @@
 \alias{storr_external}
 \title{Storr that kooks for external resources}
 \usage{
-storr_external(storage_driver, fetch_hook, default_namespace = "objects",
-  mangle_key = FALSE)
+storr_external(storage_driver, fetch_hook, default_namespace = "objects")
 }
 \arguments{
 \item{storage_driver}{Another \code{storr} driver to handle the
@@ -17,8 +16,6 @@ any type) if the external resource cannot be resolved.}
 
 \item{default_namespace}{Default namespace (see
 \code{\link{storr}})}
-
-\item{mangle_key}{Mangle key? (see \code{\link{storr}})}
 }
 \description{
 storr for fetching external resources.  This does not do a full

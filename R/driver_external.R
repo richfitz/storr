@@ -10,16 +10,13 @@
 ##'   any type) if the external resource cannot be resolved.
 ##' @param default_namespace Default namespace (see
 ##'   \code{\link{storr}})
-##' @param mangle_key Mangle key? (see \code{\link{storr}})
 ##' @export
 storr_external <- function(storage_driver, fetch_hook,
-                           default_namespace="objects", mangle_key=FALSE) {
-  .R6_storr_external(storage_driver, fetch_hook,
-                     default_namespace, mangle_key)$new()
+                           default_namespace="objects") {
+  .R6_storr_external(storage_driver, fetch_hook, default_namespace)$new()
 }
 
-.R6_storr_external <- function(storage_driver, fetch_hook,
-                               default_namespace, mangle_key) {
+.R6_storr_external <- function(storage_driver, fetch_hook, default_namespace) {
   ## NOTE: This uses inheritence.  I actually think that this might be
   ## the right call here.  This could be implemented as a has-a
   ## relationship but we fundamentally want to interact with this as
@@ -35,7 +32,7 @@ storr_external <- function(storage_driver, fetch_hook,
   ## that if the TTL support turns up in the driver it won't necessarily
   ## carry across.
   super <- self <- NULL # resolved later
-  st <- .R6_storr(storage_driver, default_namespace, mangle_key)
+  st <- .R6_storr(storage_driver, default_namespace)
   check_external_fetch_hook(fetch_hook)
   R6::R6Class(
     "storr_external",

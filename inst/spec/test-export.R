@@ -83,7 +83,7 @@ testthat::test_that("import / export", {
   on.exit(unlink(path, recursive=TRUE), add=TRUE)
   testthat::expect_identical(dir(path), character(0))
   st$archive_export(path)
-  testthat::expect_identical(sort(dir(path)), c("data", "keys"))
+  testthat::expect_identical(sort(dir(path)), c("config", "data", "keys"))
 
   ## Load into an rds storr:
   tmp <- storr_rds(path, mangle_key=TRUE)
