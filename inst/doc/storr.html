@@ -10,7 +10,7 @@
 
 <meta name="author" content="Rich FitzJohn" />
 
-<meta name="date" content="2015-12-10" />
+<meta name="date" content="2015-12-11" />
 
 <title>storr</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">storr</h1>
 <h4 class="author"><em>Rich FitzJohn</em></h4>
-<h4 class="date"><em>2015-12-10</em></h4>
+<h4 class="date"><em>2015-12-11</em></h4>
 </div>
 
 
@@ -232,18 +232,39 @@ st$<span class="kw">set</span>(<span class="st">&quot;mykey&quot;</span>, <span 
 ##     }
 ##     value
 ## }
-## &lt;environment: 0x7fd55d460008&gt;</code></pre>
+## &lt;environment: 0x7ff5e7c9a590&gt;</code></pre>
 <p>The speed up is going to be fairly context dependent, but 10x seems pretty good in this case (some of the overhead is simply a longer code path as we call out to the driver).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hash &lt;-<span class="st"> </span>st$<span class="kw">get_hash</span>(<span class="st">&quot;mykey&quot;</span>)
 microbenchmark::<span class="kw">microbenchmark</span>(st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">TRUE</span>),
                                st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">FALSE</span>))</code></pre></div>
 <pre><code>## Unit: microseconds
 ##                                   expr    min      lq     mean  median
-##   st$get_value(hash, use_cache = TRUE)  4.649  5.0225  6.84595  6.7760
-##  st$get_value(hash, use_cache = FALSE) 68.691 69.7800 74.21882 70.6515
-##       uq     max neval
-##   6.9795  36.381   100
-##  71.8075 200.879   100</code></pre>
+##   st$get_value(hash, use_cache = TRUE)  4.750  5.0255  6.39658  6.6900
+##  st$get_value(hash, use_cache = FALSE) 68.543 69.6650 73.25849 70.5575
+##      uq     max neval
+##   6.901  32.300   100
+##  71.908 153.817   100</code></pre>
+</div>
+<div id="classed-exceptions" class="section level2">
+<h2>Classed exceptions</h2>
+<p>storr uses R’s exception handling system and errors inspired from Python to make it easy to program with <code>tryCatch</code>.</p>
+<p>If a key is not in the database, storr will return a <code>KeyError</code> (not <code>NULL</code> because storing a <code>NULL</code> value is a perfectly reasonable thing to do).</p>
+<p>If you <em>did</em> want to return <code>NULL</code> when a key is requested but not present, use tryCatch in this way:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tryCatch</span>(st$<span class="kw">get</span>(<span class="st">&quot;no_such_key&quot;</span>),
+         <span class="dt">KeyError=</span>function(e) <span class="ot">NULL</span>)</code></pre></div>
+<pre><code>## NULL</code></pre>
+<p>See <code>?tryCatch</code> for details. The idea is that key lookup errors will have the class <code>KeyError</code> so will be caught here and run the given function (the argument <code>e</code> is the actual error object). Other errors will not be caught and will still throw.</p>
+<p><code>HashErrors</code> will be rarer, but could happen (they might occur if your driver supports expiry of objects). We can simulate that by setting a hash and deleting it:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">set</span>(<span class="st">&quot;foo&quot;</span>, letters)
+ok &lt;-<span class="st"> </span>st$driver$<span class="kw">del_hash</span>(st$<span class="kw">get_hash</span>(<span class="st">&quot;foo&quot;</span>))
+st$<span class="kw">flush_cache</span>()
+<span class="kw">tryCatch</span>(st$<span class="kw">get</span>(<span class="st">&quot;foo&quot;</span>),
+         <span class="dt">KeyError=</span>function(e) <span class="ot">NULL</span>,
+         <span class="dt">HashError=</span>function(e) <span class="kw">message</span>(<span class="st">&quot;Data is deleted&quot;</span>))</code></pre></div>
+<pre><code>## Data is deleted</code></pre>
+<p>Here the <code>HashError</code> is triggered.</p>
+<p><code>KeyError</code> objects include <code>key</code> and <code>namespace</code> elements, <code>HashError</code> objects include a <code>hash</code> element. They both inherit from <code>c(&quot;error&quot;, &quot;condition&quot;)</code>.</p>
+<p>Finally, when using an external storr (see ?driver_external) storr will throw a <code>KeyErrorExternal</code> if the <code>fetch_hook</code> function errors while trying to retrieve an external resource.</p>
 </div>
 </div>
 

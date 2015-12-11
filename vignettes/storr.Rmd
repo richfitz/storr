@@ -230,3 +230,47 @@ hash <- st$get_hash("mykey")
 microbenchmark::microbenchmark(st$get_value(hash, use_cache=TRUE),
                                st$get_value(hash, use_cache=FALSE))
 ```
+
+## Classed exceptions
+
+storr uses R's exception handling system and errors inspired from
+Python to make it easy to program with `tryCatch`.
+
+If a key is not in the database, storr will return a `KeyError`
+(not `NULL` because storing a `NULL` value is a perfectly
+reasonable thing to do).
+
+If you _did_ want to return `NULL` when a key is requested but not
+present, use tryCatch in this way:
+``` {r }
+tryCatch(st$get("no_such_key"),
+         KeyError=function(e) NULL)
+```
+
+See `?tryCatch` for details.  The idea is that key lookup errors
+will have the class `KeyError` so will be caught here and run the
+given function (the argument `e` is the actual error object).
+Other errors will not be caught and will still throw.
+
+`HashErrors` will be rarer, but could happen (they might occur if
+your driver supports expiry of objects).  We can simulate that by
+setting a hash and deleting it:
+
+``` {r }
+st$set("foo", letters)
+ok <- st$driver$del_hash(st$get_hash("foo"))
+st$flush_cache()
+tryCatch(st$get("foo"),
+         KeyError=function(e) NULL,
+         HashError=function(e) message("Data is deleted"))
+```
+
+Here the `HashError` is triggered.
+
+`KeyError` objects include `key` and `namespace` elements,
+`HashError` objects include a `hash` element.  They both inherit
+from `c("error", "condition")`.
+
+Finally, when using an external storr (see ?driver_external) storr
+will throw a `KeyErrorExternal` if the `fetch_hook` function errors
+while trying to retrieve an external resource.

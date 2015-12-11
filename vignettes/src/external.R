@@ -1,0 +1,214 @@
+## ---
+## title: "external"
+## author: "Rich FitzJohn"
+## date: "`r Sys.Date()`"
+## output: rmarkdown::html_vignette
+## vignette: >
+##   %\VignetteIndexEntry{external}
+##   %\VignetteEngine{knitr::rmarkdown}
+##   \usepackage[utf8]{inputenc}
+## ---
+
+## Using external storrs.
+
+## Often it is useful to retrieve data from an external resource
+## (especially websites).  The way this works is:
+##
+## 1. We do a key lookup on the storr; if that succeeds (i.e. it maps
+## to a hash) continue as normal..
+##
+## 2. If the lookup fails, pass the key (and namespace) to a "hook"
+## function that generates an R object (in any way).
+
+## This is in some ways a variant on the memoisation pattern; if the
+## key refers to a set of arguments to a long running function we get
+## something like memoisation (see the bottom of this file).
+
+## As an example, this vignette will download some DESCRIPTION files
+## from github, using the name of the repository as the key.
+
+## The first step is writing a hook function; this is a function with
+## arguments `(key, namespace)` that returns an R object.  For
+## packages stored in the root directory of a repository we can build
+## URLs of the form:
+##
+##    https://raw.githubusercontent.com/<username>/>repo>/master/DESCRIPTION
+##
+## So if the key is a username/repo pair and we ignore namespace we
+## can write a function:
+fetch_hook_gh_description <- function(key, namespace) {
+  if (!isTRUE(unname(capabilities("libcurl")))) {
+    stop("This vignette requires libcurl support in R to run")
+  }
+  fmt <- "https://raw.githubusercontent.com/%s/master/DESCRIPTION"
+  path <- tempfile("gh_description_")
+  on.exit(file.remove(path))
+  code <- download.file(sprintf(fmt, key), path, method="libcurl")
+  if (code != 0L) {
+    stop("Error downloading file")
+  }
+  as.list(read.dcf(path)[1, ])
+}
+
+## This function downloads the requested DESCRIPTION file into a
+## temporary file (which it promises to delete later using `on.exit`),
+## checks that the download was successful, then reads in the
+## downloaded file and converts it into a list.
+
+## The `httr` and `curl` packages make this a little easier to do with
+## authorisation so that this would work for private repositories by
+## using a token.
+
+## With this in place, we can build a storr:
+st <- storr::storr_external(storr::driver_environment(),
+                            fetch_hook_gh_description)
+
+## The first argument here is a storr *driver* (i.e., a `driver_`
+## function).  If you have a storr that you want to use, pass it as
+## `st$driver` to extract the underlying driver (and share storage
+## with your existing storr).
+##
+## As with other storr creation functions, you can set the default
+## namespace using the `default_namespace` argument.
+##
+## The returned object is exactly the same as a usual storr except
+## that the `get` method has changed (this is done by inheritence).
+## The `get` method only behaves differently when the object is not
+## present in the storr, in which case it will try to fetch the object
+## and insert it into the storr.
+
+## At first there is nothing in here:
+st$list()
+
+## But we can still `get` things from the storr:
+d <- st$get("richfitz/storr")
+
+## Once a key has been fetched, it will be retrieved locally:
+identical(st$get("richfitz/storr"), d)
+
+## And it will be present within the storr, as shown by `list`:
+st$list()
+
+## If an external resource cannot be located, storr will throw an
+## error of class `KeyErrorExternal`:
+tryCatch(st$get("richfitz/no_such_repo"),
+         KeyErrorExternal=function(e)
+           message(sprintf("** Repository %s not found", e$key)))
+
+## This would happen for all errors, including lack of internet
+## connectivity, corrupt file downloads, etc.  The original error will
+## be returned as the `$e` element of the error if you need to
+## distinguish between types of failure.  The `KeyErrorExternal` is
+## also a `KeyError` class, so code that catches `KeyErrors` will
+## still work as expected.
+
+## For more details on storr exception handling, see the `storr`
+## vignette (`vignette("storr", package="storr")`)
+
+## Note that if you want to persist the storage of the descriptions
+## you would need to mangle the key:
+st_rds <- st$export(storr::storr_rds(tempfile(), mangle_key=TRUE))
+st_rds$list()
+st_rds$get("richfitz/storr")$Version
+
+## The `st_rds` storr does not include the fetch hook; it is a plain storr.
+
+###+ echo=FALSE
+st_rds$destroy()
+
+## # Memoisation
+
+## The external storr can support a form of memoisation, though it
+## might be simpler to implement this directly (see below).
+
+## Suppose you have some expensive function `f(a, b)`
+f <- function(a, b) {
+  message(sprintf("Computing f(%.3f, %.3f)", a, b))
+  ## ...expensive computation here...
+  list(a, b)
+}
+
+## and a set of parameters to run the function over, with each
+## parameter set (row) associated with an id:
+pars <- data.frame(id=as.character(1:10), a=runif(10), b=runif(10),
+                   stringsAsFactors=FALSE)
+
+## The `hook` here simply looks the parameters up and arranges to run them:
+hook <- function(key, namespace) {
+  p <- pars[match(key, pars$id), -1]
+  f(p$a, p$b)
+}
+
+st <- storr::storr_external(storr::driver_environment(), hook)
+
+## The first time the result is retrieved the message will be printed
+## (the function is evaluated)
+x <- st$get("1")
+
+## The second time, it will not be as the result is retrieved from the
+## storr:
+identical(st$get("1"), x)
+
+## This idea can be generalised by storing the *parameters* and the
+## *functions* in the storr so that we lose the dependency on the
+## global variables:
+st <- storr::storr_environment()
+st$set("experiment1", pars, namespace="parameters")
+st$set("experiment1", f, namespace="functions")
+
+hook2 <- function(key, namespace) {
+  f <- st$get(namespace, namespace="functions")
+  pars <- st$get(namespace, namespace="parameters")
+  p <- pars[match(key, pars$id), -1]
+  f(p$a, p$b)
+}
+
+st_use <- storr::storr_external(st$driver, hook2)
+
+x1 <- st_use$get("1", "experiment1")
+x2 <- st_use$get("1", "experiment1")
+
+## Memoisation in the style of the `memoise` package is possible to
+## implement, but is not provided in the package.  Implementation is
+## straightforward and will work with any driver:
+memoise <- function(f, driver=storr::driver_environment()) {
+  force(f)
+  st <- storr::storr(driver)
+  function(...) {
+    key <- digest::digest(list(...))
+    tryCatch(
+      st$get(key),
+      KeyError=function(e) {
+        ans <- f(...)
+        st$set(key, ans)
+        ans
+      })
+  }
+}
+
+## Here's a function that will print when it is evaluated
+f <- function(x) {
+  message("computing...")
+  x * 2
+}
+
+## Create the memoised function
+g <- memoise(f)
+
+## The first time an argument is seen, `f()` will be run, printing a message
+g(1)
+
+## Subsequent times will be looked up from the storr:
+g(1)
+
+## Storr takes about twice as long as memoise (memoise does a direct
+## key->value mapping rather than going through hashed values because
+## it is the only thing that ever touches its cache).  However, the
+## overhead is approximately half of one call to `message()` so it's
+## not that bad.
+
+##+ eval=FALSE, echo=FALSE
+f <- function(x) x * 2
+g <- memoise(f)
+h <- memoise::memoise(f)
+microbenchmark::microbenchmark(f(1), g(1), h(1))

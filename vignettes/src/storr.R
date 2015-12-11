@@ -207,7 +207,7 @@ tryCatch(st$get("no_such_key"),
 ## your driver supports expiry of objects).  We can simulate that by
 ## setting a hash and deleting it:
 ##
-## st$set("foo", letters)
+st$set("foo", letters)
 ok <- st$driver$del_hash(st$get_hash("foo"))
 st$flush_cache()
 tryCatch(st$get("foo"),

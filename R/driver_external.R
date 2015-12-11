@@ -21,6 +21,12 @@ storr_external <- function(storage_driver, fetch_hook,
 ## relationship but we fundamentally want to interact with this as an
 ## is-a.  Unlike the previous implementation of external storr objects
 ## this one does not suffer the cache miss which is nice.
+##
+## TODO: Need "pending" support here for parallel invocations?  Not
+## possible through most backends?
+##
+## TODO: Support passing in an actual storr here, in which case we'd
+## just take the driver element from it (possibly with a clone).
 .R6_storr_external <- R6::R6Class(
   "storr_external",
   inherit=.R6_storr,
