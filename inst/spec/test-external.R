@@ -47,10 +47,10 @@ testthat::test_that("simple", {
   testthat::expect_equal(ls(st$envir), hash)
 
   ## Second time around will not hit the object:
-  expect_identical(st$get(key, ns), d)
+  testthat::expect_identical(st$get(key, ns), d)
   ## So we can delete the actual remote object:
   file.remove(file.path(path, key))
-  expect_identical(st$get(key, ns), d)
+  testthat::expect_identical(st$get(key, ns), d)
 
   ## Out of bounds:
   testthat::expect_false(st$exists("z", ns))
