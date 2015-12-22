@@ -12,6 +12,8 @@
 ## TODO: namespace here assumes we're copy from and to the same
 ## namespace.  That's not always going to be reasonable but will have
 ## to do for now.
+##
+## TODO: are the export lines here actually needed?
 storr_copy <- function(dest, src, list, namespace) {
   if (is.null(list)) {
     if (inherits(src, "storr")) {

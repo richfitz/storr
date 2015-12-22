@@ -66,6 +66,15 @@ del:
     key: &key The name of the key
     namespace: &ns The namespace of the key.
   value: \code{TRUE} if an object was deleted, \code{FALSE} otherwise.
+clear:
+  short: >-
+    Clear a storr.  This function might be slow as it will iterate
+    over each key.  Future versions of storr might allow drivers to
+    implement a clear method that will allow faster clearing.
+  params:
+    namespace: >-
+      A namespace, to clear a single namespace, or \code{NULL} to
+      clear all namespaces.
 exists:
   short: Test if a key exists within a namespace
   params:

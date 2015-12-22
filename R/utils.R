@@ -25,6 +25,9 @@ str_drop_start <- function(x, sub) {
 vlapply <- function(X, FUN, ...) {
   vapply(X, FUN, logical(1), ...)
 }
+viapply <- function(X, FUN, ...) {
+  vapply(X, FUN, integer(1), ...)
+}
 vcapply <- function(X, FUN, ...) {
   vapply(X, FUN, character(1), ...)
 }

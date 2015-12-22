@@ -120,6 +120,19 @@
 ##'   \emph{Value}:
 ##'   \code{TRUE} if an object was deleted, \code{FALSE} otherwise.
 ##' }
+##' \item{\code{clear}}{
+##'   Clear a storr.  This function might be slow as it will iterate over each key.  Future versions of storr might allow drivers to implement a clear method that will allow faster clearing.
+##'
+##'   \emph{Usage:}
+##'   \code{clear(namespace = self$default_namespace)}
+##'
+##'   \emph{Arguments:}
+##'   \describe{
+##'     \item{\code{namespace}}{
+##'       A namespace, to clear a single namespace, or \code{NULL} to clear all namespaces.
+##'     }
+##'   }
+##' }
 ##' \item{\code{exists}}{
 ##'   Test if a key exists within a namespace
 ##'

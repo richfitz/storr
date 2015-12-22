@@ -108,3 +108,27 @@ testthat::test_that("set_by_value", {
   testthat::expect_identical(st$list(), h)
   testthat::expect_equal(st$get(h), x)
 })
+
+testthat::test_that("clear", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  st <- storr(dr)
+  st$set("a1", 1, namespace="a")
+  st$set("a2", 2, namespace="a")
+  st$set("b1", 1, namespace="b")
+
+  testthat::expect_equal(sort(st$list("a")), sort(c("a1", "a2")))
+  testthat::expect_equal(st$clear("a"), 2L)
+  testthat::expect_equal(st$list("a"), character(0))
+
+  testthat::expect_equal(st$list("b"), "b1")
+  testthat::expect_equal(st$clear(NULL), 1L)
+  testthat::expect_equal(st$list("b"), character(0))
+
+  st$set("a1", 1, namespace="a")
+  st$set("a2", 2, namespace="a")
+  st$set("b1", 1, namespace="b")
+  testthat::expect_equal(st$clear(NULL), 3L)
+  testthat::expect_equal(st$clear(NULL), 0L)
+  testthat::expect_equal(st$clear("no_such_namespace"), 0L)
+})

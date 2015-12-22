@@ -126,7 +126,13 @@ storr <- function(driver, default_namespace="objects") {
     del=function(key, namespace=self$default_namespace) {
       invisible(self$driver$del_key(key, namespace))
     },
-
+    clear=function(namespace=self$default_namespace) {
+      if (is.null(namespace)) {
+        invisible(sum(viapply(self$list_namespaces(), self$clear)))
+      } else {
+        invisible(length(vlapply(self$list(namespace), self$del, namespace)))
+      }
+    },
     exists=function(key, namespace=self$default_namespace) {
       self$driver$exists_key(key, namespace)
     },
