@@ -17,7 +17,7 @@
 ##'   Set a key to a value.
 ##'
 ##'   \emph{Usage:}
-##'   \code{set(key, value, namespace = "objects", use_cache = TRUE)}
+##'   \code{set(key, value, namespace = self$default_namespace, use_cache = TRUE)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
@@ -45,7 +45,7 @@
 ##'   Like \code{set} but saves the object with a key that is the same as the hash of the object.  Equivalent to \code{$set(digest::digest(value), value)}.
 ##'
 ##'   \emph{Usage:}
-##'   \code{set_by_value(value, namespace = "objects", use_cache = TRUE)}
+##'   \code{set_by_value(value, namespace = self$default_namespace, use_cache = TRUE)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
@@ -66,7 +66,7 @@
 ##'   Retrieve an object from the storr.  If the requested value is not found thena \code{KeyError} will be raised (an R error, but can be caught with \code{tryCatch}.  See the "storr" vignette.
 ##'
 ##'   \emph{Usage:}
-##'   \code{get(key, namespace = "objects", use_cache = TRUE)}
+##'   \code{get(key, namespace = self$default_namespace, use_cache = TRUE)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
@@ -87,7 +87,7 @@
 ##'   Retrieve the hash of an object stored in the storr (rather than the object itself).
 ##'
 ##'   \emph{Usage:}
-##'   \code{get_hash(key, namespace = "objects")}
+##'   \code{get_hash(key, namespace = self$default_namespace)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
@@ -104,7 +104,7 @@
 ##'   Delete an object fom the storr.
 ##'
 ##'   \emph{Usage:}
-##'   \code{del(key, namespace = "objects")}
+##'   \code{del(key, namespace = self$default_namespace)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
@@ -124,7 +124,7 @@
 ##'   Test if a key exists within a namespace
 ##'
 ##'   \emph{Usage:}
-##'   \code{exists(key, namespace = "objects")}
+##'   \code{exists(key, namespace = self$default_namespace)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
@@ -200,7 +200,7 @@
 ##'   List all keys stored in a namespace.
 ##'
 ##'   \emph{Usage:}
-##'   \code{list(namespace = "objects")}
+##'   \code{list(namespace = self$default_namespace)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
@@ -234,7 +234,7 @@
 ##'   Import R objects from an environment.
 ##'
 ##'   \emph{Usage:}
-##'   \code{import(src, list = NULL, namespace = "objects")}
+##'   \code{import(src, list = NULL, namespace = self$default_namespace)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
@@ -255,7 +255,7 @@
 ##'   Export objects from the storr into something else.
 ##'
 ##'   \emph{Usage:}
-##'   \code{export(dest, list = NULL, namespace = "objects")}
+##'   \code{export(dest, list = NULL, namespace = self$default_namespace)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
@@ -279,7 +279,7 @@
 ##'   Export objects from the storr into a special "archive" storr, which is an \code{\link{storr_rds}} with name mangling turned on (which encodes keys with base64 so that they do not voilate filesystem naming conventions).
 ##'
 ##'   \emph{Usage:}
-##'   \code{archive_export(path, names = NULL, namespace = "objects")}
+##'   \code{archive_export(path, names = NULL, namespace = self$default_namespace)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
@@ -300,7 +300,7 @@
 ##'   Inverse of \code{archive_export}; import objects from a storr that was created by \code{archive_export}.
 ##'
 ##'   \emph{Usage:}
-##'   \code{archive_import(path, names = NULL, namespace = "objects")}
+##'   \code{archive_import(path, names = NULL, namespace = self$default_namespace)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \describe{
