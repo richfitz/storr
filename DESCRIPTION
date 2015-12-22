@@ -1,6 +1,6 @@
 Package: storr
 Title: Simple Object Storer
-Version: 0.5.0
+Version: 0.5.1
 Description: Creates and manages simple key-value stores.  These can
     use a variety of approaches for storing the data.  This package
     implements the base methods and support for filesystem and

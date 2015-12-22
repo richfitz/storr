@@ -260,7 +260,7 @@
 ##'   \emph{Arguments:}
 ##'   \describe{
 ##'     \item{\code{dest}}{
-##'       A target destination to export objects to; can be a list, environment, or another storr.
+##'       A target destination to export objects to; can be a list, environment, or another storr.  Use \code{list()} to export to a brand new list, or use \code{as.list(object)} for a shorthand.
 ##'     }
 ##'
 ##'     \item{\code{list}}{

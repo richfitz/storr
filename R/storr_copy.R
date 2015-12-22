@@ -82,3 +82,9 @@ export_names <- function(list) {
   }
   names_out
 }
+
+##' @export
+as.list.storr <- function(x, ...) {
+  x <- x$export(list())
+  x
+}

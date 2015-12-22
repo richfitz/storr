@@ -127,7 +127,8 @@ export:
   params:
     dest: >-
       A target destination to export objects to; can be a list,
-      environment, or another storr.
+      environment, or another storr.  Use \code{list()} to export to a
+      brand new list, or use \code{as.list(object)} for a shorthand.
     list: >-
       Names of objects to export, with the same rules as \code{list}
       in \code{$import}.
