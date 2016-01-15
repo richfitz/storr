@@ -91,8 +91,6 @@ driver_redis_api <- function(prefix, con) {
       sprintf("%s:data:%s", self$prefix, hash)
     },
     name_key=function(key, namespace) {
-      ## TODO: document why lists have to be separate to namespaces.
-      ## There is a reason but I forget what it is.
       sprintf("%s:keys:%s:%s", self$prefix, namespace, key)
     }
   ))

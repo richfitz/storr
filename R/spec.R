@@ -70,7 +70,7 @@ test_driver <- function(create) {
   if (standalone) {
     res <- do.call("rbind", lapply(res, as.data.frame))
     ntest <- sum(res$nb)
-    nfail <- sum(res$failed) > 0
+    nfail <- sum(res$failed)
     nerr <- sum(res$error)
     ok <- nfail == 0L && nerr == 0L
     msg <- sprintf("%s: %d %s, %d %s / %s tests total",

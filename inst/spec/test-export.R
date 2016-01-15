@@ -97,21 +97,21 @@ testthat::test_that("import / export", {
   testthat::expect_identical(tmp2$list(), "bar")
   testthat::expect_equal(tmp2$get("bar"), iris, tolerance=1e-15)
 
-  dr2 <- .driver_create()
-  on.exit(dr2$destroy(), add=TRUE)
-  st2 <- storr(dr2)
-  testthat::expect_identical(st2$list(), character(0))
+  dr$destroy()
+  dr <- .driver_create()
+  st <- storr(dr)
+  testthat::expect_identical(st$list(), character(0))
 
-  st2$archive_import(path)
-  testthat::expect_identical(sort(st2$list()), c("a", "b"))
+  st$archive_import(path)
+  testthat::expect_identical(sort(st$list()), c("a", "b"))
 
-  dr3 <- .driver_create()
-  on.exit(dr3$destroy(), add=TRUE)
-  st3 <- storr(dr3)
+  dr$destroy()
+  dr <- .driver_create()
+  st <- storr(dr)
 
-  st3$archive_import(path, c(foo="a"))
-  testthat::expect_identical(st3$list(), "foo")
-  testthat::expect_identical(st3$get("foo"), st2$get("a"))
+  st$archive_import(path, c(foo="a"))
+  testthat::expect_identical(st$list(), "foo")
+  testthat::expect_identical(st$get("foo"), tmp$get("a"))
 })
 
 testthat::test_that("namespace", {
