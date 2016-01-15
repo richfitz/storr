@@ -83,17 +83,17 @@ driver_environment <- function(envir=NULL) {
       self$envir$data[[hash]] <- value
     },
 
-    exists_key=function(key, namespace) {
+    exists_hash=function(key, namespace) {
       exists0(key, self$ensure_envir(namespace))
     },
-    exists_hash=function(hash) {
+    exists_object=function(hash) {
       exists0(hash, self$envir$data)
     },
 
-    del_key=function(key, namespace) {
+    del_hash=function(key, namespace) {
       rm0(key, self$ensure_envir(namespace))
     },
-    del_hash=function(hash) {
+    del_object=function(hash) {
       rm0(hash, self$envir$data)
     },
 

@@ -19,11 +19,11 @@ testthat::test_that("basic (empty)", {
   k <- "bbb"
   ns <- "ns"
 
-  testthat::expect_false(dr$exists_hash(h))
-  testthat::expect_false(dr$exists_key(k, ns))
+  testthat::expect_false(dr$exists_object(h))
+  testthat::expect_false(dr$exists_hash(k, ns))
 
-  testthat::expect_false(dr$del_hash(h))
-  testthat::expect_false(dr$del_key(h, ns))
+  testthat::expect_false(dr$del_object(h))
+  testthat::expect_false(dr$del_hash(h, ns))
 })
 
 testthat::test_that("set", {
@@ -48,18 +48,18 @@ testthat::test_that("set", {
   dr$set_hash(k, ns, h2)
   testthat::expect_identical(dr$get_hash(k, ns), h2)
 
-  testthat::expect_true(dr$exists_hash(h))
-  testthat::expect_true(dr$exists_key(k, ns))
+  testthat::expect_true(dr$exists_object(h))
+  testthat::expect_true(dr$exists_hash(k, ns))
 
   ## Then delete the key:
-  testthat::expect_true(dr$del_key(k, ns))
-  testthat::expect_false(dr$del_key(k, ns))
-  testthat::expect_false(dr$exists_key(k, ns))
+  testthat::expect_true(dr$del_hash(k, ns))
+  testthat::expect_false(dr$del_hash(k, ns))
+  testthat::expect_false(dr$exists_hash(k, ns))
 
   ## And delete the hash:
-  testthat::expect_true(dr$del_hash(h))
-  testthat::expect_false(dr$del_hash(h))
-  testthat::expect_false(dr$exists_hash(h))
+  testthat::expect_true(dr$del_object(h))
+  testthat::expect_false(dr$del_object(h))
+  testthat::expect_false(dr$exists_object(h))
 })
 
 testthat::test_that("namespace", {
@@ -74,30 +74,30 @@ testthat::test_that("namespace", {
 
   dr$set_object(h, d)
   testthat::expect_equal(dr$get_object(h), d, tolerance=1e-15)
-  testthat::expect_true(dr$exists_hash(h))
+  testthat::expect_true(dr$exists_object(h))
 
   dr$set_hash(k, ns, h)
   testthat::expect_identical(dr$get_hash(k, ns), h)
 
   testthat::expect_identical(dr$list_keys(ns), k)
-  testthat::expect_true(dr$exists_key(k, ns))
+  testthat::expect_true(dr$exists_hash(k, ns))
 
-  testthat::expect_true(dr$del_key(k, ns))
-  testthat::expect_false(dr$exists_key(k, ns))
-  testthat::expect_true(dr$exists_hash(h))
+  testthat::expect_true(dr$del_hash(k, ns))
+  testthat::expect_false(dr$exists_hash(k, ns))
+  testthat::expect_true(dr$exists_object(h))
 
   ## Save into a different namespace:
   ns2 <- "another"
   k2 <- "ccc"
 
   dr$set_hash(k2, ns2, h)
-  testthat::expect_true(dr$exists_key(k2, ns2))
+  testthat::expect_true(dr$exists_hash(k2, ns2))
   testthat::expect_identical(dr$get_hash(k2, ns2), h)
 
   testthat::expect_identical(dr$list_keys(ns), character(0))
   testthat::expect_identical(dr$list_keys(ns2), "ccc")
   testthat::expect_identical(dr$list_hashes(), h)
 
-  testthat::expect_true(dr$del_key(k2, ns2))
-  testthat::expect_false(dr$exists_key(k2, ns2))
+  testthat::expect_true(dr$del_hash(k2, ns2))
+  testthat::expect_false(dr$exists_hash(k2, ns2))
 })

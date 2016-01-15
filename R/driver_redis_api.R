@@ -54,17 +54,17 @@ driver_redis_api <- function(prefix, con) {
       self$con$SET(self$name_hash(hash), object_to_bin(value))
     },
 
-    exists_key=function(key, namespace) {
+    exists_hash=function(key, namespace) {
       self$con$EXISTS(self$name_key(key, namespace)) == 1L
     },
-    exists_hash=function(hash) {
+    exists_object=function(hash) {
       self$con$EXISTS(self$name_hash(hash)) == 1L
     },
 
-    del_key=function(key, namespace) {
+    del_hash=function(key, namespace) {
       self$con$DEL(self$name_key(key, namespace)) == 1L
     },
-    del_hash=function(hash) {
+    del_object=function(hash) {
       self$con$DEL(self$name_hash(hash)) == 1L
     },
 

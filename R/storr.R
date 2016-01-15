@@ -124,7 +124,7 @@ storr <- function(driver, default_namespace="objects") {
     },
 
     del=function(key, namespace=self$default_namespace) {
-      invisible(self$driver$del_key(key, namespace))
+      invisible(self$driver$del_hash(key, namespace))
     },
     clear=function(namespace=self$default_namespace) {
       if (is.null(namespace)) {
@@ -134,11 +134,11 @@ storr <- function(driver, default_namespace="objects") {
       }
     },
     exists=function(key, namespace=self$default_namespace) {
-      self$driver$exists_key(key, namespace)
+      self$driver$exists_hash(key, namespace)
     },
 
-    exists_hash=function(hash) {
-      self$driver$exists_hash(hash)
+    exists_object=function(hash) {
+      self$driver$exists_object(hash)
     },
 
     gc=function() {
@@ -152,7 +152,7 @@ storr <- function(driver, default_namespace="objects") {
       if (use_cache && exists0(hash, envir)) {
         value <- envir[[hash]]
       } else {
-        if (!self$driver$exists_hash(hash)) {
+        if (!self$driver$exists_object(hash)) {
           stop(HashError(hash))
         }
         value <- self$driver$get_object(hash)
@@ -165,7 +165,7 @@ storr <- function(driver, default_namespace="objects") {
 
     set_value=function(value, use_cache=TRUE) {
       hash <- hash_object(value)
-      if (!self$driver$exists_hash(hash)) {
+      if (!self$driver$exists_object(hash)) {
         self$driver$set_object(hash, value)
       }
       if (use_cache && !exists0(hash, self$envir)) {
@@ -224,7 +224,7 @@ storr_gc <- function(driver, envir) {
     unique(vcapply(driver$list_keys(i), f, i)))))
   unused <- setdiff(hashes, seen)
   for (h in unused) {
-    driver$del_hash(h)
+    driver$del_object(h)
   }
   rm0(unused, envir)
   invisible(unused)

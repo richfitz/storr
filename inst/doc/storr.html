@@ -10,7 +10,7 @@
 
 <meta name="author" content="Rich FitzJohn" />
 
-<meta name="date" content="2015-12-11" />
+<meta name="date" content="2016-01-15" />
 
 <title>storr</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">storr</h1>
 <h4 class="author"><em>Rich FitzJohn</em></h4>
-<h4 class="date"><em>2015-12-11</em></h4>
+<h4 class="date"><em>2016-01-15</em></h4>
 </div>
 
 
@@ -222,7 +222,7 @@ st$<span class="kw">set</span>(<span class="st">&quot;mykey&quot;</span>, <span 
 ##         value &lt;- envir[[hash]]
 ##     }
 ##     else {
-##         if (!self$driver$exists_hash(hash)) {
+##         if (!self$driver$exists_object(hash)) {
 ##             stop(HashError(hash))
 ##         }
 ##         value &lt;- self$driver$get_object(hash)
@@ -232,18 +232,18 @@ st$<span class="kw">set</span>(<span class="st">&quot;mykey&quot;</span>, <span 
 ##     }
 ##     value
 ## }
-## &lt;environment: 0x7ff5e7c9a590&gt;</code></pre>
+## &lt;environment: 0x7fab429dd190&gt;</code></pre>
 <p>The speed up is going to be fairly context dependent, but 10x seems pretty good in this case (some of the overhead is simply a longer code path as we call out to the driver).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hash &lt;-<span class="st"> </span>st$<span class="kw">get_hash</span>(<span class="st">&quot;mykey&quot;</span>)
 microbenchmark::<span class="kw">microbenchmark</span>(st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">TRUE</span>),
                                st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">FALSE</span>))</code></pre></div>
 <pre><code>## Unit: microseconds
 ##                                   expr    min      lq     mean  median
-##   st$get_value(hash, use_cache = TRUE)  4.750  5.0255  6.39658  6.6900
-##  st$get_value(hash, use_cache = FALSE) 68.543 69.6650 73.25849 70.5575
-##      uq     max neval
-##   6.901  32.300   100
-##  71.908 153.817   100</code></pre>
+##   st$get_value(hash, use_cache = TRUE)  4.847  5.2335  7.40537  6.9685
+##  st$get_value(hash, use_cache = FALSE) 70.222 71.7565 75.18340 72.5035
+##       uq     max neval
+##   7.2565  77.384   100
+##  73.7315 178.731   100</code></pre>
 </div>
 <div id="classed-exceptions" class="section level2">
 <h2>Classed exceptions</h2>
@@ -256,7 +256,7 @@ microbenchmark::<span class="kw">microbenchmark</span>(st$<span class="kw">get_v
 <p>See <code>?tryCatch</code> for details. The idea is that key lookup errors will have the class <code>KeyError</code> so will be caught here and run the given function (the argument <code>e</code> is the actual error object). Other errors will not be caught and will still throw.</p>
 <p><code>HashErrors</code> will be rarer, but could happen (they might occur if your driver supports expiry of objects). We can simulate that by setting a hash and deleting it:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">set</span>(<span class="st">&quot;foo&quot;</span>, letters)
-ok &lt;-<span class="st"> </span>st$driver$<span class="kw">del_hash</span>(st$<span class="kw">get_hash</span>(<span class="st">&quot;foo&quot;</span>))
+ok &lt;-<span class="st"> </span>st$driver$<span class="kw">del_object</span>(st$<span class="kw">get_hash</span>(<span class="st">&quot;foo&quot;</span>))
 st$<span class="kw">flush_cache</span>()
 <span class="kw">tryCatch</span>(st$<span class="kw">get</span>(<span class="st">&quot;foo&quot;</span>),
          <span class="dt">KeyError=</span>function(e) <span class="ot">NULL</span>,

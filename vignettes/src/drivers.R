@@ -25,9 +25,9 @@
 ## Given a driver `dr`, storr retrieves values (`get`) by running:
 
 ## ```r
-## dr$exists_key(key, namespace)
+## dr$exists_hash(key, namespace)
 ## hash <- dr$get_hash(key, namespace)
-## dr$exists_hash(hash)
+## dr$exists_object(hash)
 ## dr$get_object(hash)
 ## ```
 
@@ -45,14 +45,14 @@
 ## of the driver.
 ##
 ## storr will take care of throwing appropriate errors if the object
-## is not found (which requires the calls to `exists_key` and
-## `exists_hash`).
+## is not found (which requires the calls to `exists_hash` and
+## `exists_object`).
 
 ## `set` works in a similar way:
 ##
 ## ```r
 ## hash <- storr:::hash_object(hash)
-## if (!dr$exists_hash(hash)) {
+## if (!dr$exists_object(hash)) {
 ##   dr$set_object(hash, value)
 ## }
 ## dr$set_hash(key, namespace, hash)
@@ -156,16 +156,16 @@ identical(x, value)
 ##   object stored against it.  Deserialisation will likely be needed
 ##   here (e.g., `unserialize(dat)`)
 
-## * `exists_key(key, namespace)` (logical): Given strings for `key` and
+## * `exists_hash(key, namespace)` (logical): Given strings for `key` and
 ##   `namespace` return `TRUE` if there is a hash stored against the
 ##   key/namespace pair, `FALSE` otherwise.
-## * `exists_hash(hash)` (logical): Given a string for `hash`, return
+## * `exists_object(hash)` (logical): Given a string for `hash`, return
 ##   `TRUE` if there is an object stored against the hash.
 
-## * `del_key(key, namespace)` (logical): Given strings for `key` and
+## * `del_hash(key, namespace)` (logical): Given strings for `key` and
 ##   `namespace`, delete this key if it exists.  Return `TRUE` if the key
 ##   existed, `FALSE` otherwise.
-## * `del_hash(hash)` (logical): Given a string for `hash` the object if
+## * `del_object(hash)` (logical): Given a string for `hash` the object if
 ##   it exists.  Return `TRUE` if the hash existed, `FALSE` otherwise.
 
 ## * `list_hashes()` (character vector): Return a character vector of all
@@ -273,23 +273,23 @@ driver_sqlite <- function(path, tbl_data="storr_data", tbl_keys="storr_keys") {
     },
 
     ## Check if a key/namespace pair exists.
-    exists_key=function(key, namespace) {
+    exists_hash=function(key, namespace) {
       sql <- sprintf('SELECT 1 FROM %s WHERE namespace = "%s" AND key = "%s"',
                      self$tbl_keys, namespace, key)
       nrow(DBI::dbGetQuery(self$con, sql)) > 0L
     },
     ## Check if a hash exists
-    exists_hash=function(hash) {
+    exists_object=function(hash) {
       sql <- sprintf('SELECT 1 FROM %s WHERE hash = "%s"',
                      self$tbl_data, hash)
       nrow(DBI::dbGetQuery(self$con, sql)) > 0L
     },
 
     ## Delete a key.  Because of the requirement to return TRUE/FALSE on
-    ## successful/unsuccessful key deletion this includes an exists_key()
+    ## successful/unsuccessful key deletion this includes an exists_hash()
     ## step first.
-    del_key=function(key, namespace) {
-      if (self$exists_key(key, namespace)) {
+    del_hash=function(key, namespace) {
+      if (self$exists_hash(key, namespace)) {
         sql <- sprintf('DELETE FROM %s WHERE namespace = "%s" AND key = "%s"',
                        self$tbl_keys, namespace, key)
         DBI::dbGetQuery(self$con, sql)
@@ -299,8 +299,8 @@ driver_sqlite <- function(path, tbl_data="storr_data", tbl_keys="storr_keys") {
       }
     },
     ## Delete a hash
-    del_hash=function(hash) {
-      if (self$exists_hash(hash)) {
+    del_object=function(hash) {
+      if (self$exists_object(hash)) {
         sql <- sprintf('DELETE FROM %s WHERE hash = "%s"', self$tbl_data, hash)
         DBI::dbGetQuery(self$con, sql)
         TRUE
@@ -333,15 +333,15 @@ dr <- driver_sqlite(":memory:")
 ## hashes in the database:
 dr$list_hashes()
 
-## so `exists_hash` returns `FALSE`:
+## so `exists_object` returns `FALSE`:
 hash <- digest::digest(mtcars)
-dr$exists_hash(hash)
+dr$exists_object(hash)
 
 ## We can set an object against a hash:
 dr$set_object(hash, mtcars)
 
-## and then `exists_hash` will return `TRUE`
-dr$exists_hash(hash)
+## and then `exists_object` will return `TRUE`
+dr$exists_object(hash)
 
 ## and we can retrieve the object:
 head(dr$get_object(hash))
@@ -350,11 +350,11 @@ head(dr$get_object(hash))
 dr$list_hashes()
 
 ## Delete the hash:
-dr$del_hash(hash)
+dr$del_object(hash)
 
 ## And it's gone:
 dr$list_hashes()
-dr$exists_hash(hash)
+dr$exists_object(hash)
 
 ## Set up a key
 key <- "aaa"
@@ -362,7 +362,7 @@ namespace <- "ns"
 dr$set_hash(key, namespace, hash)
 
 ## Which now exists:
-dr$exists_key(key, namespace)
+dr$exists_hash(key, namespace)
 
 ## And can be listed:
 dr$list_keys(namespace)
@@ -370,8 +370,8 @@ dr$list_keys(namespace)
 ## and the hash against the key returned:
 dr$get_hash(key, namespace)
 
-dr$del_key(key, namespace)
-dr$exists_key(key, namespace)
+dr$del_hash(key, namespace)
+dr$exists_hash(key, namespace)
 dr$list_keys(namespace)
 
 ## OK, so this *seems* to be working.  But how do we test if it is

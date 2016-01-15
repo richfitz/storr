@@ -27,21 +27,21 @@ testthat::test_that("simple", {
   testthat::expect_is(st, "storr")
   testthat::expect_is(st, "storr_external")
 
-  testthat::expect_false(st$driver$exists_key(key, ns))
-  testthat::expect_false(st$driver$exists_hash(hash))
+  testthat::expect_false(st$driver$exists_hash(key, ns))
+  testthat::expect_false(st$driver$exists_object(hash))
 
   testthat::expect_false(st$exists(key, ns))
-  testthat::expect_false(st$exists_hash(hash))
+  testthat::expect_false(st$exists_object(hash))
 
   testthat::expect_identical(st$list(ns), character(0))
 
   d <- st$get(key, ns)
   testthat::expect_equal(d, dat, tolerance=1e-15)
 
-  testthat::expect_true(st$driver$exists_key(key, ns))
-  testthat::expect_true(st$driver$exists_hash(hash))
+  testthat::expect_true(st$driver$exists_hash(key, ns))
+  testthat::expect_true(st$driver$exists_object(hash))
   testthat::expect_true(st$exists(key, ns))
-  testthat::expect_true(st$exists_hash(hash))
+  testthat::expect_true(st$exists_object(hash))
 
   ## We hit the cache on the way in:
   testthat::expect_equal(ls(st$envir), hash)

@@ -208,7 +208,7 @@ tryCatch(st$get("no_such_key"),
 ## setting a hash and deleting it:
 ##
 st$set("foo", letters)
-ok <- st$driver$del_hash(st$get_hash("foo"))
+ok <- st$driver$del_object(st$get_hash("foo"))
 st$flush_cache()
 tryCatch(st$get("foo"),
          KeyError=function(e) NULL,

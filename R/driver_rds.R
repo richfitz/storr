@@ -139,17 +139,17 @@ driver_rds <- function(path, compress=TRUE, mangle_key=NULL) {
       saveRDS(value, self$name_hash(hash), compress=self$compress)
     },
 
-    exists_key=function(key, namespace) {
+    exists_hash=function(key, namespace) {
       file.exists(self$name_key(key, namespace))
     },
-    exists_hash=function(hash) {
+    exists_object=function(hash) {
       file.exists(self$name_hash(hash))
     },
 
-    del_key=function(key, namespace) {
+    del_hash=function(key, namespace) {
       file_remove(self$name_key(key, namespace))
     },
-    del_hash=function(hash) {
+    del_object=function(hash) {
       file_remove(self$name_hash(hash))
     },
 
