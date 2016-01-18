@@ -29,6 +29,7 @@ driver_redis_api <- function(prefix, con) {
   public=list(
     con=NULL,
     prefix=NULL,
+    traits=list(accept_raw=TRUE),
     initialize=function(prefix, con) {
       self$prefix <- prefix
       self$con <- con
@@ -48,10 +49,11 @@ driver_redis_api <- function(prefix, con) {
       self$con$SET(self$name_key(key, namespace), hash)
     },
     get_object=function(hash) {
-      bin_to_object(self$con$GET(self$name_hash(hash)))
+      unserialize(self$con$GET(self$name_hash(hash)))
     },
     set_object=function(hash, value) {
-      self$con$SET(self$name_hash(hash), object_to_bin(value))
+      assert_raw(value)
+      self$con$SET(self$name_hash(hash), value)
     },
 
     exists_hash=function(key, namespace) {
@@ -95,11 +97,6 @@ driver_redis_api <- function(prefix, con) {
     }
   ))
 
-## TODO: Allow string serialisation here optionally, and set that in
-## the config part of the driver (similar to to the way that mangling
-## is done in the rds driver).
-object_to_bin <- function(x) serialize(x, NULL)
-bin_to_object <- function(x) unserialize(x)
 redis_drop_keys <- function(con, pattern) {
   del <- redis_list_keys(con, pattern)
   if (length(del) > 0) {

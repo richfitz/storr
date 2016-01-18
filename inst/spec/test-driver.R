@@ -36,7 +36,11 @@ testthat::test_that("set", {
   k <- "bbb"
   ns <- "ns"
 
-  dr$set_object(h, d)
+  if (isTRUE(dr$traits[["accept_raw"]])) {
+    dr$set_object(h, serialize(d, NULL))
+  } else {
+    dr$set_object(h, d)
+  }
   testthat::expect_equal(dr$get_object(h), d, tolerance=1e-15)
 
   ## Then, set a key to address that hash:
@@ -72,7 +76,11 @@ testthat::test_that("namespace", {
   k <- "bbb"
   ns <- "ns"
 
-  dr$set_object(h, d)
+  if (isTRUE(dr$traits[["accept_raw"]])) {
+    dr$set_object(h, serialize(d, NULL))
+  } else {
+    dr$set_object(h, d)
+  }
   testthat::expect_equal(dr$get_object(h), d, tolerance=1e-15)
   testthat::expect_true(dr$exists_object(h))
 

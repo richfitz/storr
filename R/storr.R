@@ -84,10 +84,12 @@ storr <- function(driver, default_namespace="objects") {
     driver=NULL,
     envir=NULL,
     default_namespace=NULL,
+    traits=NULL,
     initialize=function(driver, default_namespace) {
       self$driver <- driver
       self$envir <- new.env(parent=emptyenv())
       self$default_namespace <- default_namespace
+      self$traits <- storr_traits(driver$traits)
     },
 
     destroy=function() {
@@ -164,9 +166,18 @@ storr <- function(driver, default_namespace="objects") {
     },
 
     set_value=function(value, use_cache=TRUE) {
-      hash <- hash_object(value)
+      if (self$traits$accept_raw) {
+        value_dr <- serialize(value, NULL)
+        hash <- hash_object(value_dr, serialize=FALSE, skip=14L)
+      } else {
+        value_dr <- value
+        hash <- hash_object(value)
+      }
+
+      ## NOTE: This exists/set roundtrip here always seems useful to
+      ## avoid sending (potentially large) data over a connection.
       if (!self$driver$exists_object(hash)) {
-        self$driver$set_object(hash, value)
+        self$driver$set_object(hash, value_dr)
       }
       if (use_cache && !exists0(hash, self$envir)) {
         assign(hash, value, self$envir)

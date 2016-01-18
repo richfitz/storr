@@ -79,6 +79,7 @@ driver_rds <- function(path, compress=TRUE, mangle_key=NULL) {
     path=NULL,
     compress=NULL,
     mangle_key=NULL,
+    traits=list(accept_raw=TRUE),
     initialize=function(path, compress, mangle_key) {
       dir_create(path)
       dir_create(file.path(path, "data"))
@@ -136,7 +137,11 @@ driver_rds <- function(path, compress=TRUE, mangle_key=NULL) {
       readRDS(self$name_hash(hash))
     },
     set_object=function(hash, value) {
-      saveRDS(value, self$name_hash(hash), compress=self$compress)
+      assert_raw(value)
+      filename <- self$name_hash(hash)
+      con <- (if (self$compress) gzfile else file)(filename, "wb")
+      on.exit(close(con))
+      writeBin(value, con)
     },
 
     exists_hash=function(key, namespace) {

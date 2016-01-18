@@ -1,5 +1,5 @@
-hash_object <- function(x) {
-  digest::digest(x)
+hash_object <- function(x, ...) {
+  digest::digest(x, algo="md5", ...)
 }
 
 hash_string <- function(str) {
@@ -70,6 +70,11 @@ assert_scalar_logical <- function(x, name=deparse(substitute(x))) {
   assert_logical(x, name)
 }
 
+assert_raw <- function(x, name=deparse(substitute(x))) {
+  if (!is.raw(x)) {
+    stop(sprintf("%s must be raw", name), call.=FALSE)
+  }
+}
 
 dir_create <- function(path) {
   if (!file.exists(path)) {
@@ -99,4 +104,13 @@ reclass_R6 <- function(x, cl) {
     class(x) <- cl
   }
   x
+}
+
+## TODO: This does not support alternative serialisation (yet), or
+## dealing with things that have been string serialised (see
+## redis_api).  To fix, look at readRDS' source code and work out how
+## it determines if the file is the correct format.
+RAW_HEADER <- as.raw(c(88L, 10L, 0))
+is_serialized <- function(x) {
+  is.raw(x) && length(x) > 3L && identical(x[1:3], RAW_HEADER)
 }

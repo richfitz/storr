@@ -35,8 +35,9 @@ testthat::test_that("basic", {
   d <- runif(100)
   hash <- hash_object(d)
 
-  cache$set("aaa", d)
+  res <- cache$set("aaa", d)
 
+  testthat::expect_identical(res, hash)
   testthat::expect_identical(cache$list(), "aaa")
   testthat::expect_identical(cache$list_hashes(), hash)
   testthat::expect_identical(cache$get_hash("aaa"), hash)
