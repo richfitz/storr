@@ -29,7 +29,7 @@ driver_redis_api <- function(prefix, con) {
   public=list(
     con=NULL,
     prefix=NULL,
-    traits=list(accept_raw=TRUE),
+    traits=list(accept_raw=TRUE, throw_missing=TRUE),
     initialize=function(prefix, con) {
       self$prefix <- prefix
       self$con <- con
@@ -43,13 +43,21 @@ driver_redis_api <- function(prefix, con) {
     },
 
     get_hash=function(key, namespace) {
-      self$con$GET(self$name_key(key, namespace))
+      res <- self$con$GET(self$name_key(key, namespace))
+      if (is.null(res)) {
+        stop("No such hash")
+      }
+      res
     },
     set_hash=function(key, namespace, hash) {
       self$con$SET(self$name_key(key, namespace), hash)
     },
     get_object=function(hash) {
-      unserialize(self$con$GET(self$name_hash(hash)))
+      res <- self$con$GET(self$name_hash(hash))
+      if (is.null(res)) {
+        stop("No such object")
+      }
+      unserialize(res)
     },
     set_object=function(hash, value) {
       assert_raw(value)

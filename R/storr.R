@@ -118,10 +118,15 @@ storr <- function(driver, default_namespace="objects") {
     },
 
     get_hash=function(key, namespace=self$default_namespace) {
-      if (self$exists(key, namespace)) {
-        self$driver$get_hash(key, namespace)
+      if (self$traits$throw_missing) {
+        tryCatch(self$driver$get_hash(key, namespace),
+                 error=function(e) stop(KeyError(key, namespace)))
       } else {
-        stop(KeyError(key, namespace))
+        if (self$exists(key, namespace)) {
+          self$driver$get_hash(key, namespace)
+        } else {
+          stop(KeyError(key, namespace))
+        }
       }
     },
 
@@ -154,10 +159,15 @@ storr <- function(driver, default_namespace="objects") {
       if (use_cache && exists0(hash, envir)) {
         value <- envir[[hash]]
       } else {
-        if (!self$driver$exists_object(hash)) {
-          stop(HashError(hash))
+        if (self$traits$throw_missing) {
+          value <- tryCatch(self$driver$get_object(hash),
+                            error=function(e) stop(HashError(hash)))
+        } else {
+          if (!self$driver$exists_object(hash)) {
+            stop(HashError(hash))
+          }
+          value <- self$driver$get_object(hash)
         }
-        value <- self$driver$get_object(hash)
         if (use_cache) {
           envir[[hash]] <- value
         }

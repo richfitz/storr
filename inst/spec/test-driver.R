@@ -109,3 +109,14 @@ testthat::test_that("namespace", {
   testthat::expect_true(dr$del_hash(k2, ns2))
   testthat::expect_false(dr$exists_hash(k2, ns2))
 })
+
+testthat::test_that("traits: throw_missing", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+
+  if (isTRUE(dr$traits[["throw_missing"]])) {
+    str <- paste(sample(letters), collapse="")
+    testthat::expect_error(dr$get_hash(str, "objects"))
+    testthat::expect_error(dr$get_object(hash_object(str)))
+  }
+})
