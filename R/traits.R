@@ -3,8 +3,6 @@
 ## things.  For rds it's about even.
 storr_traits_default <- function() {
   list(accept_raw=FALSE,
-       bulk_get=FALSE,
-       bulk_set=FALSE,
        throw_missing=FALSE)
 }
 
