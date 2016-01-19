@@ -1,9 +1,9 @@
 Package: storr
-Title: Simple Object Storer
-Version: 0.6.0
+Title: Simple Key Value Stores
+Version: 1.0.0
 Description: Creates and manages simple key-value stores.  These can
     use a variety of approaches for storing the data.  This package
-    implements the base methods and support for filesystem and
+    implements the base methods and support for file system and
     in-memory stores.  A vignette shows how additional drivers can be
     created, and stubs exist for supporting 'Redis' databases.
 Depends:
