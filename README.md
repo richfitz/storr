@@ -10,7 +10,7 @@ Simple object cacher for R.  `storr` acts as a very simple key-value store (supp
 * Pluggable storage backends - currently
   - environment (memory)
   - rds (disk)
-  - [Redis](http://redis.io) (via [redux](https://github.com/richfitz/redux) & [RedisAPI](https://github.com/ropensci/RedisAPI))
+  - Redis (`http://redis.io`) (via [redux](https://github.com/richfitz/redux) & [RedisAPI](https://github.com/ropensci/RedisAPI))
   - [rlite](https://github.com/seppo0010/rlite) (via [rrlite](https://github.com/ropensci/rrlite) & [RedisAPI](https://github.com/ropensci/RedisAPI))
 * Future backends might include
   - git via [git2r](https://github.com/ropensci/git2r)
