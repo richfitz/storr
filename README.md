@@ -1,6 +1,7 @@
 # storr
 
 [![Build Status](https://travis-ci.org/richfitz/storr.png?branch=master)](https://travis-ci.org/richfitz/storr)
+[![](http://www.r-pkg.org/badges/version/storr)](http://cran.rstudio.com/web/packages/storr/index.html)
 
 Simple object cacher for R.  `storr` acts as a very simple key-value store (supporting `get`/`set`/`del` for arbitrary R objects as data and as keys).  The actual storage can be transient or persistent, local or distributed without changing the interface.  To allow for distributed access, data is returned by *content* rather than simply by key (with a key/content lookup step) so that if another process changes the data, `storr` will retrieve the current version.
 
@@ -20,6 +21,14 @@ Simple object cacher for R.  `storr` acts as a very simple key-value store (supp
 storr always goes back to the common storage (database, filesystem, whatever) for the current object -> hash mapping but when retrieving the data given a hash hash we can often do that without accessing the underlying storage.  This means that repeated lookups happen quickly while still being able to reflect changes elsewhere.
 
 # Installation
+
+From CRAN
+
+```r
+install.packages("storr")
+```
+
+or install the development version with
 
 ```
 devtools::install_github("richfitz/storr")
