@@ -38,8 +38,8 @@ indent <- function(str, n, pad=NULL) {
 }
 
 format_params <- function(xp) {
-  fmt1 <- "\\describe{\n%s\n}"
-  fmt2 <- "\\item{\\code{%s}}{\n%s\n}\n"
+  fmt1 <- "\\itemize{\n%s\n}"
+  fmt2 <- "\\item{\\code{%s}: %s\n}\n"
   pars <- sprintf(fmt2, names(xp), indent(unlist(xp), 2))
   sprintf(fmt1, indent(paste(pars, collapse="\n"), 2))
 }
@@ -81,7 +81,7 @@ format_method <- function(x) {
 }
 
 strip_trailing_whitespace <- function(x) {
-  gsub("[ t]+(\n|$)", "\\1", x)
+  gsub("[ \t]+(\n|$)", "\\1", x)
 }
 
 format_class <- function(x) {
@@ -107,7 +107,8 @@ yaml_read <- function(filename) {
 
 process_storr <- function() {
   dat <- add_usage(yaml_read("man-roxygen/storr.yml"), storr_environment())
-  writeLines(format_class(dat), "man-roxygen/storr_methods.R")
+  str <- format_class(dat)
+  writeLines(str, "man-roxygen/storr_methods.R")
 }
 
 if (!interactive() && identical(commandArgs(TRUE), "process")) {

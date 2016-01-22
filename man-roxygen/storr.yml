@@ -80,8 +80,8 @@ exists:
   params:
     key: *key
     namespace: *ns
-exists_hash:
-  short: Test if a hash exists within the storr
+exists_object:
+  short: Test if an object with a given hash exists within the storr
   params:
     hash: Hash to test
 gc:
