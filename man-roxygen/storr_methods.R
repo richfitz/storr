@@ -56,7 +56,7 @@
 ##'   }
 ##' }
 ##' \item{\code{get}}{
-##'   Retrieve an object from the storr.  If the requested value is not found thena \code{KeyError} will be raised (an R error, but can be caught with \code{tryCatch}.  See the "storr" vignette.
+##'   Retrieve an object from the storr.  If the requested value is not found then a \code{KeyError} will be raised (an R error, but can be caught with \code{tryCatch}; see the "storr" vignette).
 ##'
 ##'   \emph{Usage:}
 ##'   \code{get(key, namespace = self$default_namespace, use_cache = TRUE)}
@@ -107,7 +107,7 @@
 ##'   \code{TRUE} if an object was deleted, \code{FALSE} otherwise.
 ##' }
 ##' \item{\code{clear}}{
-##'   Clear a storr.  This function might be slow as it will iterate over each key.  Future versions of storr might allow drivers to implement a clear method that will allow faster clearing.
+##'   Clear a storr.  This function might be slow as it will iterate over each key.  Future versions of storr might allow drivers to implement a bulk clear method that will allow faster clearing.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{clear(namespace = self$default_namespace)}
@@ -170,7 +170,7 @@
 ##'   The object if it is present, otherwise throw a \code{HashError}.
 ##' }
 ##' \item{\code{set_value}}{
-##'   Set a hash to a value.  You will not need to use this very often, but it is used internally.
+##'   Add an object value, but don't add a key.  You will not need to use this very often, but it is used internally.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{set_value(value, use_cache = TRUE)}

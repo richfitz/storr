@@ -18,7 +18,7 @@ Simple object cacher for R.  `storr` acts as a very simple key-value store (supp
   - leveldb via [RcppLevelDB](https://github.com/gokceneraslan/rcppleveldb)
   - [dat](http://dat-data.com)
 
-storr always goes back to the common storage (database, filesystem, whatever) for the current object -> hash mapping but when retrieving the data given a hash hash we can often do that without accessing the underlying storage.  This means that repeated lookups happen quickly while still being able to reflect changes elsewhere.
+`storr` always goes back to the common storage (database, filesystem, whatever) for the current object -> hash mapping but when retrieving the data given a hash hash we can often do that without accessing the underlying storage.  This means that repeated lookups happen quickly while still being able to reflect changes elsewhere.
 
 # Installation
 
@@ -36,7 +36,7 @@ devtools::install_github("richfitz/storr")
 
 # Documentation
 
-storr comes with three vignettes:
+`storr` comes with three vignettes:
 
 * [storr](http://richfitz.github.io/storr/vignettes/storr.html) `vignette("storr")` outlines basic use and core implementation details.
 * [external](http://richfitz.github.io/storr/vignettes/external.html) `vignette("external")` shows how to use storr to cache external resources such as files, web resources, etc, using the `storr_external` object.

@@ -7,12 +7,25 @@
 fetch_hook_read(fpath, fread)
 }
 \arguments{
-\item{fpath}{Function to convert \code{key, namespace} into a file path}
+\item{fpath}{Function to convert \code{key, namespace} into a file
+path}
 
-\item{fread}{Function for converting \code{filename} into an R pobject}
+\item{fread}{Function for converting \code{filename} into an R
+pobject}
 }
 \description{
-Hook to fetch a resource from a file, for use with driver_external
+Hook to fetch a resource from a file, for use with
+driver_external.  We take two functions as arguments: the first
+converts a key/namespace pair into a filename, and the second
+reads from that filename.  Because many R functions support
+reading from URLs \code{fetch_hook_read} can be used to read from
+remote resources.
+}
+\details{
+For more information about using this, see
+\code{\link{storr_external}} (this can be used as a
+\code{fetch_hook} argument) and the vignette:
+\code{vignette("external")}
 }
 \examples{
 hook <- fetch_hook_read(

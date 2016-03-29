@@ -1,5 +1,6 @@
-##' RDS object cache driver.  This driver saves objects in a number of
-##' rds files (see \code{\link{saveRDS}}) on the filesystem.
+##' Object cache driver that saves objects using R's native
+##' serialised file format (see \code{\link{saveRDS}}) on the
+##' filesystem.
 ##'
 ##' The \code{mangle_key} argument will run each key that is created
 ##' through a "base 64" encoding.  This means that keys that include
@@ -12,7 +13,7 @@
 ##' different.
 ##'
 ##' Note that the \emph{namespace} is not mangled (at least not yet)
-##' so needs to be a valid filename.
+##' so needs to contain characters that are valid in a filename.
 ##'
 ##' Because the actual file will be stored with mangled names it is
 ##' not safe to use the same path for a storr with and without
@@ -20,7 +21,7 @@
 ##' is set.  Using \code{mangle_key=NULL} uses whatever mangledness
 ##' exists (or no mangledness if creating a new storr).
 ##'
-##' @title RDS object cache driver
+##' @title rds object cache driver
 ##' @param path Path for the store.  \code{tempdir()} is a good choice
 ##'   for ephemeral storage, The \code{rappdirs} package (on CRAN)
 ##'   might be nice for persistent application data.

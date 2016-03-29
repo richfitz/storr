@@ -3,7 +3,7 @@
 \name{storr_rds}
 \alias{driver_rds}
 \alias{storr_rds}
-\title{RDS object cache driver}
+\title{rds object cache driver}
 \usage{
 storr_rds(path, compress = TRUE, mangle_key = NULL,
   default_namespace = "objects")
@@ -25,8 +25,9 @@ using base64 before saving to the filesystem.  See Details.}
 \code{\link{storr}}).}
 }
 \description{
-RDS object cache driver.  This driver saves objects in a number of
-rds files (see \code{\link{saveRDS}}) on the filesystem.
+Object cache driver that saves objects using R's native
+serialised file format (see \code{\link{saveRDS}}) on the
+filesystem.
 }
 \details{
 The \code{mangle_key} argument will run each key that is created
@@ -40,7 +41,7 @@ with unmangled keys but the names of the stored files will be
 different.
 
 Note that the \emph{namespace} is not mangled (at least not yet)
-so needs to be a valid filename.
+so needs to contain characters that are valid in a filename.
 
 Because the actual file will be stored with mangled names it is
 not safe to use the same path for a storr with and without

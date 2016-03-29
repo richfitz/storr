@@ -47,8 +47,8 @@ set_by_value:
 get:
   short: >-
     Retrieve an object from the storr.  If the requested value is not
-    found thena \code{KeyError} will be raised (an R error, but can be
-    caught with \code{tryCatch}.  See the "storr" vignette.
+    found then a \code{KeyError} will be raised (an R error, but can be
+    caught with \code{tryCatch}; see the "storr" vignette).
   params:
     key: &key_get The name of the key to get.
     namespace: &ns_get Optional namespace to look for the key within.
@@ -70,7 +70,7 @@ clear:
   short: >-
     Clear a storr.  This function might be slow as it will iterate
     over each key.  Future versions of storr might allow drivers to
-    implement a clear method that will allow faster clearing.
+    implement a bulk clear method that will allow faster clearing.
   params:
     namespace: >-
       A namespace, to clear a single namespace, or \code{NULL} to
@@ -100,8 +100,8 @@ get_value:
   value: The object if it is present, otherwise throw a \code{HashError}.
 set_value:
   short: >-
-    Set a hash to a value.  You will not need to use this very often,
-    but it is used internally.
+    Add an object value, but don't add a key.  You will not need to
+    use this very often, but it is used internally.
   params:
     value: An R object to set.
     use_cache: *use_cache

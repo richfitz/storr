@@ -27,10 +27,16 @@ are three in the package: \code{\link{driver_environment}} for
 ephemeral in-memory storage, \code{\link{driver_rds}} for
 serialised storage to disk and \code{\link{driver_redis_api}}
 which stores data in Redis but requires packages that are not on
-CRAN to function (ropensci/RedisAPI and one of ropensci/rrlite or
-richfitz/redux).  New drivers are relatively easy to add -- see
-the "drivers" vignette (\code{vignette("drivers",
-package="storr")}).
+CRAN to function
+(\href{https://github.com/ropensci/RedisAPI}{RedisAPI} and one of
+\href{https://github.com/ropensci/rrlite}{rrlite} or
+\href{https://github.com/ropensci/redux}{redux}).  New drivers are
+relatively easy to add -- see the "drivers" vignette
+(\code{vignette("drivers", package="storr")}).
+
+There are convenience functions (e.g.,
+\code{\link{storr_environment}} and \code{\link{storr_rds}}) that
+may be more convenient to use than this function.
 
 Once a storr has been made it provides a number of methods.
 Because storr uses \code{R6} (\code{\link{R6Class}}) objects, each
@@ -102,7 +108,7 @@ the action (get, set, del, list, import, export) will affect the
   }
 }
 \item{\code{get}}{
-  Retrieve an object from the storr.  If the requested value is not found thena \code{KeyError} will be raised (an R error, but can be caught with \code{tryCatch}.  See the "storr" vignette.
+  Retrieve an object from the storr.  If the requested value is not found then a \code{KeyError} will be raised (an R error, but can be caught with \code{tryCatch}; see the "storr" vignette).
 
   \emph{Usage:}
   \code{get(key, namespace = self$default_namespace, use_cache = TRUE)}
@@ -153,7 +159,7 @@ the action (get, set, del, list, import, export) will affect the
   \code{TRUE} if an object was deleted, \code{FALSE} otherwise.
 }
 \item{\code{clear}}{
-  Clear a storr.  This function might be slow as it will iterate over each key.  Future versions of storr might allow drivers to implement a clear method that will allow faster clearing.
+  Clear a storr.  This function might be slow as it will iterate over each key.  Future versions of storr might allow drivers to implement a bulk clear method that will allow faster clearing.
 
   \emph{Usage:}
   \code{clear(namespace = self$default_namespace)}
@@ -216,7 +222,7 @@ the action (get, set, del, list, import, export) will affect the
   The object if it is present, otherwise throw a \code{HashError}.
 }
 \item{\code{set_value}}{
-  Set a hash to a value.  You will not need to use this very often, but it is used internally.
+  Add an object value, but don't add a key.  You will not need to use this very often, but it is used internally.
 
   \emph{Usage:}
   \code{set_value(value, use_cache = TRUE)}

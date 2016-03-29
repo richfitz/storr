@@ -11,16 +11,24 @@ storr_external(storage_driver, fetch_hook, default_namespace = "objects")
 actual storage.}
 
 \item{fetch_hook}{A function to run to fetch data when a key is
-not found in the store.  This function must throw an error (of
-any type) if the external resource cannot be resolved.}
+not found in the store.  This function must take arguments
+\code{key} and \code{namespace} and return an R object.  It must
+throw an error if the external resource cannot be resolved.}
 
 \item{default_namespace}{Default namespace (see
 \code{\link{storr}})}
 }
 \description{
-storr for fetching external resources.  This does not do a full
-cascade (that will be implemented elsewhere) but does a very
-simple pattern where if a key cannot be found in the storr we go
-out to some external source to find it.
+storr for fetching external resources.  This driver is used where
+will try to fetch from an external data source if a resource can
+not be found locally.  This works by checking to see if a key is
+present in the storr (and if so returning it).  If it is not
+found, then the function \code{fetch_hook} is run to fetch it.
+}
+\details{
+See the vignette \code{vignette("external")} for much more detail.
+This function is likely most useful for things like caching
+resources from websites, or computing long-running quantities on
+demand.
 }
 

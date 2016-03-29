@@ -9,10 +9,16 @@
 ##' ephemeral in-memory storage, \code{\link{driver_rds}} for
 ##' serialised storage to disk and \code{\link{driver_redis_api}}
 ##' which stores data in Redis but requires packages that are not on
-##' CRAN to function (ropensci/RedisAPI and one of ropensci/rrlite or
-##' richfitz/redux).  New drivers are relatively easy to add -- see
-##' the "drivers" vignette (\code{vignette("drivers",
-##' package="storr")}).
+##' CRAN to function
+##' (\href{https://github.com/ropensci/RedisAPI}{RedisAPI} and one of
+##' \href{https://github.com/ropensci/rrlite}{rrlite} or
+##' \href{https://github.com/ropensci/redux}{redux}).  New drivers are
+##' relatively easy to add -- see the "drivers" vignette
+##' (\code{vignette("drivers", package="storr")}).
+##'
+##' There are convenience functions (e.g.,
+##' \code{\link{storr_environment}} and \code{\link{storr_rds}}) that
+##' may be more convenient to use than this function.
 ##'
 ##' Once a storr has been made it provides a number of methods.
 ##' Because storr uses \code{R6} (\code{\link{R6Class}}) objects, each
