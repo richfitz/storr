@@ -27,10 +27,11 @@ st <- storr::storr_rds(path)
 ## Alternatively you can create the driver explicitly:
 ###+ eval=FALSE
 dr <- storr::driver_rds(path)
-st <- storr::storr(dr)
 
 ## With this driver object we can create the `storr` object which is
 ## what we actually interact with:
+###+ eval=FALSE
+st <- storr::storr(dr)
 
 ## # Key-value store
 
@@ -50,7 +51,7 @@ st$exists("mykey")
 
 st$exists("another_key")
 
-## To delete it:
+## To delete a key:
 st$del("mykey")
 
 ## It's gone!

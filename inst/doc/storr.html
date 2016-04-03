@@ -10,7 +10,7 @@
 
 <meta name="author" content="Rich FitzJohn" />
 
-<meta name="date" content="2016-01-15" />
+<meta name="date" content="2016-04-03" />
 
 <title>storr</title>
 
@@ -72,7 +72,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">storr</h1>
 <h4 class="author"><em>Rich FitzJohn</em></h4>
-<h4 class="date"><em>2016-01-15</em></h4>
+<h4 class="date"><em>2016-04-03</em></h4>
 </div>
 
 
@@ -82,9 +82,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">path &lt;-<span class="st"> </span><span class="kw">tempfile</span>(<span class="st">&quot;storr_&quot;</span>)
 st &lt;-<span class="st"> </span>storr::<span class="kw">storr_rds</span>(path)</code></pre></div>
 <p>Alternatively you can create the driver explicitly:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dr &lt;-<span class="st"> </span>storr::<span class="kw">driver_rds</span>(path)
-st &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(dr)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dr &lt;-<span class="st"> </span>storr::<span class="kw">driver_rds</span>(path)</code></pre></div>
 <p>With this driver object we can create the <code>storr</code> object which is what we actually interact with:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(dr)</code></pre></div>
 <div id="key-value-store" class="section level1">
 <h1>Key-value store</h1>
 <p>The main way of interacting with a <code>storr</code> object is <code>get</code>/<code>set</code>/<code>del</code> for getting, setting and deleting data stored at some key. To store data:</p>
@@ -106,7 +106,7 @@ st &lt;-<span class="st"> </span>storr::<span class="kw">storr</span>(dr)</code>
 <pre><code>## [1] TRUE</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">exists</span>(<span class="st">&quot;another_key&quot;</span>)</code></pre></div>
 <pre><code>## [1] FALSE</code></pre>
-<p>To delete it:</p>
+<p>To delete a key:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">del</span>(<span class="st">&quot;mykey&quot;</span>)</code></pre></div>
 <p>It’s gone!</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">st$<span class="kw">list</span>()</code></pre></div>
@@ -222,28 +222,33 @@ st$<span class="kw">set</span>(<span class="st">&quot;mykey&quot;</span>, <span 
 ##         value &lt;- envir[[hash]]
 ##     }
 ##     else {
-##         if (!self$driver$exists_object(hash)) {
-##             stop(HashError(hash))
+##         if (self$traits$throw_missing) {
+##             value &lt;- tryCatch(self$driver$get_object(hash), error = function(e) stop(HashError(hash)))
 ##         }
-##         value &lt;- self$driver$get_object(hash)
+##         else {
+##             if (!self$driver$exists_object(hash)) {
+##                 stop(HashError(hash))
+##             }
+##             value &lt;- self$driver$get_object(hash)
+##         }
 ##         if (use_cache) {
 ##             envir[[hash]] &lt;- value
 ##         }
 ##     }
 ##     value
 ## }
-## &lt;environment: 0x7fab429dd190&gt;</code></pre>
+## &lt;environment: 0x7fd43af3f9c0&gt;</code></pre>
 <p>The speed up is going to be fairly context dependent, but 10x seems pretty good in this case (some of the overhead is simply a longer code path as we call out to the driver).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hash &lt;-<span class="st"> </span>st$<span class="kw">get_hash</span>(<span class="st">&quot;mykey&quot;</span>)
 microbenchmark::<span class="kw">microbenchmark</span>(st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">TRUE</span>),
                                st$<span class="kw">get_value</span>(hash, <span class="dt">use_cache=</span><span class="ot">FALSE</span>))</code></pre></div>
 <pre><code>## Unit: microseconds
 ##                                   expr    min      lq     mean  median
-##   st$get_value(hash, use_cache = TRUE)  4.847  5.2335  7.40537  6.9685
-##  st$get_value(hash, use_cache = FALSE) 70.222 71.7565 75.18340 72.5035
+##   st$get_value(hash, use_cache = TRUE)  4.705  5.1970  7.41581  6.7845
+##  st$get_value(hash, use_cache = FALSE) 72.279 73.4535 76.78699 74.3305
 ##       uq     max neval
-##   7.2565  77.384   100
-##  73.7315 178.731   100</code></pre>
+##   7.0415  37.597   100
+##  75.2900 163.055   100</code></pre>
 </div>
 <div id="classed-exceptions" class="section level2">
 <h2>Classed exceptions</h2>

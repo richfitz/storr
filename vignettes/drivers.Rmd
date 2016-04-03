@@ -20,9 +20,8 @@ To demonstrate we'll write a wrapper around RSQLite to store data.
 
 # How it works and what we need
 
-The required methods are:
-
-Given a driver `dr`, storr retrieves values (`get`) by running:
+First, consider the `get` method in storr.  With a driver `dr`,
+storr retrieves values by running:
 
 ```r
 dr$exists_hash(key, namespace)
@@ -67,21 +66,19 @@ actual data is likely to be the slowest part it's worth avoiding).
 the hash.
 2. store the hash against the key and namespace.
 
-The total list of required functions is:
-
-(see TODO.md)
+The full list of functions needed follows the next section.
 
 ## A digression: key/value stores and SQL
 
-SQL data bases are probably not going to be a great place to store
+SQL databases are probably not going to be a great place to store
 key/value data (especially very large objects) and this section is
 not meant to be normative.  Instead, this is one possible route
 that could be taken.  Recent version of postgresql include
 interfaces that support first class key/value (`hstore`) which
 would be prefereable to this.
 
-Details from
-[here](http://jfaganuk.github.io/2015/01/12/storing-r-objects-in-sqlite-tables/)
+The details come from
+[here](http://jfaganuk.github.io/2015/01/12/storing-r-objects-in-sqlite-tables/), but this is likely to change with the new work coming soon (see below).
 
 Start with a SQLite connection (similar things can be done with
 other DBI drivers but at present this uses one SQLite-only function
@@ -113,7 +110,7 @@ RSQLite::dbGetPreparedQuery(con, sql, bind.data=dat)
 
 The complicated bit here is using the `RSQLite::dbGetPreparedQuery`
 to inject the raw byte sequence of the serialised object into the
-`value` column (note that this is not a `DBI` function, otherwise .
+`value` column (note that this is not a `DBI` function).
 I believe that similar approaches are possible in other DBI
 drivers.  With the new development version of DBI/RSQLite this will
 change to using `DBI::dbBind`:
@@ -145,44 +142,49 @@ There are quite a few required functions to implement.  Below, the
 value in parentheses after the function signature is the expected
 return type.
 
-* `type()` (character): Takes no argument and returns a string with
-  the "type" of the driver.  This can be any identifier.
-* `destroy()` (NULL): Takes no argument and destroys all data
-  associated with the driver.  Best to also leave the driver in a
-  state where it can't be used, though this is not enforced.
+* `type()` (returns character): Takes no argument and returns a
+  string with the "type" of the driver.  This can be any
+  identifier.
+* `destroy()` (returns NULL): Takes no argument and destroys all
+  data associated with the driver.  Best to also leave the driver
+  in a state where it can't be used, though this is not enforced.
 
-* `set_hash(key, namespace, hash)` (NULL): Given strings for `key`,
-  `namespace` and `hash` against the key/namespace pair.
-* `get_hash(key, namespace)` (character): Given strings for `key`, and
-  `namespace`, return the hash of the object.
+* `set_hash(key, namespace, hash)` (returns NULL): Given strings
+  for `key`, `namespace` and `hash`, set the `hash` against the
+  `key`/`namespace` pair.
+* `get_hash(key, namespace)` (returns character): Given strings for
+  `key`, and `namespace`, return the hash of the object.
 
-* `set_object(hash, value)` (NULL): Given a string `hash` and an
-  arbitrary object `value`, store the object against the hash.
-  Serialisation will likely be needed here (e.g., `serialize(value,
-  NULL)`).
-* `get_object(hash)` (object): Given a string `hash` return the R
-  object stored against it.  Deserialisation will likely be needed
-  here (e.g., `unserialize(dat)`)
+* `set_object(hash, value)` (returns NULL): Given a string `hash`
+  and an arbitrary object `value`, store the object against the
+  hash.  Serialisation will likely be needed here (e.g.,
+  `serialize(value, NULL)`).
+* `get_object(hash)` (returns object): Given a string `hash` return
+  the R object stored against it.  Deserialisation will likely be
+  needed here (e.g., `unserialize(dat)`)
 
-* `exists_hash(key, namespace)` (logical): Given strings for `key` and
-  `namespace` return `TRUE` if there is a hash stored against the
-  key/namespace pair, `FALSE` otherwise.
-* `exists_object(hash)` (logical): Given a string for `hash`, return
-  `TRUE` if there is an object stored against the hash.
+* `exists_hash(key, namespace)` (returns logical): Given strings
+  for `key` and `namespace` return `TRUE` if there is a hash stored
+  against the key/namespace pair, `FALSE` otherwise.
+* `exists_object(hash)` (returns logical): Given a string for
+  `hash`, return `TRUE` if there is an object stored against the
+  hash.
 
-* `del_hash(key, namespace)` (logical): Given strings for `key` and
-  `namespace`, delete this key if it exists.  Return `TRUE` if the key
-  existed, `FALSE` otherwise.
-* `del_object(hash)` (logical): Given a string for `hash` the object if
-  it exists.  Return `TRUE` if the hash existed, `FALSE` otherwise.
+* `del_hash(key, namespace)` (returns logical): Given strings for
+  `key` and `namespace`, delete this key if it exists.  Return
+  `TRUE` if the key existed, `FALSE` otherwise.
+* `del_object(hash)` (returns logical): Given a string for `hash`
+  the object if it exists.  Return `TRUE` if the hash existed,
+  `FALSE` otherwise.
 
-* `list_hashes()` (character vector): Return a character vector of all
-  known hashes.
-* `list_namespaces()` (character vector): Return a character vector of
-  all known namespaces.
-* `list_keys(namespace)` (character vector): Given a string
-  `namespace`, return a character vector of all known keys within the
-  namespace.
+* `list_hashes()` (returns character vector): Return a character
+  vector of all known hashes.
+
+* `list_namespaces()` (returns character vector): Return a
+  character vector of all known namespaces.
+* `list_keys(namespace)` (returns character vector): Given a string
+  `namespace`, return a character vector of all known keys within
+  the namespace.
 
 The arguments to the constructor will be
 
@@ -213,7 +215,7 @@ little commentry throughout.
 
     ## On initialisation we'll create the two tables but only if they
     ## do not exist.  We can enforce the constraint that hash must be
-    ## unique within tbl_data and key/`namespace pairs must be unique
+    ## unique within tbl_data and key/namespace pairs must be unique
     ## within tbl_keys.
     initialize=function(path, tbl_data, tbl_keys) {
       self$con <- DBI::dbConnect(RSQLite::SQLite(), path)
