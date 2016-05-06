@@ -114,3 +114,20 @@ RAW_HEADER <- as.raw(c(88L, 10L, 0))
 is_serialized <- function(x) {
   is.raw(x) && length(x) > 3L && identical(x[1:3], RAW_HEADER)
 }
+
+## For current R (3.2.3 or thereabouts) writeBin does not work with
+## long vectors.  We can work around this for now, but in future
+## versions this will just use native R support.
+write_bin <- function(value, con, long=2^31 - 2) {
+  len <- length(value)
+  if (len > long) {
+    i <- 1L
+    while (i < len) {
+      j <- i + long - 1L
+      writeBin(value[seq(i, min(j, len))], con)
+      i <- j + 1L
+    }
+  } else {
+    writeBin(value, con)
+  }
+}

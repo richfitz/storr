@@ -74,3 +74,30 @@ test_that("mangledless compatibility", {
   dr4 <- driver_rds(path2)
   expect_false(dr4$mangle_key)
 })
+
+## This test takes a _lot_ of time and memory.
+test_that("large vector support", {
+  skip_on_cran()
+  skip("this one is really slow but run occasionally")
+
+  data <- raw(2195148826)
+  x <- serialize(data, NULL)
+
+  path <- tempfile()
+  expect_error(writeBin(x, path), "long vectors not supported yet")
+  file.remove(path)
+
+  path <- tempfile()
+  dr <- driver_rds(path, compress=FALSE)
+  on.exit(dr$destroy())
+
+  ## This is quite slow...
+  hash <- hash_object(x, serialize=FALSE, skip=14L)
+  ## This is really slow and writes out the data without crashing
+  ## ideally.  It does make the system very laggy though and I don't
+  ## really understand why.
+  dr$set_object(hash, x)
+
+  cmp <- dr$get_object(hash)
+  expect_identical(cmp, data)
+})

@@ -138,11 +138,13 @@ driver_rds <- function(path, compress=TRUE, mangle_key=NULL) {
       readRDS(self$name_hash(hash))
     },
     set_object=function(hash, value) {
+      ## NOTE: this takes advantage of having the serialised value
+      ## already and avoids seralising twice.
       assert_raw(value)
       filename <- self$name_hash(hash)
       con <- (if (self$compress) gzfile else file)(filename, "wb")
       on.exit(close(con))
-      writeBin(value, con)
+      write_bin(value, con)
     },
 
     exists_hash=function(key, namespace) {

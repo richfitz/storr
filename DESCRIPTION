@@ -20,6 +20,6 @@ Suggests:
     RSQLite,
     knitr,
     microbenchmark,
-    testthat
+    testthat (>= 1.0.0)
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
