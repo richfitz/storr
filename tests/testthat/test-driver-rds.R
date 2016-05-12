@@ -101,3 +101,25 @@ test_that("large vector support", {
   cmp <- dr$get_object(hash)
   expect_identical(cmp, data)
 })
+
+test_that("compression support", {
+  ## some data that will likely compress very well:
+  data <- rep(1:10, each=500)
+
+  st1 <- storr_rds(tempfile(), TRUE)
+  st2 <- storr_rds(tempfile(), FALSE)
+  on.exit({
+    st1$destroy()
+    st2$destroy()
+  })
+
+  h1 <- st1$set("data", data)
+  h2 <- st2$set("data", data)
+
+  expect_identical(h1, h2)
+  expect_gt(file.size(st2$driver$name_hash(h2)),
+            file.size(st1$driver$name_hash(h1)))
+
+  expect_identical(st1$get("data"), data)
+  expect_identical(st2$get("data"), data)
+})
