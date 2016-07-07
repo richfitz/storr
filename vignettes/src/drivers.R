@@ -77,8 +77,13 @@
 ## interfaces that support first class key/value (`hstore`) which
 ## would be prefereable to this.
 
-## The details come from
-## [here](http://jfaganuk.github.io/2015/01/12/storing-r-objects-in-sqlite-tables/), but this is likely to change with the new work coming soon (see below).
+## The appropriate interface here is currently in flux with breaking
+## changes altering the interface in DBI/RSQLite so there are _two_
+## ways of doing this; one for versions of RSQLite up to 1.0.0, and
+## another for larger versions.  To make this package work on CRAN,
+## both versions are presented here, but hopefully the approach is
+## still clear enough.
+old_sqlite <- packageVersion("RSQLite") <= package_version("1.0.0")
 
 ## Start with a SQLite connection (similar things can be done with
 ## other DBI drivers but at present this uses one SQLite-only function
@@ -92,30 +97,31 @@ sql <- c(sprintf("CREATE TABLE IF NOT EXISTS %s", table),
          "value blob)")
 DBI::dbGetQuery(con, paste(sql, collapse=" "))
 
-## Then take an object, serialise it, and stuff it into the blob:
+## Then take an object, serialise it, and stuff it into the blob, then
+## insert that into the table.  This is the part that varies between
+## versions.
+
+## For both versions, we'll store the *value* of `mtcars` with the
+## *name* `"mtcars"`:
 value <- mtcars
 name <- "mtcars"
-
-dat <- data.frame(name=name,
-                  value=I(list(serialize(value, NULL))),
-                  stringsAsFactors=FALSE)
 sql <- sprintf("INSERT into %s (name, value) values (:name, :value)", table)
-RSQLite::dbGetPreparedQuery(con, sql, bind.data=dat)
 
-## The complicated bit here is using the `RSQLite::dbGetPreparedQuery`
-## to inject the raw byte sequence of the serialised object into the
-## `value` column (note that this is not a `DBI` function).
-## I believe that similar approaches are possible in other DBI
-## drivers.  With the new development version of DBI/RSQLite this will
-## change to using `DBI::dbBind`:
+if (old_sqlite) {
+  dat <- data.frame(name=name,
+                    value=I(list(serialize(value, NULL))),
+                    stringsAsFactors=FALSE)
+  RSQLite::dbGetPreparedQuery(con, sql, bind.data=dat)
+} else {
+  dat <- list(name=name, value=list(serialize(value, NULL)))
+  DBI::dbGetQuery(con, sql, dat)
+}
 
-## ```{r, eval=FALSE}
-## DBI::dbGetQuery(con, sql, bind.data=dat)
-## ```
-
-## which is great because it means that the driver below would work
-## for other DBI-compliant backends (development versions of RPostgres
-## and RMySQL at least).
+## The pattern here is to use `dbGetQuery` to create and execute the
+## query, injecting the raw byte sequence of the serialised object
+## into the `value` column.  This is currently supported only for
+## RSQLite in the current release, but will probably be supported by
+## other DBI-compatible packages over time.
 
 ## We can retrieve the data by name:
 sql <- sprintf('SELECT value FROM %s WHERE name == "%s"', table, name)
@@ -265,13 +271,17 @@ driver_sqlite <- function(path, tbl_data="storr_data", tbl_keys="storr_keys") {
     ## serialised to string with:
     ##   rawToChar(serialize(value, NULL, TRUE))
     set_object=function(hash, value) {
-      dat <- data.frame(hash=hash,
-                        value=I(list(serialize(value, NULL))),
-                        stringsAsFactors=FALSE)
-      sql <- c(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
-               "(hash, value) VALUES (:hash, :value)")
-      RSQLite::dbGetPreparedQuery(self$con, paste(sql, collapse=" "),
-                                  bind.data=dat)
+      sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
+                   "(hash, value) VALUES (:hash, :value)")
+      if (old_sqlite) {
+        dat <- data.frame(hash=hash,
+                          value=I(list(serialize(value, NULL))),
+                          stringsAsFactors=FALSE)
+        RSQLite::dbGetPreparedQuery(self$con, sql, bind.data=dat)
+      } else {
+        dat <- list(hash=hash, value=list(serialize(value, NULL)))
+        DBI::dbGetQuery(self$con, sql, dat)
+      }
     },
 
     ## Check if a key/namespace pair exists.
