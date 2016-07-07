@@ -431,13 +431,15 @@ st_sql$list_hashes()
 ## slower than the rds driver (which is ~= the same speed as the redis
 ## driver)
 st_rds <- storr::storr_rds(tempfile())
-microbenchmark::microbenchmark(
-  st_sql$set(key, runif(10), use_cache=FALSE),
-  st_rds$set(key, runif(10), use_cache=FALSE))
+if (requireNamespace("microbenchmark", quietly=TRUE)) {
+  microbenchmark::microbenchmark(
+    st_sql$set(key, runif(10), use_cache=FALSE),
+    st_rds$set(key, runif(10), use_cache=FALSE))
 
-microbenchmark::microbenchmark(
-  st_sql$get(key, use_cache=FALSE),
-  st_rds$get(key, use_cache=FALSE))
+  microbenchmark::microbenchmark(
+    st_sql$get(key, use_cache=FALSE),
+    st_rds$get(key, use_cache=FALSE))
+}
 
 st_sql$destroy()
 st_rds$destroy()
