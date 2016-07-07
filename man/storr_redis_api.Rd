@@ -16,9 +16,7 @@ with a punctuation character (e.g., ":") will make created
 strings nicer to deal with.}
 
 \item{con}{A \code{redis_api} connection object, as created by the
-RedisAPI package.  This package does not actually provide the
-tools to create a connection; you need to provide one that is
-good to go.}
+redux or rrlite packages.}
 
 \item{default_namespace}{Default namespace (see \code{\link{storr}}).}
 }

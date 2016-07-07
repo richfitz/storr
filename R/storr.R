@@ -10,8 +10,7 @@
 ##' serialised storage to disk and \code{\link{driver_redis_api}}
 ##' which stores data in Redis but requires packages that are not on
 ##' CRAN to function
-##' (\href{https://github.com/ropensci/RedisAPI}{RedisAPI} and one of
-##' \href{https://github.com/ropensci/rrlite}{rrlite} or
+##' (\href{https://github.com/ropensci/rrlite}{rrlite} or
 ##' \href{https://github.com/richfitz/redux}{redux}).  New drivers are
 ##' relatively easy to add -- see the "drivers" vignette
 ##' (\code{vignette("drivers", package="storr")}).

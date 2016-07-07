@@ -7,9 +7,7 @@
 ##'   strings nicer to deal with.
 ##'
 ##' @param con A \code{redis_api} connection object, as created by the
-##'   RedisAPI package.  This package does not actually provide the
-##'   tools to create a connection; you need to provide one that is
-##'   good to go.
+##'   redux or rrlite packages.
 ##'
 ##' @param default_namespace Default namespace (see \code{\link{storr}}).
 ##' @export
@@ -111,10 +109,11 @@ redis_drop_keys <- function(con, pattern) {
     con$DEL(del)
   }
 }
-## TODO: Merge into RedisAPI with a best-practice based on SCAN,
-## though doing that while being able to test for SCAN is hard, and
-## getting that without invoking RedisAPI is harder.  This is a rare
-## operation and only used in tests so it should be OK.
+## TODO: Merge into redux with a best-practice based on SCAN, though
+## doing that while being able to test for SCAN is hard, and getting
+## that to work correctly for rrlite is hard without directly invoking
+## the package.  This is a rare operation and only used in tests so it
+## should be OK.
 ##
 ## TODO: on entry, try to detect if we have SCAN support and drop the
 ## KEYS call if so.  Or switch on the type.  Or I can try and patch
