@@ -51,11 +51,7 @@ test_driver <- function(create) {
   standalone <- inherits(reporter, "StopReporter")
   if (standalone) {
     old_reporter <- reporter
-    if (inherits(testthat::SummaryReporter, "refObjectGenerator")) {
-      reporter <- testthat::SummaryReporter()
-    } else {
-      reporter <- testthat::SummaryReporter$new()
-    }
+    reporter <- testthat::SummaryReporter$new()
     reporter$start_reporter()
     on.exit({
       reporter$end_reporter()
