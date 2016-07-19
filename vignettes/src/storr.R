@@ -94,21 +94,25 @@ st2$list()
 ## # Supported backends
 
 ## * environments (`driver_environment`) - mostly for debugging and
-## transient storage, but by far the fastest.
+##   transient storage, but by far the fastest.
 ## * on disk with rds (`driver_rds`) - zero dependencies, quite fast,
-## will suffer under high concurrency because there is no file
-## locking.
+##   will suffer under high concurrency because there is no file
+##   locking.
 ## * Redis (`driver_redis`) - uses
-## [`redux`](https://github.com/richfitz/redux) to store the data in a
-## Redis (`http://redis.io`) database.  About the same speed as rds
-## (faster write, slower read at present), but can allow multiple R
-## processes to share the same set of objects.
+##   [`redux`](https://github.com/richfitz/redux) to store the data in a
+##   Redis (`http://redis.io`) database.  About the same speed as rds
+##   (faster write, slower read at present), but can allow multiple R
+##   processes to share the same set of objects.
 ## * rlite (`driver_rlite`) - stores data in an
-## [rlite](https://github.com/seppo0010/rlite) database using
-## [`rrlite`](https://github.com/ropensci/rrlite).  This is the
-## slowest at present but does also support concurrency.  But
-## rlite has the potential to be as useful as SQLite is so this will
-## improve.
+##   [rlite](https://github.com/seppo0010/rlite) database using
+##   [`rrlite`](https://github.com/ropensci/rrlite).  This is quite
+##   quick, but is stalled for general release because `rrlite` does not
+##   support windows.
+## * DBI (`driver_dbi`) - uses (abuses?) a relational database to
+##   store the data.  This is not the fastest interface but allows for
+##   interprocess key/value stores where a relational database is
+##   supported.  All databases supported by DBI are supported (so at
+##   least SQLite, MySQL and Postgres).
 
 ## # Implementation details
 

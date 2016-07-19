@@ -1,3 +1,7 @@
+## storr 1.1.0 (2016-??-??)
+
+* Support for using relational databases via DBI (SQLite, MySQL, Postgres) #23
+
 ## storr 1.0.1 (2016-05-10)
 
 * Updated to work with recent testthat (>= 1.0.0)

@@ -16,7 +16,9 @@
 ## built-in tests in the package to ensure that the driver behaves
 ## correctly, and infrastructure to help with running those tests.
 
-## To demonstrate we'll write a wrapper around RSQLite to store data.
+## To demonstrate we'll write a wrapper around RSQLite to store data
+## (NOTE: this has since been rolled into the package as an actual
+## driver `driver_dbi` but I'm leaving it here for posterity).
 
 ## # How it works and what we need
 
