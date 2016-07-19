@@ -131,3 +131,10 @@ write_bin <- function(value, con, long=2^31 - 2) {
     writeBin(value, con)
   }
 }
+
+serialize_str <- function(x) {
+  rawToChar(serialize(x, NULL, TRUE))
+}
+unserialize_str <- function(x) {
+  unserialize(charToRaw(x))
+}

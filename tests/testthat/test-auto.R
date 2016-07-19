@@ -1,6 +1,13 @@
 storr:::test_driver(function() driver_environment())
 storr:::test_driver(function() driver_rds(tempfile("storr_")))
 
+if (requireNamespace("SQLite", quietly=TRUE)) {
+  new_sqlite <- function() {
+    DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  }
+  storr:::test_driver(function() driver_dbi(new_sqlite(), "data", "keys"))
+}
+
 ## These are not required on CRAN testing, but only for my own
 ## edification.
 if ("redux" %in% .packages(TRUE)) {
