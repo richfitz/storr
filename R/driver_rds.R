@@ -89,35 +89,11 @@ driver_rds <- function(path, compress=TRUE, mangle_key=NULL) {
       self$path <- path
       self$compress <- compress
 
-      ## This attempts to check that we are connecting to a storr of
-      ## appropriate mangledness.  There's a lot of logic here, but
-      ## it's actually pretty simple in practice and tested in
-      ## test-driver-rds.R:
-      ##
-      ##   if mangle_key is NULL we take the mangledless of the
-      ##   existing storr or set up for no mangling.
-      ##
-      ##   if mangle_key is not NULL then it is an error if it differs
-      ##   from the existing storr's mangledness.
       if (!is.null(mangle_key)) {
         assert_scalar_logical(mangle_key)
       }
-      path_mangled <- file.path(path, "config", "mangle_key")
-      if (file.exists(path_mangled)) {
-        mangle_key_prev <- as.logical(readLines(path_mangled))
-        if (is.null(mangle_key)) {
-          mangle_key <- mangle_key_prev
-        } else if (mangle_key != mangle_key_prev) {
-          stop(sprintf("Incompatible mangledness (existing: %s, requested: %s)",
-                       mangle_key_prev, mangle_key))
-        }
-      } else {
-        if (is.null(mangle_key)) {
-          mangle_key <- FALSE
-        }
-        writeLines(as.character(mangle_key), path_mangled)
-      }
-      self$mangle_key <- mangle_key
+      self$mangle_key <- driver_rds_load_config(path, "mangle_key", mangle_key,
+                                                FALSE, TRUE)
     },
 
     type=function() {
@@ -182,3 +158,41 @@ driver_rds <- function(path, compress=TRUE, mangle_key=NULL) {
       file.path(self$path, "keys", namespace, key)
     }
   ))
+
+## This attempts to check that we are connecting to a storr of
+## appropriate mangledness.  There's a lot of logic here, but it's
+## actually pretty simple in practice and tested in test-driver-rds.R:
+##
+##   if mangle_key is NULL we take the mangledless of the
+##   existing storr or set up for no mangling.
+##
+##   if mangle_key is not NULL then it is an error if it differs
+##   from the existing storr's mangledness.
+driver_rds_load_config <- function(path, name, value, default, must_agree) {
+  path <- file.path(path, "config", name)
+
+  load_value <- function() {
+    if (file.exists(path)) {
+      value <- readLines(path)
+      storage.mode(value) <- storage.mode(default)
+    } else {
+      value <- default
+    }
+    value
+  }
+
+  if (is.null(value)) {
+    value <- load_value()
+  } else if (must_agree && file.exists(path)) {
+    value_prev <- load_value()
+    if (value != value_prev) {
+      stop(sprintf("Incompatible value for %s (existing: %s, requested: %s)",
+                   name, value_prev, value))
+    }
+  }
+  if (!file.exists(path)) {
+    writeLines(as.character(value), path)
+  }
+
+  value
+}

@@ -52,7 +52,7 @@ test_that("mangledless compatibility", {
 
   ## Pointing another driver here without mangling is an error:
   expect_error(driver_rds(path, mangle_key=FALSE),
-               "Incompatible mangledness")
+               "Incompatible value for mangle_key")
 
   ## But omitting the argument (NULL mangledness) is OK
   dr2 <- driver_rds(path)
@@ -68,7 +68,7 @@ test_that("mangledless compatibility", {
 
   ## Pointing another driver here without mangling is an error:
   expect_error(driver_rds(path2, mangle_key=TRUE),
-               "Incompatible mangledness")
+               "Incompatible value for mangle_key")
 
   ## But omitting the argument (NULL mangledness) is OK
   dr4 <- driver_rds(path2)
