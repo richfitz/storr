@@ -5,10 +5,10 @@
 \alias{storr_rds}
 \title{rds object cache driver}
 \usage{
-storr_rds(path, compress = TRUE, mangle_key = NULL,
+storr_rds(path, compress = NULL, mangle_key = NULL,
   default_namespace = "objects")
 
-driver_rds(path, compress = TRUE, mangle_key = NULL)
+driver_rds(path, compress = NULL, mangle_key = NULL)
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice

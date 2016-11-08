@@ -25,10 +25,13 @@
 ##' @param path Path for the store.  \code{tempdir()} is a good choice
 ##'   for ephemeral storage, The \code{rappdirs} package (on CRAN)
 ##'   might be nice for persistent application data.
+##'
 ##' @param compress Compress the generated file?  This saves a small
 ##'   amount of space for a reasonable amount of time.
+##'
 ##' @param mangle_key Mangle keys?  If TRUE, then the key is encoded
 ##'   using base64 before saving to the filesystem.  See Details.
+##'
 ##' @param default_namespace Default namespace (see
 ##'   \code{\link{storr}}).
 ##' @export
@@ -63,14 +66,14 @@
 ##' # Clean up the two storrs:
 ##' st$destroy()
 ##' st2$destroy()
-storr_rds <- function(path, compress=TRUE, mangle_key=NULL,
+storr_rds <- function(path, compress = NULL, mangle_key = NULL,
                       default_namespace="objects") {
   storr(driver_rds(path, compress, mangle_key), default_namespace)
 }
 
 ##' @export
 ##' @rdname storr_rds
-driver_rds <- function(path, compress=TRUE, mangle_key=NULL) {
+driver_rds <- function(path, compress = NULL, mangle_key = NULL) {
   .R6_driver_rds$new(path, compress, mangle_key)
 }
 
@@ -87,13 +90,17 @@ driver_rds <- function(path, compress=TRUE, mangle_key=NULL) {
       dir_create(file.path(path, "keys"))
       dir_create(file.path(path, "config"))
       self$path <- path
-      self$compress <- compress
 
       if (!is.null(mangle_key)) {
         assert_scalar_logical(mangle_key)
       }
       self$mangle_key <- driver_rds_load_config(path, "mangle_key", mangle_key,
                                                 FALSE, TRUE)
+      if (!is.null(compress)) {
+        assert_scalar_logical(compress)
+      }
+      self$compress <- driver_rds_load_config(path, "compress", compress,
+                                              TRUE, FALSE)
     },
 
     type=function() {
