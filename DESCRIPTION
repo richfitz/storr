@@ -1,6 +1,6 @@
 Package: storr
 Title: Simple Key Value Stores
-Version: 1.0.1
+Version: 1.0.2
 Description: Creates and manages simple key-value stores.  These can
     use a variety of approaches for storing the data.  This package
     implements the base methods and support for file system and
