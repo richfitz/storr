@@ -123,3 +123,21 @@ test_that("compression support", {
   expect_identical(st1$get("data"), data)
   expect_identical(st2$get("data"), data)
 })
+
+test_that("hash", {
+  hash_algos <- c("md5", "sha1")
+  x <- runif(10)
+  key <- "foo"
+  hmd5 <- digest::digest(x, "md5")
+
+  for (h in hash_algos) {
+    st <- storr_rds(tempfile(), hash_algorithm = h)
+    st$set(key, x)
+    expect_equal(st$get(key), x)
+    hash <- digest::digest(x, h)
+    expect_equal(st$list_hashes(), hash)
+    ## Sanity check
+    expect_equal(hash == hmd5, h == "md5")
+    st$destroy()
+  }
+})

@@ -86,15 +86,18 @@ storr <- function(driver, default_namespace="objects") {
 .R6_storr <- R6::R6Class(
   "storr",
   public=list(
-    driver=NULL,
-    envir=NULL,
-    default_namespace=NULL,
-    traits=NULL,
+    driver = NULL,
+    envir = NULL,
+    default_namespace = NULL,
+    traits = NULL,
+    hash_raw = NULL,
+
     initialize=function(driver, default_namespace) {
       self$driver <- driver
       self$envir <- new.env(parent=emptyenv())
       self$default_namespace <- default_namespace
       self$traits <- storr_traits(driver$traits)
+      self$hash_raw <- make_hash_serialised_object(driver$hash_algorithm)
     },
 
     destroy=function() {
@@ -181,18 +184,16 @@ storr <- function(driver, default_namespace="objects") {
     },
 
     set_value=function(value, use_cache=TRUE) {
-      if (self$traits$accept_raw) {
-        value_dr <- serialize(value, NULL)
-        hash <- hash_object(value_dr, serialize=FALSE, skip=14L)
-      } else {
-        value_dr <- value
-        hash <- hash_object(value)
-      }
+      value_ser <- serialize(value, NULL)
+      hash <- self$hash_raw(value_ser)
 
       ## NOTE: This exists/set roundtrip here always seems useful to
-      ## avoid sending (potentially large) data over a connection.
+      ## avoid sending (potentially large) data over a connection, but
+      ## it's possible that some drivers could do this more
+      ## efficiently themselves during negotiation.
       if (!self$driver$exists_object(hash)) {
-        self$driver$set_object(hash, value_dr)
+        value_send <- if (self$traits$accept_raw) value_ser else value
+        self$driver$set_object(hash, value_send)
       }
       if (use_cache && !exists0(hash, self$envir)) {
         assign(hash, value, self$envir)

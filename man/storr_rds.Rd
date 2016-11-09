@@ -5,10 +5,11 @@
 \alias{storr_rds}
 \title{rds object cache driver}
 \usage{
-storr_rds(path, compress = NULL, mangle_key = NULL,
+storr_rds(path, compress = NULL, mangle_key = NULL, hash_algorithm = NULL,
   default_namespace = "objects")
 
-driver_rds(path, compress = NULL, mangle_key = NULL)
+driver_rds(path, compress = NULL, mangle_key = NULL,
+  hash_algorithm = NULL)
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice
@@ -20,6 +21,11 @@ amount of space for a reasonable amount of time.}
 
 \item{mangle_key}{Mangle keys?  If TRUE, then the key is encoded
 using base64 before saving to the filesystem.  See Details.}
+
+\item{hash_algorithm}{Name of the hash algorithm to use.  Possible
+values are "md5", "sha1", and others supported by
+\code{\link{digest}}.  If not given, then we will default to
+"md5".}
 
 \item{default_namespace}{Default namespace (see
 \code{\link{storr}}).}

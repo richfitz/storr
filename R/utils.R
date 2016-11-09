@@ -2,6 +2,15 @@ hash_object <- function(x, hash_algorithm = "md5", ...) {
   digest::digest(x, algo = hash_algorithm, ...)
 }
 
+make_hash_serialised_object <- function(hash_algorithm) {
+  ## i <- -seq_len(14L) -- if using openssl
+  hash <- digest::digest
+  hash_algotithm <- hash_algorithm %||% "md5"
+  function(x) {
+    hash(x, hash_algorithm, skip = 14L, serialize = FALSE)
+  }
+}
+
 exists0 <- function(name, envir) {
   exists(name, envir=envir, inherits=FALSE)
 }
@@ -64,6 +73,16 @@ assert_logical <- function(x, name=deparse(substitute(x))) {
 assert_scalar_logical <- function(x, name=deparse(substitute(x))) {
   assert_scalar(x, name)
   assert_logical(x, name)
+}
+
+assert_character <- function(x, name=deparse(substitute(x))) {
+  if (!is.character(x)) {
+    stop(sprintf("%s must be character", name), call.=FALSE)
+  }
+}
+assert_scalar_character <- function(x, name=deparse(substitute(x))) {
+  assert_scalar(x, name)
+  assert_character(x, name)
 }
 
 assert_raw <- function(x, name=deparse(substitute(x))) {
@@ -133,4 +152,8 @@ serialize_str <- function(x) {
 }
 unserialize_str <- function(x) {
   unserialize(charToRaw(x))
+}
+
+`%||%` <- function(a, b) {
+  if (is.null(a)) b else a
 }

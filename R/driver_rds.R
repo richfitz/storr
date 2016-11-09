@@ -32,6 +32,11 @@
 ##' @param mangle_key Mangle keys?  If TRUE, then the key is encoded
 ##'   using base64 before saving to the filesystem.  See Details.
 ##'
+##' @param hash_algorithm Name of the hash algorithm to use.  Possible
+##'   values are "md5", "sha1", and others supported by
+##'   \code{\link{digest}}.  If not given, then we will default to
+##'   "md5".
+##'
 ##' @param default_namespace Default namespace (see
 ##'   \code{\link{storr}}).
 ##' @export
@@ -67,24 +72,31 @@
 ##' st$destroy()
 ##' st2$destroy()
 storr_rds <- function(path, compress = NULL, mangle_key = NULL,
+                      hash_algorithm = NULL,
                       default_namespace="objects") {
-  storr(driver_rds(path, compress, mangle_key), default_namespace)
+  storr(driver_rds(path, compress, mangle_key, hash_algorithm),
+        default_namespace)
 }
 
 ##' @export
 ##' @rdname storr_rds
-driver_rds <- function(path, compress = NULL, mangle_key = NULL) {
-  .R6_driver_rds$new(path, compress, mangle_key)
+driver_rds <- function(path, compress = NULL, mangle_key = NULL,
+                       hash_algorithm = NULL) {
+  .R6_driver_rds$new(path, compress, mangle_key, hash_algorithm)
 }
 
 .R6_driver_rds <- R6::R6Class(
   "driver_rds",
   public=list(
-    path=NULL,
-    compress=NULL,
-    mangle_key=NULL,
+    ## TODO: things like hash_algorithm: do they belong in traits?
+    ## This needs sorting before anyone writes their own driver!
+    path = NULL,
+    compress = NULL,
+    mangle_key = NULL,
+    hash_algorithm = NULL,
     traits=list(accept_raw=TRUE),
-    initialize=function(path, compress, mangle_key) {
+
+    initialize=function(path, compress, mangle_key, hash_algorithm) {
       dir_create(path)
       dir_create(file.path(path, "data"))
       dir_create(file.path(path, "keys"))
@@ -94,13 +106,28 @@ driver_rds <- function(path, compress = NULL, mangle_key = NULL) {
       if (!is.null(mangle_key)) {
         assert_scalar_logical(mangle_key)
       }
-      self$mangle_key <- driver_rds_load_config(path, "mangle_key", mangle_key,
-                                                FALSE, TRUE)
+      self$mangle_key <- driver_rds_config(path, "mangle_key", mangle_key,
+                                           FALSE, TRUE)
       if (!is.null(compress)) {
         assert_scalar_logical(compress)
       }
-      self$compress <- driver_rds_load_config(path, "compress", compress,
-                                              TRUE, FALSE)
+      self$compress <- driver_rds_config(path, "compress", compress,
+                                         TRUE, FALSE)
+
+      if (!is.null(hash_algorithm)) {
+        assert_scalar_character(hash_algorithm)
+      }
+      self$hash_algorithm <- driver_rds_config(path, "hash_algorithm",
+                                               hash_algorithm, "md5", TRUE)
+
+      ## I should also check here that the length of existing files
+      ## make sense because we will be in transition here for a few
+      ## versions.  It's not a great big deal because the default will
+      ## remain md5 for a while, but I should check this with an
+      ## existing RDS storr, and add that as a test.
+      ##
+      ## This might also be a good idea to save the version number in
+      ## to safe guard this a bit.
     },
 
     type=function() {
@@ -175,7 +202,7 @@ driver_rds <- function(path, compress = NULL, mangle_key = NULL) {
 ##
 ##   if mangle_key is not NULL then it is an error if it differs
 ##   from the existing storr's mangledness.
-driver_rds_load_config <- function(path, name, value, default, must_agree) {
+driver_rds_config <- function(path, name, value, default, must_agree) {
   path <- file.path(path, "config", name)
 
   load_value <- function() {
