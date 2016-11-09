@@ -119,15 +119,6 @@ driver_rds <- function(path, compress = NULL, mangle_key = NULL,
       }
       self$hash_algorithm <- driver_rds_config(path, "hash_algorithm",
                                                hash_algorithm, "md5", TRUE)
-
-      ## I should also check here that the length of existing files
-      ## make sense because we will be in transition here for a few
-      ## versions.  It's not a great big deal because the default will
-      ## remain md5 for a while, but I should check this with an
-      ## existing RDS storr, and add that as a test.
-      ##
-      ## This might also be a good idea to save the version number in
-      ## to safe guard this a bit.
     },
 
     type=function() {
@@ -203,11 +194,11 @@ driver_rds <- function(path, compress = NULL, mangle_key = NULL,
 ##   if mangle_key is not NULL then it is an error if it differs
 ##   from the existing storr's mangledness.
 driver_rds_config <- function(path, name, value, default, must_agree) {
-  path <- file.path(path, "config", name)
+  path_opt <- file.path(path, "config", name)
 
   load_value <- function() {
-    if (file.exists(path)) {
-      value <- readLines(path)
+    if (file.exists(path_opt)) {
+      value <- readLines(path_opt)
       storage.mode(value) <- storage.mode(default)
     } else {
       value <- default
@@ -215,17 +206,28 @@ driver_rds_config <- function(path, name, value, default, must_agree) {
     value
   }
 
+  ## This is a workaround to allow hash_algorithm to be safely used
+  ## with storr databases from versions <= 1.0.1 where this was not
+  ## saved.
+  if (name == "hash_algorithm") {
+    if (!file.exists(path_opt)) {
+      if (length(dir(file.path(path, "data"))) > 0L) {
+        writeLines("md5", path_opt)
+      }
+    }
+  }
+
   if (is.null(value)) {
     value <- load_value()
-  } else if (must_agree && file.exists(path)) {
+  } else if (must_agree && file.exists(path_opt)) {
     value_prev <- load_value()
     if (value != value_prev) {
       stop(sprintf("Incompatible value for %s (existing: %s, requested: %s)",
                    name, value_prev, value))
     }
   }
-  if (!file.exists(path)) {
-    writeLines(as.character(value), path)
+  if (!file.exists(path_opt)) {
+    writeLines(as.character(value), path_opt)
   }
 
   value

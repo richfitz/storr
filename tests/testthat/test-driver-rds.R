@@ -141,3 +141,30 @@ test_that("hash", {
     st$destroy()
   }
 })
+
+test_that("backward compatibility", {
+  ## In version 1.0.1 and earlier, the hash algorithm was not stored
+  ## in the database and md5 was *always* used.
+  ##
+  ## Was created with:
+  ##
+  ##   unlink("tests/testthat/v1.0.1", recursive = TRUE)
+  ##   storr::storr_rds("tests/testthat/v1.0.1")$set("key", "v1.0.1")
+  copy_to_tmp <- function(src) {
+    path <- tempfile()
+    dir.create(path)
+    file.copy(src, path, recursive = TRUE)
+    file.path(path, src)
+  }
+
+  path <- copy_to_tmp("v1.0.1")
+  st <- storr_rds(path)
+  expect_equal(st$list(), "key")
+  expect_equal(st$get("key"), "v1.0.1")
+  expect_equal(st$driver$hash_algorithm, "md5")
+  st$destroy()
+
+  path <- copy_to_tmp("v1.0.1")
+  expect_error(storr_rds(path, hash_algorithm = "sha1"),
+               "Incompatible value for hash_algorithm")
+})
