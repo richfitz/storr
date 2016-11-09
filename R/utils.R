@@ -1,9 +1,5 @@
-hash_object <- function(x, ...) {
-  digest::digest(x, algo="md5", ...)
-}
-
-hash_string <- function(str) {
-  digest::digest(str, serialize=FALSE)
+hash_object <- function(x, hash_algorithm = "md5", ...) {
+  digest::digest(x, algo = hash_algorithm, ...)
 }
 
 exists0 <- function(name, envir) {
