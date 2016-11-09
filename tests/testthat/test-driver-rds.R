@@ -138,6 +138,11 @@ test_that("hash", {
     expect_equal(st$list_hashes(), hash)
     ## Sanity check
     expect_equal(hash == hmd5, h == "md5")
+
+    h_other <- setdiff(hash_algos, h)[[1]]
+    expect_error(storr_rds(st$driver$path, hash_algorithm = h_other),
+                 "Incompatible value for hash_algorithm")
+
     st$destroy()
   }
 })

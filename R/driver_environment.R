@@ -13,6 +13,12 @@
 ##'   argument along.
 ##'
 ##' @param default_namespace Default namespace (see \code{\link{storr}}).
+##'
+##' @param hash_algorithm Name of the hash algorithm to use.  Possible
+##'   values are "md5", "sha1", and others supported by
+##'   \code{\link{digest}}.  If not given, then we will default to
+##'   "md5".
+##'
 ##' @export
 ##' @examples
 ##'
@@ -30,33 +36,50 @@
 ##' # or export to a new list:
 ##' lis <- st$export(list())
 ##' lis
-storr_environment <- function(envir=NULL, default_namespace="objects") {
-  storr(driver_environment(envir), default_namespace)
+storr_environment <- function(envir = NULL, hash_algorithm = NULL,
+                              default_namespace = "objects") {
+  storr(driver_environment(envir, hash_algorithm), default_namespace)
 }
 
 ##' @export
 ##' @rdname storr_environment
-driver_environment <- function(envir=NULL) {
+driver_environment <- function(envir = NULL, hash_algorithm = NULL) {
   if (is.null(envir)) {
     envir <- new.env(parent=emptyenv())
   }
-  .R6_driver_environment$new(envir)
+  .R6_driver_environment$new(envir, hash_algorithm)
 }
 
 .R6_driver_environment <- R6::R6Class(
   "driver_environment",
   public=list(
-    envir=NULL,
+    envir = NULL,
+    hash_algorithm = NULL,
 
-    initialize=function(envir) {
+    initialize=function(envir, hash_algorithm) {
+      if (!is.null(hash_algorithm)) {
+        assert_scalar_character(hash_algorithm)
+      }
       if (is.null(envir$data)) {
         envir$keys <- list()
         envir$data <- new.env(parent=emptyenv())
+        envir$hash_algorithm <- hash_algorithm <- hash_algorithm %||% "md5"
       } else {
         assert_environment(envir$data)
         assert_list(envir$keys)
+        if (is.null(hash_algorithm)) {
+          hash_algorithm <- envir$hash_algorithm
+        } else {
+          if (hash_algorithm != envir$hash_algorithm) {
+            msg <- sprintf(
+              "Incompatible value for %s (existing: %s, requested: %s)",
+              "hash_algorithm", envir$hash_algorithm, hash_algorithm)
+            stop(msg)
+          }
+        }
       }
       self$envir <- envir
+      self$hash_algorithm <- hash_algorithm
     },
 
     type=function() {
