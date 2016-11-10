@@ -133,3 +133,18 @@ testthat::test_that("clear", {
   testthat::expect_equal(st$clear(NULL), 0L)
   testthat::expect_equal(st$clear("no_such_namespace"), 0L)
 })
+
+test_that("reconnect", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  st <- storr(dr)
+  st$set("a1", 1, namespace="a")
+  st$set("a2", 2, namespace="a")
+  st$set("b1", 1, namespace="b")
+
+  dr2 <- .driver_create(dr)
+  st2 <- storr(dr2)
+
+  expect_equal(st2$list_namespaces(), st$list_namespaces())
+  expect_equal(st2$list("a"), st$list("a"))
+})
