@@ -12,25 +12,30 @@
 ##' @param default_namespace Default namespace (see \code{\link{storr}}).
 ##' @export
 ##' @author Rich FitzJohn
-storr_redis_api <- function(prefix, con, default_namespace="objects") {
-  storr(driver_redis_api(prefix, con), default_namespace)
+storr_redis_api <- function(prefix, con, hash_algorithm = NULL,
+                            default_namespace="objects") {
+  storr(driver_redis_api(prefix, con, hash_algorithm), default_namespace)
 }
 
 ##' @export
 ##' @rdname storr_redis_api
-driver_redis_api <- function(prefix, con) {
-  .R6_driver_redis_api$new(prefix, con)
+driver_redis_api <- function(prefix, con, hash_algorithm = NULL) {
+  .R6_driver_redis_api$new(prefix, con, hash_algorithm)
 }
 
 .R6_driver_redis_api <- R6::R6Class(
   "driver_redis_api",
   public=list(
-    con=NULL,
-    prefix=NULL,
-    traits=list(accept_raw=TRUE, throw_missing=TRUE),
-    initialize=function(prefix, con) {
+    con = NULL,
+    prefix = NULL,
+    traits = list(accept_raw = TRUE, throw_missing = TRUE),
+    hash_algorithm = NULL,
+
+    initialize=function(prefix, con, hash_algorithm) {
       self$prefix <- prefix
       self$con <- con
+      self$hash_algorithm <- driver_redis_api_config(
+        con, prefix, "hash_algorithm", hash_algorithm, "md5", TRUE)
     },
     type=function() {
       paste("redis_api", self$con$type(), sep="/")
@@ -120,4 +125,34 @@ redis_drop_keys <- function(con, pattern) {
 ## rrlite.
 redis_list_keys <- function(con, pattern) {
   as.character(con$KEYS(pattern))
+}
+
+driver_redis_api_config <- function(con, prefix, name, value, default,
+                                    must_agree) {
+  path_opt <- sprintf("%s:config:%s", prefix, name)
+
+  load_value <- function() {
+    if (con$EXISTS(path_opt)) {
+      value <- con$GET(path_opt)
+      storage.mode(value) <- storage.mode(default)
+    } else {
+      value <- default
+    }
+    value
+  }
+
+  if (is.null(value)) {
+    value <- load_value()
+  } else if (must_agree && con$EXISTS(path_opt)) {
+    value_prev <- load_value()
+    if (value != value_prev) {
+      stop(sprintf("Incompatible value for %s (existing: %s, requested: %s)",
+                   name, value_prev, value))
+    }
+  }
+  if (!con$EXISTS(path_opt)) {
+    con$SET(path_opt, value)
+  }
+
+  value
 }
