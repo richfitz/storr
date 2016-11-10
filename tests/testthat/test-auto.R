@@ -1,11 +1,15 @@
-storr:::test_driver(function() driver_environment())
-storr:::test_driver(function() driver_rds(tempfile("storr_")))
+storr:::test_driver(function(dr = NULL, ...)
+  driver_environment(dr$envir, ...))
+
+storr:::test_driver(function(dr = NULL, ...)
+  driver_rds(dr$path %||% tempfile("storr_"), ...))
 
 if (requireNamespace("SQLite", quietly=TRUE)) {
   new_sqlite <- function() {
     DBI::dbConnect(RSQLite::SQLite(), ":memory:")
   }
-  storr:::test_driver(function() driver_dbi(new_sqlite(), "data", "keys"))
+  storr:::test_driver(function(dr = NULL, ...)
+    driver_dbi(dr$con %||% new_sqlite(), "data", "keys", ...))
 }
 
 ## These are not required on CRAN testing, but only for my own
@@ -13,10 +17,13 @@ if (requireNamespace("SQLite", quietly=TRUE)) {
 if ("redux" %in% .packages(TRUE)) {
   rand_str <- function() paste0(hash_object(Sys.time()), ":")
   con <- redux::hiredis()
-  storr:::test_driver(function() driver_redis_api(rand_str(), con))
+  storr:::test_driver(function(dr = NULL, ...)
+    driver_redis_api(dr$prefix %||% rand_str(), con, ...))
 }
+
 if ("rrlite" %in% .packages(TRUE)) {
   rand_str <- function() hash_object(Sys.time())
   con <- rrlite::hirlite()
-  storr:::test_driver(function() driver_redis_api(rand_str(), con))
+  storr:::test_driver(function(dr = NULL, ...)
+    driver_redis_api(dr$prefix %||% rand_str(), con, ...))
 }

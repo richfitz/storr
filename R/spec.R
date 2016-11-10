@@ -42,9 +42,6 @@
 ##' }
 ##' }
 test_driver <- function(create) {
-  if (!(is.function(create) && length(formals(create)) == 0L)) {
-    stop("create must be a function of zero arguments")
-  }
   loadNamespace("testthat")
 
   reporter <- testthat::get_reporter()
