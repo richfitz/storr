@@ -71,10 +71,8 @@ driver_environment <- function(envir = NULL, hash_algorithm = NULL) {
           hash_algorithm <- envir$hash_algorithm
         } else {
           if (hash_algorithm != envir$hash_algorithm) {
-            msg <- sprintf(
-              "Incompatible value for %s (existing: %s, requested: %s)",
-              "hash_algorithm", envir$hash_algorithm, hash_algorithm)
-            stop(msg)
+            stop(ConfigError("hash_algorithm", envir$hash_algorithm,
+                             hash_algorithm))
           }
         }
       }

@@ -222,8 +222,7 @@ driver_rds_config <- function(path, name, value, default, must_agree) {
   } else if (must_agree && file.exists(path_opt)) {
     value_prev <- load_value()
     if (value != value_prev) {
-      stop(sprintf("Incompatible value for %s (existing: %s, requested: %s)",
-                   name, value_prev, value))
+      stop(ConfigError(name, value_prev, value))
     }
   }
   if (!file.exists(path_opt)) {

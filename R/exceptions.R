@@ -23,3 +23,14 @@ HashError <- function(hash, driver) {
                  call=NULL),
             class=c("HashError", "error", "condition"))
 }
+
+ConfigError <- function(name, prev, requested) {
+  msg <- sprintf("Incompatible value for %s (existing: %s, requested: %s)",
+                 name, prev, requested)
+  structure(list(name = name,
+                 prev = prev,
+                 requested = requested,
+                 message = msg,
+                 call = NULL),
+            class = c("ConfigError", "error", "condition"))
+}

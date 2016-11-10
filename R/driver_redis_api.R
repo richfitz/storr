@@ -146,8 +146,7 @@ driver_redis_api_config <- function(con, prefix, name, value, default,
   } else if (must_agree && con$EXISTS(path_opt)) {
     value_prev <- load_value()
     if (value != value_prev) {
-      stop(sprintf("Incompatible value for %s (existing: %s, requested: %s)",
-                   name, value_prev, value))
+      stop(ConfigError(name, value_prev, value))
     }
   }
   if (!con$EXISTS(path_opt)) {

@@ -147,10 +147,8 @@ driver_dbi <- function(con, tbl_data, tbl_keys, binary = NULL,
           hash_algorithm <- config$hash_algorithm
         } else {
           if (hash_algorithm != config$hash_algorithm) {
-            msg <- sprintf(
-              "Incompatible value for %s (existing: %s, requested: %s)",
-              "hash_algorithm", config$hash_algorithm, hash_algorithm)
-            stop(msg)
+            stop(ConfigError("hash_algorithm", config$hash_algorithm,
+                             hash_algorithm))
           }
         }
       }
