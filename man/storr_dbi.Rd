@@ -5,10 +5,10 @@
 \alias{storr_dbi}
 \title{DBI storr driver}
 \usage{
-storr_dbi(con, tbl_data, tbl_keys, binary = NULL,
+storr_dbi(con, tbl_data, tbl_keys, binary = NULL, hash_algorithm = NULL,
   default_namespace = "objects")
 
-driver_dbi(con, tbl_data, tbl_keys, binary = NULL)
+driver_dbi(con, tbl_data, tbl_keys, binary = NULL, hash_algorithm = NULL)
 }
 \arguments{
 \item{con}{A DBI connection object (see example)}
@@ -25,6 +25,11 @@ other DBI drivers, and is not actually any faster.  If not given
 (i.e., \code{NULL}), then binary storage will be used where
 possible when creating new tables, and where tables exist, we
 use whatever was used in the existing tables.}
+
+\item{hash_algorithm}{Name of the hash algorithm to use.  Possible
+values are "md5", "sha1", and others supported by
+\code{\link{digest}}.  If not given, then we will default to
+"md5".}
 
 \item{default_namespace}{Default namespace (see
 \code{\link{storr}}).}
@@ -50,7 +55,6 @@ slower than) string serialisation, in contrast with my experience
 with other backends.
 }
 \examples{
-
 if (requireNamespace("RSQLite", quietly = TRUE)) {
   # Create an in-memory SQLite database and connection:
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")

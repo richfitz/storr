@@ -20,6 +20,8 @@ test_that("hash", {
     expect_error(storr_environment(e, hash_algorithm = h_other),
                  "Incompatible value for hash_algorithm")
 
+    expect_equal(storr_environment(e)$driver$hash_algorithm, h)
+
     st$destroy()
   }
 })

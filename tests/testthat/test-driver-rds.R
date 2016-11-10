@@ -143,6 +143,8 @@ test_that("hash", {
     expect_error(storr_rds(st$driver$path, hash_algorithm = h_other),
                  "Incompatible value for hash_algorithm")
 
+    expect_equal(storr_rds(st$driver$path)$driver$hash_algorithm, h)
+
     st$destroy()
   }
 })

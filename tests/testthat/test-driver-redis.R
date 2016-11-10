@@ -27,6 +27,8 @@ test_that("hash", {
     expect_error(storr_redis_api(prefix, con, hash_algorithm = h_other),
                  "Incompatible value for hash_algorithm")
 
+    expect_equal(storr_redis_api(prefix, con)$driver$hash_algorithm, h)
+
     st$destroy()
   }
 })

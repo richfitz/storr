@@ -18,8 +18,11 @@
 ##'
 ##' @title DBI storr driver
 ##' @param con A DBI connection object (see example)
+##'
 ##' @param tbl_data Name for the table that maps hashes to values
+##'
 ##' @param tbl_keys Name for the table that maps keys to hashes
+##'
 ##' @param binary Optional logical indicating if the values should be
 ##'   stored in binary.  If possible, this is both (potentially
 ##'   faster) and more accurate.  However, at present it is supported
@@ -28,11 +31,17 @@
 ##'   (i.e., \code{NULL}), then binary storage will be used where
 ##'   possible when creating new tables, and where tables exist, we
 ##'   use whatever was used in the existing tables.
+##'
+##' @param hash_algorithm Name of the hash algorithm to use.  Possible
+##'   values are "md5", "sha1", and others supported by
+##'   \code{\link{digest}}.  If not given, then we will default to
+##'   "md5".
+##'
 ##' @param default_namespace Default namespace (see
 ##'   \code{\link{storr}}).
+##'
 ##' @export
 ##' @examples
-##'
 ##' if (requireNamespace("RSQLite", quietly = TRUE)) {
 ##'   # Create an in-memory SQLite database and connection:
 ##'   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
@@ -57,28 +66,36 @@
 ##'   st$destroy()
 ##'   DBI::dbListTables(con)
 ##' }
-storr_dbi <- function(con, tbl_data, tbl_keys, binary=NULL,
-                      default_namespace="objects") {
-  storr(driver_dbi(con, tbl_data, tbl_keys, binary), default_namespace)
+storr_dbi <- function(con, tbl_data, tbl_keys, binary = NULL,
+                      hash_algorithm = NULL,
+                      default_namespace = "objects") {
+  storr(driver_dbi(con, tbl_data, tbl_keys, binary, hash_algorithm),
+        default_namespace)
 }
 
 ##' @rdname storr_dbi
 ##' @export
-driver_dbi <- function(con, tbl_data, tbl_keys, binary=NULL) {
-  .R6_driver_DBI$new(con, tbl_data, tbl_keys, binary)
+driver_dbi <- function(con, tbl_data, tbl_keys, binary = NULL,
+                       hash_algorithm = NULL) {
+  .R6_driver_DBI$new(con, tbl_data, tbl_keys, binary, hash_algorithm)
 }
 
 .R6_driver_DBI <- R6::R6Class(
   "driver_DBI",
 
+  ## It's not really clear here where we should store the
+  ## configuration; it could be an additional table (which seems
+  ## silly).  Alternatively we could stuff a value in with a special
+  ## data key.  I'm thinking that
   public=list(
-    con=NULL,
-    tbl_data=NULL,
-    tbl_keys=NULL,
-    binary=NULL,
-    supports_binary=FALSE,
+    con = NULL,
+    tbl_data = NULL,
+    tbl_keys = NULL,
+    binary = NULL,
+    hash_algorithm = NULL,
 
-    initialize=function(con, tbl_data, tbl_keys, binary=NULL) {
+    initialize=function(con, tbl_data, tbl_keys, binary = NULL,
+                        hash_algorithm = NULL) {
       loadNamespace("DBI")
 
       self$con <- con
@@ -93,14 +110,51 @@ driver_dbi <- function(con, tbl_data, tbl_keys, binary=NULL) {
       sql <- c(sprintf("CREATE TABLE if NOT EXISTS %s", tbl_data),
                "(hash STRING PRIMARY KEY NOT NULL,",
                sprintf("value %s NOT NULL)", data_type))
-      DBI::dbGetQuery(self$con, paste(sql, collapse=" "))
+      DBI::dbGetQuery(self$con, paste(sql, collapse = " "))
 
       sql <- c(sprintf("CREATE TABLE IF NOT EXISTS %s", tbl_keys),
                "(namespace STRING NOT NULL,",
+               ## TODO: hash here could has a proper length (CHAR(X))
+               ## which might give better performance.  Probably worth
+               ## checking at some point.
                "key STRING NOT NULL,",
                "hash STRING NOT NULL,",
                "PRIMARY KEY (namespace, key))")
-      DBI::dbGetQuery(self$con, paste(sql, collapse=" "))
+      DBI::dbGetQuery(self$con, paste(sql, collapse = " "))
+
+      ## 15 'f's - no hash algo has this length
+      ##
+      ## TODO: This will work just fine unless we do set the hash to
+      ## have a very particular length.
+      ##
+      ## TODO: See dbi_use_binary for an alternative approach for
+      ## dealing with configuration; I don't think we can really use
+      ## that here though?
+      config_hash <- paste(rep("f", 15), collapse = "")
+      if (self$exists_object(config_hash)) {
+        config <- self$get_object(config_hash)
+      } else {
+        config <- NULL
+      }
+      if (!is.null(hash_algorithm)) {
+        assert_scalar_character(hash_algorithm)
+      }
+      if (is.null(config$hash_algorithm)) {
+        config$hash_algorithm <- hash_algorithm %||% "md5"
+        self$set_object(config_hash, config)
+      } else {
+        if (is.null(hash_algorithm)) {
+          hash_algorithm <- config$hash_algorithm
+        } else {
+          if (hash_algorithm != config$hash_algorithm) {
+            msg <- sprintf(
+              "Incompatible value for %s (existing: %s, requested: %s)",
+              "hash_algorithm", config$hash_algorithm, hash_algorithm)
+            stop(msg)
+          }
+        }
+      }
+      self$hash_algorithm <- config$hash_algorithm
     },
 
     type=function() {
