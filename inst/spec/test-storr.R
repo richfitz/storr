@@ -148,3 +148,34 @@ test_that("reconnect", {
   expect_equal(st2$list_namespaces(), st$list_namespaces())
   expect_equal(st2$list("a"), st$list("a"))
 })
+
+testthat::test_that("hash_algorithm", {
+  hash_algos <- c("md5", "sha1")
+  x <- runif(10)
+  key <- "foo"
+  hmd5 <- digest::digest(x, "md5")
+
+  for (h in hash_algos) {
+    dr <- .driver_create(hash_algorithm = h)
+    on.exit(dr$destroy())
+
+    testthat::expect_equal(dr$hash_algorithm, h)
+
+    st <- storr(dr)
+    st$set(key, x)
+    testthat::expect_equal(st$get(key), x)
+    hash <- hash_object(x, h)
+    testthat::expect_equal(st$list_hashes(), hash)
+    ## Sanity check
+    testthat::expect_equal(hash == hmd5, h == "md5")
+
+    h_other <- setdiff(hash_algos, h)[[1L]]
+    testthat::expect_error(.driver_create(dr, hash_algorithm = h_other),
+                           "Incompatible value for hash_algorithm")
+
+    testthat::expect_equal(.driver_create(dr)$hash_algorithm, h)
+
+    dr$destroy()
+  }
+  on.exit()
+})

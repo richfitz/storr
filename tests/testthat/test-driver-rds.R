@@ -124,31 +124,6 @@ test_that("compression support", {
   expect_identical(st2$get("data"), data)
 })
 
-test_that("hash", {
-  hash_algos <- c("md5", "sha1")
-  x <- runif(10)
-  key <- "foo"
-  hmd5 <- digest::digest(x, "md5")
-
-  for (h in hash_algos) {
-    st <- storr_rds(tempfile(), hash_algorithm = h)
-    st$set(key, x)
-    expect_equal(st$get(key), x)
-    hash <- digest::digest(x, h)
-    expect_equal(st$list_hashes(), hash)
-    ## Sanity check
-    expect_equal(hash == hmd5, h == "md5")
-
-    h_other <- setdiff(hash_algos, h)[[1]]
-    expect_error(storr_rds(st$driver$path, hash_algorithm = h_other),
-                 "Incompatible value for hash_algorithm")
-
-    expect_equal(storr_rds(st$driver$path)$driver$hash_algorithm, h)
-
-    st$destroy()
-  }
-})
-
 test_that("backward compatibility", {
   ## In version 1.0.1 and earlier, the hash algorithm was not stored
   ## in the database and md5 was *always* used.
