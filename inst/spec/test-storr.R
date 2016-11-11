@@ -78,6 +78,22 @@ testthat::test_that("basic", {
   testthat::expect_equal(cache$get("bbb", use_cache=FALSE), d, tolerance=1e-15)
 })
 
+testthat::test_that("replace value", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+
+  st <- storr(dr)
+
+  x <- runif(5)
+  y <- runif(10)
+
+  st$set("key", x)
+  expect_equal(st$get("key", use_cache = FALSE), x)
+
+  st$set("key", y)
+  expect_equal(st$get("key", use_cache = FALSE), y)
+})
+
 testthat::test_that("default namespace", {
   dr <- .driver_create()
   on.exit(dr$destroy())
