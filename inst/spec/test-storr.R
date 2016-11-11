@@ -179,3 +179,18 @@ testthat::test_that("hash_algorithm", {
   }
   on.exit()
 })
+
+testthat::test_that("get_value", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  st <- storr(dr)
+
+  x <- runif(10)
+  st$set("a", x)
+
+  h <- st$list_hashes()
+  testthat::expect_equal(st$get_value(h), x)
+
+  testthat::expect_error(st$get_value("nosuchhash"),
+                         "hash 'nosuchhash' not found")
+})

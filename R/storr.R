@@ -160,8 +160,6 @@ R6_storr <- R6::R6Class(
       storr_gc(self$driver, self$envir)
     },
 
-    ## TODO: Allow drivers to declare that they will throw on
-    ## invalid access to save two lookups here.
     get_value=function(hash, use_cache=TRUE) {
       envir <- self$envir
       if (use_cache && exists0(hash, envir)) {
