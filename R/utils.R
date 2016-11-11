@@ -106,30 +106,6 @@ file_remove <- function(path) {
   invisible(exists)
 }
 
-## Might be useful for performance.
-declass_R6 <- function(x) {
-  if (!is.null(class(x)) && inherits(x, "R6") && is.function(x$clone)) {
-    x <- x$clone()
-    class(x) <- NULL
-  }
-  x
-}
-reclass_R6 <- function(x, cl) {
-  if (is.environment(x) && is.null(class(x))) {
-    class(x) <- cl
-  }
-  x
-}
-
-## TODO: This does not support alternative serialisation (yet), or
-## dealing with things that have been string serialised (see
-## redis_api).  To fix, look at readRDS' source code and work out how
-## it determines if the file is the correct format.
-RAW_HEADER <- as.raw(c(88L, 10L, 0))
-is_serialized <- function(x) {
-  is.raw(x) && length(x) > 3L && identical(x[1:3], RAW_HEADER)
-}
-
 ## For current R (3.2.3 or thereabouts) writeBin does not work with
 ## long vectors.  We can work around this for now, but in future
 ## versions this will just use native R support.
