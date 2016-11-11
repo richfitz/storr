@@ -2,15 +2,15 @@
 ## Redis PING is about 32 us so the savings are worth it for many
 ## things.  For rds it's about even.
 storr_traits_default <- function() {
-  list(accept_raw=FALSE,
-       throw_missing=FALSE)
+  list(accept_raw = FALSE,
+       throw_missing = FALSE)
 }
 
 storr_traits <- function(given) {
   default <- storr_traits_default()
   extra <- setdiff(names(given), names(default))
   if (length(extra) > 0L) {
-    stop("Unknown traits ", paste(extra, collapse=", "))
+    stop("Unknown traits ", paste(extra, collapse = ", "))
   }
   default[names(given)] <- given
   default

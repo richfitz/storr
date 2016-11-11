@@ -19,3 +19,10 @@ test_that("flush cache", {
   st$flush_cache()
   expect_equal(ls(st$envir), character(0))
 })
+
+test_that("traits", {
+  expect_equal(storr_traits(NULL), storr_traits_default())
+  expect_equal(storr_traits(list()), storr_traits_default())
+  expect_error(storr_traits(list(infinite_unicorns = TRUE)),
+               "Unknown traits")
+})
