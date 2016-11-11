@@ -302,7 +302,7 @@ dbi_use_binary <- function(con, tbl_data, binary) {
     res <- DBI::dbColumnInfo(rs)
     t <- res$type[match("value", res$name)]
     if (is.na(t)) {
-      stop("Did not find 'data' column")
+      stop("Did not find 'value' column")
     } else {
       binary_found <- t == "list" # small assumption here that this means BLOB
     }
