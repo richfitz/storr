@@ -47,10 +47,10 @@ driver_environment <- function(envir = NULL, hash_algorithm = NULL) {
   if (is.null(envir)) {
     envir <- new.env(parent=emptyenv())
   }
-  .R6_driver_environment$new(envir, hash_algorithm)
+  R6_driver_environment$new(envir, hash_algorithm)
 }
 
-.R6_driver_environment <- R6::R6Class(
+R6_driver_environment <- R6::R6Class(
   "driver_environment",
   public=list(
     envir = NULL,

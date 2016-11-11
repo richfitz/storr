@@ -82,10 +82,10 @@ storr_rds <- function(path, compress = NULL, mangle_key = NULL,
 ##' @rdname storr_rds
 driver_rds <- function(path, compress = NULL, mangle_key = NULL,
                        hash_algorithm = NULL) {
-  .R6_driver_rds$new(path, compress, mangle_key, hash_algorithm)
+  R6_driver_rds$new(path, compress, mangle_key, hash_algorithm)
 }
 
-.R6_driver_rds <- R6::R6Class(
+R6_driver_rds <- R6::R6Class(
   "driver_rds",
   public=list(
     ## TODO: things like hash_algorithm: do they belong in traits?

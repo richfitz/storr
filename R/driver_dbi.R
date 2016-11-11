@@ -77,10 +77,10 @@ storr_dbi <- function(con, tbl_data, tbl_keys, binary = NULL,
 ##' @export
 driver_dbi <- function(con, tbl_data, tbl_keys, binary = NULL,
                        hash_algorithm = NULL) {
-  .R6_driver_DBI$new(con, tbl_data, tbl_keys, binary, hash_algorithm)
+  R6_driver_DBI$new(con, tbl_data, tbl_keys, binary, hash_algorithm)
 }
 
-.R6_driver_DBI <- R6::R6Class(
+R6_driver_DBI <- R6::R6Class(
   "driver_DBI",
 
   ## It's not really clear here where we should store the

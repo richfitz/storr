@@ -73,7 +73,7 @@
 ##' st2$del("x")
 ##' st2$del("y")
 storr <- function(driver, default_namespace="objects") {
-  .R6_storr$new(driver, default_namespace)
+  R6_storr$new(driver, default_namespace)
 }
 
 ## NOTE: without some fairly ugly gymnastics, this is a **build-time**
@@ -83,7 +83,7 @@ storr <- function(driver, default_namespace="objects") {
 ## during .onLoad(); that's not ideal though because it makes the code
 ## a lot more obfuscated.
 ##' @importFrom R6 R6Class
-.R6_storr <- R6::R6Class(
+R6_storr <- R6::R6Class(
   "storr",
   public=list(
     driver = NULL,

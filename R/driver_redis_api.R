@@ -20,10 +20,10 @@ storr_redis_api <- function(prefix, con, hash_algorithm = NULL,
 ##' @export
 ##' @rdname storr_redis_api
 driver_redis_api <- function(prefix, con, hash_algorithm = NULL) {
-  .R6_driver_redis_api$new(prefix, con, hash_algorithm)
+  R6_driver_redis_api$new(prefix, con, hash_algorithm)
 }
 
-.R6_driver_redis_api <- R6::R6Class(
+R6_driver_redis_api <- R6::R6Class(
   "driver_redis_api",
   public=list(
     con = NULL,

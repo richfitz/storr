@@ -20,7 +20,7 @@
 ##' @export
 storr_external <- function(storage_driver, fetch_hook,
                            default_namespace="objects") {
-  .R6_storr_external$new(storage_driver, fetch_hook, default_namespace)
+  R6_storr_external$new(storage_driver, fetch_hook, default_namespace)
 }
 
 ## NOTE: This uses inheritence.  I actually think that this might be
@@ -34,9 +34,9 @@ storr_external <- function(storage_driver, fetch_hook,
 ##
 ## TODO: Support passing in an actual storr here, in which case we'd
 ## just take the driver element from it (possibly with a clone).
-.R6_storr_external <- R6::R6Class(
+R6_storr_external <- R6::R6Class(
   "storr_external",
-  inherit=.R6_storr,
+  inherit=R6_storr,
   public=list(
     fetch_hook=NULL,
     initialize=function(storage_driver, fetch_hook, default_namespace) {

@@ -197,12 +197,12 @@ identical(x, value)
 ## to follow.
 
 driver_sqlite <- function(path, tbl_data="storr_data", tbl_keys="storr_keys") {
-  .R6_driver_sqlite$new(path, tbl_data, tbl_keys)
+  R6_driver_sqlite$new(path, tbl_data, tbl_keys)
 }
 
 ## The R6 class definition that implements the functions above, with a
 ## little commentry throughout.
-.R6_driver_sqlite <- R6::R6Class(
+R6_driver_sqlite <- R6::R6Class(
   "driver_sqlite",
   public=list(
     ## Public data members
