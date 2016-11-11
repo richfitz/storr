@@ -60,10 +60,10 @@ R6_storr_external <- R6::R6Class(
     }))
 
 check_external_fetch_hook <- function(fetch_hook) {
+  ## NOTE: Could check here that there are two arguments, and that the
+  ## argument names are (key, namespace) but that seems overly
+  ## restrictive and hard to get right
   assert_function(fetch_hook)
-  if (!identical(names(formals(fetch_hook)), c("key", "namespace"))) {
-    stop("Function arguments must be 'key', 'namespace'")
-  }
   fetch_hook
 }
 
