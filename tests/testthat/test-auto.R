@@ -4,7 +4,7 @@ storr:::test_driver(function(dr = NULL, ...)
 storr:::test_driver(function(dr = NULL, ...)
   driver_rds(dr$path %||% tempfile("storr_"), ...))
 
-if (requireNamespace("SQLite", quietly=TRUE)) {
+if (requireNamespace("RSQLite", quietly=TRUE)) {
   new_sqlite <- function() {
     DBI::dbConnect(RSQLite::SQLite(), ":memory:")
   }

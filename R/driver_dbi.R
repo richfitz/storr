@@ -122,17 +122,14 @@ R6_driver_DBI <- R6::R6Class(
                "PRIMARY KEY (namespace, key))")
       DBI::dbGetQuery(self$con, paste(sql, collapse = " "))
 
-      ## 15 'f's - no hash algo has this length
-      ##
       ## TODO: This will work just fine unless we do set the hash to
       ## have a very particular length.
       ##
       ## TODO: See dbi_use_binary for an alternative approach for
       ## dealing with configuration; I don't think we can really use
       ## that here though?
-      config_hash <- paste(rep("f", 15), collapse = "")
-      if (self$exists_object(config_hash)) {
-        config <- self$get_object(config_hash)
+      if (self$exists_object(STORR_DBI_CONFIG_HASH)) {
+        config <- self$get_object(STORR_DBI_CONFIG_HASH)
       } else {
         config <- NULL
       }
@@ -141,7 +138,7 @@ R6_driver_DBI <- R6::R6Class(
       }
       if (is.null(config$hash_algorithm)) {
         config$hash_algorithm <- hash_algorithm %||% "md5"
-        self$set_object(config_hash, config)
+        self$set_object(STORR_DBI_CONFIG_HASH, config)
       } else {
         if (is.null(hash_algorithm)) {
           hash_algorithm <- config$hash_algorithm
@@ -260,7 +257,8 @@ R6_driver_DBI <- R6::R6Class(
     ## return numeric(0) if the result set is empty, we need as.character here.
     list_hashes=function() {
       sql <- sprintf("SELECT hash FROM %s", self$tbl_data)
-      as.character(DBI::dbGetQuery(self$con, sql)[[1]])
+      setdiff(as.character(DBI::dbGetQuery(self$con, sql)[[1]]),
+              STORR_DBI_CONFIG_HASH)
     },
     list_namespaces=function() {
       sql <- sprintf("SELECT DISTINCT namespace FROM %s", self$tbl_keys)
@@ -318,3 +316,6 @@ dbi_use_binary <- function(con, tbl_data, binary) {
     if (is.null(binary)) supports_binary else binary
   }
 }
+
+## 15 'f's - no hash algo has this length
+STORR_DBI_CONFIG_HASH <- paste(rep("f", 15), collapse = "")
