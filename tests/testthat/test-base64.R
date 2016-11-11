@@ -32,3 +32,9 @@ test_that("base64", {
   expect_identical(length(err1), 0L)
   expect_identical(length(err2), 0L)
 })
+
+test_that("vector", {
+  x <- encode64(letters)
+  expect_equal(x, vcapply(letters, encode64, USE.NAMES = FALSE))
+  expect_equal(decode64(x), letters)
+})

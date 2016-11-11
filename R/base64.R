@@ -15,9 +15,9 @@
 ##' # Encoding things into filename-safe strings is the reason for
 ##' # this function:
 ##' encode64("unlikely/to be @ valid filename")
-encode64 <- function(x, char62="-", char63="_") {
+encode64 <- function(x, char62 = "-", char63 = "_") {
   if (length(x) != 1L) {
-    return(vcapply(x, encode64,char62, char63, USE.NAMES=FALSE))
+    return(vcapply(x, encode64, char62, char63, USE.NAMES = FALSE))
   }
   tr <- c(LETTERS, letters, 0:9, char62, char63)
   x <- as.integer(charToRaw(x))
@@ -40,14 +40,14 @@ encode64 <- function(x, char62="-", char63="_") {
     len <- length(z)
     z[(len - n_pad + 1):len] <- "="
   }
-  paste0(z, collapse="")
+  paste0(z, collapse = "")
 }
 
 ##' @export
 ##' @rdname encode64
-decode64 <- function(x, char62="-", char63="_") {
+decode64 <- function(x, char62 = "-", char63 = "_") {
   if (length(x) != 1L) {
-    return(vcapply(x, decode64,char62, char63, USE.NAMES=FALSE))
+    return(vcapply(x, decode64, char62, char63, USE.NAMES = FALSE))
   }
   ## TODO: check that the string is correctly encoded before doing
   ## anything.
