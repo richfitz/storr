@@ -243,12 +243,8 @@ R6_storr <- R6::R6Class(
 storr_gc <- function(driver, envir) {
   ns <- driver$list_namespaces()
   hashes <- driver$list_hashes()
-  seen <- character(0)
-  f <- function(key, namespace) {
-    driver$get_hash(key, namespace)
-  }
-  seen <- unique(unlist(lapply(ns, function(i)
-    unique(vcapply(driver$list_keys(i), f, i)))))
+  seen <- unique(unlist(lapply(ns, function(nsi)
+    unique(vcapply(driver$list_keys(nsi), driver$get_hash, namespace = nsi)))))
   unused <- setdiff(hashes, seen)
   for (h in unused) {
     driver$del_object(h)
