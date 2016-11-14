@@ -208,12 +208,12 @@ R6_driver_DBI <- R6::R6Class(
         sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
                      "(hash, value) VALUES (:hash, :value)")
         dat <- list(hash=hash, value=list(serialize(value, NULL)))
-        DBI::dbGetQuery(self$con, sql, dat)
       } else {
-        sql <- c(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
-                 sprintf('(hash, value) VALUES ("%s", "%s")',
-                         hash, serialize_str(value)))
+        sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
+                     "(hash, value) VALUES (?, ?)")
+        dat <- list(hash, serialize_str(value))
       }
+      DBI::dbExecute(self$con, sql, dat)
     },
 
     ## Check if a key/namespace pair exists.

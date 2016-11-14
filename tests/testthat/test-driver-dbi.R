@@ -82,3 +82,15 @@ test_that("binary support detection", {
   with_mock("utils::packageVersion" = pv(c(RSQLite = "1.0.0", DBI = "0.4.1")),
             expect_true(dbi_supports_binary(con)))
 })
+
+test_that("non-binary storage", {
+  con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  st <- storr_dbi(con, "data", "keys", binary = FALSE)
+  x <- runif(10)
+  h <- hash_object(x)
+
+  st$set("foo", x)
+  expect_equal(st$list_hashes(), h)
+
+  expect_equal(st$get_value(h, FALSE), x)
+})
