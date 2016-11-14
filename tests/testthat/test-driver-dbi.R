@@ -33,3 +33,10 @@ test_that("missing data column", {
   expect_error(storr_dbi(con, "data", "keys"),
                "Did not find 'value' column", fixed = TRUE)
 })
+
+test_that("storr", {
+  con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  st <- storr_dbi(con, "data", "keys")
+  expect_is(st, "storr")
+  expect_equal(st$driver$type(), "DBI/SQLiteConnection")
+})
