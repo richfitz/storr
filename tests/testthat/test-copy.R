@@ -24,3 +24,18 @@ test_that("as.list", {
   dat <- as.list(st)
   expect_equal(dat, src[names(dat)])
 })
+
+test_that("unknown types", {
+  st <- storr_environment()
+
+  src <- list(a = 1, b = 2)
+  expect_error(
+    st$import(unlist(src), list = names(src)),
+    "Invalid type for src; can't 'get' from objects of type numeric")
+
+  res <- st$import(src)
+
+  expect_error(
+    st$export(numeric(), list = names(res)),
+    "Invalid type for dest; can't 'set' into objects of type numeric")
+})

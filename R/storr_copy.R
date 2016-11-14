@@ -37,28 +37,31 @@ storr_copy <- function(dest, src, list, namespace) {
   list(names = names_dest, dest = dest)
 }
 
-make_do_get <- function(x) {
-  if (is.function(x$get)) {
-    x$get
-  } else if (is.environment(x) || is.list(x)) {
-    function(key, namespace) x[[key]]
+make_do_get <- function(src) {
+  if ("get" %in% names(src) && is.function(src[["get"]])) {
+    src$get
+  } else if (is.environment(src) || is.list(src)) {
+    function(key, namespace) src[[key]]
   } else {
-    stop("I don't know how to 'get' from objects of type ",
-         paste(class(x), sep = "/"))
+    stop("Invalid type for src; can't 'get' from objects of type ",
+         paste(class(src), sep = "/"))
   }
 }
 
-make_do_set <- function(x) {
-  if (is.function(x$set)) {
+make_do_set <- function(dest) {
+  if ("set" %in% names(dest) && is.function(dest[["set"]])) {
     function(key, value, namespace) {
-      x$set(key, value, namespace)
-      x
+      dest$set(key, value, namespace)
+      dest
     }
-  } else if (is.environment(x) || is.list(x)) {
+  } else if (is.environment(dest) || is.list(dest)) {
     function(key, value, namespace) {
-      x[[key]] <- value
-      x
+      dest[[key]] <- value
+      dest
     }
+  } else {
+    stop("Invalid type for dest; can't 'set' into objects of type ",
+         paste(class(dest), sep = "/"))
   }
 }
 
