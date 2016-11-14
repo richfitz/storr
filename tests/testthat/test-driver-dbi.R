@@ -58,7 +58,7 @@ test_that("binary support detection", {
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 
   ## These are pretty easy:
-  with_mock(dbi_supports_binary = function(...) TRUE, {
+  with_mock("storr::dbi_supports_binary" = function(...) TRUE, {
     expect_true(dbi_use_binary(con, "data", NULL))
     expect_true(dbi_use_binary(con, "data", TRUE))
     expect_false(dbi_use_binary(con, "data", FALSE))
@@ -67,7 +67,7 @@ test_that("binary support detection", {
   ## Behaviour when the driver does not support binary:
   ##
   ## TODO: this does not get picked up by covr!?
-  with_mock(dbi_supports_binary = function(...) FALSE, {
+  with_mock("storr::dbi_supports_binary" = function(...) FALSE, {
     expect_error(dbi_use_binary(con, "data", TRUE),
                  "Binary storage requested but storage driver does")
     expect_false(dbi_use_binary(con, "data", NULL))
