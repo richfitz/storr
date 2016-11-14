@@ -35,8 +35,8 @@
 ##' @examples
 ##' ## Testing the environment driver is nice and fast:
 ##' if (requireNamespace("testthat")) {
-##'   create_env <- function(dr) {
-##      driver_environment(dr$envir)
+##'   create_env <- function(dr = NULL, ...) {
+##'     driver_environment(dr$envir, ...)
 ##'   }
 ##'   test_driver(create_env)
 ##' }

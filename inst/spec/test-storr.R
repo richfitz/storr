@@ -171,6 +171,11 @@ testthat::test_that("hash_algorithm", {
   key <- "foo"
   hmd5 <- digest::digest(x, "md5")
 
+  dr <- .driver_create()
+  if (is.null(dr$hash_algorithm)) {
+    skip("hash_algorithm not supported")
+  }
+
   for (h in hash_algos) {
     dr <- .driver_create(hash_algorithm = h)
     on.exit(dr$destroy())
