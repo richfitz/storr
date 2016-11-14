@@ -19,6 +19,11 @@ strings nicer to deal with.}
 \item{con}{A \code{redis_api} connection object, as created by the
 redux or rrlite packages.}
 
+\item{hash_algorithm}{Name of the hash algorithm to use.  Possible
+values are "md5", "sha1", and others supported by
+\code{\link{digest}}.  If not given, then we will default to
+"md5".}
+
 \item{default_namespace}{Default namespace (see \code{\link{storr}}).}
 }
 \description{
