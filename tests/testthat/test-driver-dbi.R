@@ -2,6 +2,8 @@ context("DBI")
 
 ## Default will find binary support in SQLite:
 test_that("binary detection", {
+  skip_if_not_installed("RSQLite")
+
   ## TODO: for CRAN safety this needs to be skipped if SQLite is not
   ## of sufficient version.
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
@@ -35,6 +37,8 @@ test_that("missing data column", {
 })
 
 test_that("storr", {
+  skip_if_not_installed("RSQLite")
+
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
   st <- storr_dbi(con, "data", "keys")
   expect_is(st, "storr")
@@ -42,6 +46,8 @@ test_that("storr", {
 })
 
 test_that("binary support detection", {
+  skip_if_not_installed("RSQLite")
+
   ## Fake package version generating function:
   pv <- function(v) {
     force(v)
@@ -84,6 +90,8 @@ test_that("binary support detection", {
 })
 
 test_that("non-binary storage", {
+  skip_if_not_installed("RSQLite")
+
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
   st <- storr_dbi(con, "data", "keys", binary = FALSE)
   x <- runif(10)
