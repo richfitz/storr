@@ -40,3 +40,45 @@ test_that("storr", {
   expect_is(st, "storr")
   expect_equal(st$driver$type(), "DBI/SQLiteConnection")
 })
+
+test_that("binary support detection", {
+  ## Fake package version generating function:
+  pv <- function(v) {
+    force(v)
+    function(pkg, lib.loc = NULL) {
+      if (pkg %in% names(v)) {
+        ret <- v[[pkg]]
+      } else {
+        ret <- packageDescription(pkg, lib.loc = lib.loc, fields = "Version")
+      }
+      numeric_version(ret)
+    }
+  }
+
+  con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+
+  ## These are pretty easy:
+  with_mock(dbi_supports_binary = function(...) TRUE, {
+    expect_true(dbi_use_binary(con, "data", NULL))
+    expect_true(dbi_use_binary(con, "data", TRUE))
+    expect_false(dbi_use_binary(con, "data", FALSE))
+  })
+
+  ## Behaviour when the driver does not support binary:
+  ##
+  ## TODO: this does not get picked up by covr!?
+  with_mock(dbi_supports_binary = function(...) FALSE, {
+    expect_error(dbi_use_binary(con, "data", TRUE),
+                 "Binary storage requested but storage driver does")
+    expect_false(dbi_use_binary(con, "data", NULL))
+    expect_false(dbi_use_binary(con, "data", FALSE))
+  })
+
+  ## Then test version things:
+  with_mock("utils::packageVersion" = pv(c(DBI = "0.0.1")),
+            expect_false(dbi_supports_binary(con)))
+  with_mock("utils::packageVersion" = pv(c(RSQLite = "0.0.1")),
+            expect_false(dbi_supports_binary(con)))
+  with_mock("utils::packageVersion" = pv(c(RSQLite = "1.0.0", DBI = "0.4.1")),
+            expect_true(dbi_supports_binary(con)))
+})
