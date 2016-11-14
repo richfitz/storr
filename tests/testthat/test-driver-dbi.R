@@ -85,7 +85,7 @@ test_that("binary support detection", {
             expect_false(dbi_supports_binary(con)))
   with_mock("utils::packageVersion" = pv(c(RSQLite = "0.0.1")),
             expect_false(dbi_supports_binary(con)))
-  with_mock("utils::packageVersion" = pv(c(RSQLite = "1.0.0", DBI = "0.4.1")),
+  with_mock("utils::packageVersion" = pv(c(RSQLite = "1.0.1", DBI = "0.4.1")),
             expect_true(dbi_supports_binary(con)))
 })
 

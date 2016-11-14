@@ -18,10 +18,11 @@ Imports:
     R6 (>= 2.1.0),
     digest
 Suggests:
-    DBI,
-    RSQLite,
+    DBI (>= 0.5.1),
+    RSQLite (> 1.0.0),
     knitr,
     microbenchmark,
     testthat (>= 1.0.0)
+Remotes: rstats-db/RSQLite
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

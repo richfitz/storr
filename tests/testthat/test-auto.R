@@ -1,16 +1,22 @@
-storr:::test_driver(function(dr = NULL, ...)
-  driver_environment(dr$envir, ...))
-
-storr:::test_driver(function(dr = NULL, ...)
-  driver_rds(dr$path %||% tempfile("storr_"), ...))
-
-if (requireNamespace("RSQLite", quietly=TRUE)) {
-  new_sqlite <- function() {
-    DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  }
+test_that("environment", {
   storr:::test_driver(function(dr = NULL, ...)
-    driver_dbi(dr$con %||% new_sqlite(), "data", "keys", ...))
-}
+    driver_environment(dr$envir, ...))
+})
+
+test_that("rds", {
+  storr:::test_driver(function(dr = NULL, ...)
+    driver_rds(dr$path %||% tempfile("storr_"), ...))
+})
+
+test_that("dbi", {
+  if (requireNamespace("RSQLite", quietly=TRUE)) {
+    new_sqlite <- function() {
+      DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+    }
+    storr:::test_driver(function(dr = NULL, ...)
+      driver_dbi(dr$con %||% new_sqlite(), "data", "keys", ...))
+  }
+})
 
 ## These are not required on CRAN testing, but only for my own
 ## edification.

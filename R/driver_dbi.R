@@ -278,7 +278,7 @@ dbi_supports_binary <- function(con) {
   ## serialisation.
   if (packageVersion("DBI") >= package_version("0.4.1")) {
     if (inherits(con, "SQLiteConnection") &&
-        packageVersion("RSQLite") >= package_version("1.0.0")) {
+        packageVersion("RSQLite") > package_version("1.0.0")) {
       supports_binary <- TRUE
     }
   }
