@@ -110,7 +110,7 @@ R6_driver_DBI <- R6::R6Class(
       sql <- c(sprintf("CREATE TABLE if NOT EXISTS %s", tbl_data),
                "(hash STRING PRIMARY KEY NOT NULL,",
                sprintf("value %s NOT NULL)", data_type))
-      DBI::dbGetQuery(self$con, paste(sql, collapse = " "))
+      DBI::dbExecute(self$con, paste(sql, collapse = " "))
 
       sql <- c(sprintf("CREATE TABLE IF NOT EXISTS %s", tbl_keys),
                "(namespace STRING NOT NULL,",
@@ -120,7 +120,7 @@ R6_driver_DBI <- R6::R6Class(
                "key STRING NOT NULL,",
                "hash STRING NOT NULL,",
                "PRIMARY KEY (namespace, key))")
-      DBI::dbGetQuery(self$con, paste(sql, collapse = " "))
+      DBI::dbExecute(self$con, paste(sql, collapse = " "))
 
       ## TODO: This will work just fine unless we do set the hash to
       ## have a very particular length.
@@ -177,7 +177,7 @@ R6_driver_DBI <- R6::R6Class(
       sql <- c(sprintf("INSERT OR REPLACE INTO %s", self$tbl_keys),
                sprintf('(namespace, key, hash) VALUES ("%s", "%s", "%s")',
                        namespace, key, hash))
-      DBI::dbGetQuery(self$con, paste(sql, collapse=" "))
+      DBI::dbExecute(self$con, paste(sql, collapse=" "))
     },
 
     ## Return a (deserialised) R object, given a hash
@@ -236,7 +236,7 @@ R6_driver_DBI <- R6::R6Class(
       if (self$exists_hash(key, namespace)) {
         sql <- sprintf('DELETE FROM %s WHERE namespace = "%s" AND key = "%s"',
                        self$tbl_keys, namespace, key)
-        DBI::dbGetQuery(self$con, sql)
+        DBI::dbExecute(self$con, sql)
         TRUE
       } else {
         FALSE
@@ -246,7 +246,7 @@ R6_driver_DBI <- R6::R6Class(
     del_object=function(hash) {
       if (self$exists_object(hash)) {
         sql <- sprintf('DELETE FROM %s WHERE hash = "%s"', self$tbl_data, hash)
-        DBI::dbGetQuery(self$con, sql)
+        DBI::dbExecute(self$con, sql)
         TRUE
       } else {
         FALSE
