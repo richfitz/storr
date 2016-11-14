@@ -7,12 +7,15 @@
 test_driver(create)
 }
 \arguments{
-\item{create}{A function with no arguments that when run will
-create a new driver instance.  Depending on your storage model,
-temporary directories, in-memory locations, or random-but-unique
-prefixes may help create isolated locations for the test (the
-tests assume that a storr created with \code{create} is entirely
-empty).}
+\item{create}{A function with one arguments that when run with
+\code{NULL} as the argument will create a new driver instance.
+It will also be called with a driver (of the same type) as an
+argument - in this case, you must create a new driver object
+pointing at the same underlying storage (see the examples).
+Depending on your storage model, temporary directories,
+in-memory locations, or random-but-unique prefixes may help
+create isolated locations for the test (the tests assume that a
+storr created with \code{create} is entirely empty).}
 }
 \description{
 Test that a driver passes all storr tests.  This page is only of
@@ -40,13 +43,18 @@ any precious data!
 \examples{
 ## Testing the environment driver is nice and fast:
 if (requireNamespace("testthat")) {
-  test_driver(function() driver_environment())
+  create_env <- function(dr) {
+  }
+  test_driver(create_env)
 }
 
 # To test things like the rds driver, I would run:
 \dontrun{
 if (requireNamespace("testthat")) {
-  test_driver(function() driver_rds(tempfile()))
+  create_rds <- function(dr = NULL) {
+    driver_rds(if (is.null(dr)) tempfile() else dr$path)
+  }
+  test_driver(create_rds)
 }
 }
 }
