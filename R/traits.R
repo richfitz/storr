@@ -3,7 +3,8 @@
 ## things.  For rds it's about even.
 storr_traits_default <- function() {
   list(accept_raw = FALSE,
-       throw_missing = FALSE)
+       throw_missing = FALSE,
+       drop_r_version = FALSE)
 }
 
 storr_traits <- function(given) {
@@ -13,5 +14,10 @@ storr_traits <- function(given) {
     stop("Unknown traits ", paste(extra, collapse = ", "))
   }
   default[names(given)] <- given
+
+  if (default$drop_r_version && !default$accept_raw) {
+    stop("if drop_r_version is TRUE, then accept_raw must also be TRUE")
+  }
+
   default
 }

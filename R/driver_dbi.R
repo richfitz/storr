@@ -94,6 +94,10 @@ R6_driver_DBI <- R6::R6Class(
     binary = NULL,
     hash_algorithm = NULL,
 
+    ## TODO: some traits, especially accept_raw but possibly also
+    ## throw_missing should be set, especially when assuming a recent
+    ## version of RSQLite.
+
     initialize=function(con, tbl_data, tbl_keys, binary = NULL,
                         hash_algorithm = NULL) {
       loadNamespace("DBI")

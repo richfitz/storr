@@ -97,7 +97,9 @@ R6_storr <- R6::R6Class(
       self$envir <- new.env(parent=emptyenv())
       self$default_namespace <- default_namespace
       self$traits <- storr_traits(driver$traits)
-      self$hash_raw <- make_hash_serialised_object(driver$hash_algorithm)
+      self$hash_raw <-
+        make_hash_serialised_object(driver$hash_algorithm,
+                                    !self$traits$drop_r_version)
     },
 
     destroy=function() {
@@ -182,7 +184,10 @@ R6_storr <- R6::R6Class(
     },
 
     set_value=function(value, use_cache=TRUE) {
-      value_ser <- serialize(value, NULL)
+      traits <- self$traits
+
+      value_ser <- serialize_object(value,
+                                    drop_r_version = traits$drop_r_version)
       hash <- self$hash_raw(value_ser)
 
       ## NOTE: This exists/set roundtrip here always seems useful to
@@ -190,7 +195,7 @@ R6_storr <- R6::R6Class(
       ## it's possible that some drivers could do this more
       ## efficiently themselves during negotiation.
       if (!self$driver$exists_object(hash)) {
-        value_send <- if (self$traits$accept_raw) value_ser else value
+        value_send <- if (traits$accept_raw) value_ser else value
         self$driver$set_object(hash, value_send)
       }
       if (use_cache && !exists0(hash, self$envir)) {
