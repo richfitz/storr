@@ -29,15 +29,16 @@ testthat::test_that("basic (empty)", {
 testthat::test_that("set", {
   dr <- .driver_create()
   on.exit(dr$destroy())
+  helper <- spec_helper(dr)
 
   ## First, let's set some data to a hash
   d <- runif(100)
-  h <- hash_object(d)
+  h <- helper$hash_object(d)
   k <- "bbb"
   ns <- "ns"
 
   if (isTRUE(dr$traits[["accept_raw"]])) {
-    dr$set_object(h, serialize(d, NULL))
+    dr$set_object(h, helper$serialize(d))
   } else {
     dr$set_object(h, d)
   }
@@ -48,7 +49,7 @@ testthat::test_that("set", {
   testthat::expect_identical(dr$get_hash(k, ns), h)
 
   ## Check that *updating* a hash works.
-  h2 <- hash_object(h)
+  h2 <- helper$hash_object(h)
   dr$set_hash(k, ns, h2)
   testthat::expect_identical(dr$get_hash(k, ns), h2)
 
@@ -69,15 +70,16 @@ testthat::test_that("set", {
 testthat::test_that("namespace", {
   dr <- .driver_create()
   on.exit(dr$destroy())
+  helper <- spec_helper(dr)
 
   ## First, let's set some data to a hash
   d <- runif(100)
-  h <- hash_object(d)
+  h <- helper$hash_object(d)
   k <- "bbb"
   ns <- "ns"
 
   if (isTRUE(dr$traits[["accept_raw"]])) {
-    dr$set_object(h, serialize(d, NULL))
+    dr$set_object(h, helper$serialize(d))
   } else {
     dr$set_object(h, d)
   }
@@ -113,10 +115,11 @@ testthat::test_that("namespace", {
 testthat::test_that("traits: throw_missing", {
   dr <- .driver_create()
   on.exit(dr$destroy())
+  helper <- spec_helper(dr)
 
   if (isTRUE(dr$traits[["throw_missing"]])) {
     str <- paste(sample(letters), collapse="")
     testthat::expect_error(dr$get_hash(str, "objects"))
-    testthat::expect_error(dr$get_object(hash_object(str)))
+    testthat::expect_error(dr$get_object(helper$hash_object(str)))
   }
 })

@@ -6,6 +6,7 @@ testthat::context(sprintf("external [%s]", .driver_name))
 testthat::test_that("simple", {
   dr <- .driver_create()
   on.exit(dr$destroy())
+  helper <- spec_helper(dr)
 
   path <- tempfile()
   on.exit(unlink(path, recursive=TRUE), add=TRUE)
@@ -13,7 +14,7 @@ testthat::test_that("simple", {
   ## Set up some data:
   dat <- "aaa"
   key <- "a"
-  hash <- hash_object(dat)
+  hash <- helper$hash_object(dat)
   ns <- "objects"
 
   dir.create(path)

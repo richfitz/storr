@@ -14,6 +14,7 @@ testthat::context(sprintf("storr [%s]", .driver_name))
 testthat::test_that("basic", {
   dr <- .driver_create()
   on.exit(dr$destroy())
+  helper <- spec_helper(dr)
 
   cache <- storr(dr)
   testthat::expect_is(cache, "storr")
@@ -33,7 +34,7 @@ testthat::test_that("basic", {
                          "key 'aaa' ('objects') not found", fixed=TRUE)
 
   d <- runif(100)
-  hash <- hash_object(d)
+  hash <- helper$hash_object(d)
 
   res <- cache$set("aaa", d)
 
@@ -117,10 +118,12 @@ testthat::test_that("default namespace", {
 testthat::test_that("set_by_value", {
   dr <- .driver_create()
   on.exit(dr$destroy())
+  helper <- spec_helper(dr)
+
   st <- storr(dr)
   x <- runif(10)
   h <- st$set_by_value(x)
-  testthat::expect_identical(h, hash_object(x))
+  testthat::expect_identical(h, helper$hash_object(x))
   testthat::expect_identical(st$list_hashes(), h)
   testthat::expect_identical(st$list(), h)
   testthat::expect_equal(st$get(h), x)
@@ -175,6 +178,7 @@ testthat::test_that("hash_algorithm", {
   if (is.null(dr$hash_algorithm)) {
     skip("hash_algorithm not supported")
   }
+  helper <- spec_helper(dr)
 
   for (h in hash_algos) {
     dr <- .driver_create(hash_algorithm = h)
@@ -185,7 +189,11 @@ testthat::test_that("hash_algorithm", {
     st <- storr(dr)
     st$set(key, x)
     testthat::expect_equal(st$get(key), x)
-    hash <- hash_object(x, h)
+
+    ## TODO: this is profoundly ugly and it would be nice to get this
+    ## sorted out at some point
+    hash <- make_hash_serialised_object(h, !st$traits$drop_r_version)(
+      helper$serialize(x))
     testthat::expect_equal(st$list_hashes(), hash)
     ## Sanity check
     testthat::expect_equal(hash == hmd5, h == "md5")

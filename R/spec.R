@@ -88,3 +88,23 @@ test_driver <- function(create) {
     invisible(res)
   }
 }
+
+## Creates hash / serialize functions that will work correctly for the tests
+##
+## The functions to remove are:
+##
+## * digest::digest -- should be nowhere (TODO: a few places still)
+## * hash_object
+## * serialize
+spec_helper <- function(driver) {
+  drop_r_version <- storr_traits(driver$traits)$drop_r_version
+  hash_algorithm <- driver$hash_algorithm %||% "md5"
+  hash <- make_hash_serialised_object(driver$hash_algorithm, !drop_r_version)
+  do_serialize <- function(object) {
+    serialize_object(object, drop_r_version = drop_r_version)
+  }
+  hash_object <- function(object) {
+    hash(do_serialize(object))
+  }
+  list(hash = hash, serialize = do_serialize, hash_object = hash_object)
+}
