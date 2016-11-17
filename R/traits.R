@@ -1,10 +1,8 @@
-## The overhead of using tryCatch is ~2-4 us but the overhead of a
-## Redis PING is about 32 us so the savings are worth it for many
-## things.  For rds it's about even.
 storr_traits_default <- function() {
   list(accept_raw = FALSE,
        throw_missing = FALSE,
-       drop_r_version = FALSE)
+       drop_r_version = FALSE,
+       hash_algorithm = TRUE)
 }
 
 storr_traits <- function(given) {
