@@ -30,40 +30,46 @@ testthat::test_that("basic", {
   testthat::expect_identical(setdiff(cache$list_namespaces(), "objects"),
                              character(0))
 
-  testthat::expect_error(cache$get("aaa"),
-                         "key 'aaa' ('objects') not found", fixed=TRUE)
+  key <- "aaa"
+
+  testthat::expect_error(cache$get(key),
+                         sprintf("key '%s' ('objects') not found", key),
+                         fixed = TRUE)
 
   d <- runif(100)
   hash <- helper$hash_object(d)
 
-  res <- cache$set("aaa", d)
+  res <- cache$set(key, d)
 
   testthat::expect_identical(res, hash)
-  testthat::expect_identical(cache$list(), "aaa")
+  testthat::expect_identical(cache$list(), key)
   testthat::expect_identical(cache$list_hashes(), hash)
-  testthat::expect_identical(cache$get_hash("aaa"), hash)
-  testthat::expect_equal(cache$get("aaa"), d, tolerance=1e-15)
-  testthat::expect_equal(cache$get("aaa", use_cache=FALSE), d, tolerance=1e-15)
-  testthat::expect_equal(cache$get_value(hash), d, tolerance=1e-15)
+  testthat::expect_identical(cache$get_hash(key), hash)
+  testthat::expect_equal(cache$get(key), d, tolerance = 1e-15)
+  testthat::expect_equal(cache$get(key, use_cache = FALSE), d,
+                         tolerance = 1e-15)
+  testthat::expect_equal(cache$get_value(hash), d, tolerance = 1e-15)
   testthat::expect_identical(ls(cache$envir), hash)
   testthat::expect_identical(cache$list_namespaces(), "objects")
 
   ## Set a second key to to the same value:
-  cache$set("bbb", d)
-  testthat::expect_identical(sort(cache$list()), c("aaa", "bbb"))
+  key2 <- "bbb"
+  cache$set(key2, d)
+  testthat::expect_identical(sort(cache$list()), c(key, key2))
   testthat::expect_identical(cache$list_hashes(), hash)
-  testthat::expect_identical(cache$get_hash("bbb"), hash)
-  testthat::expect_equal(cache$get("bbb"), d, tolerance=1e-15)
-  testthat::expect_equal(cache$get("bbb", use_cache=FALSE), d, tolerance=1e-15)
+  testthat::expect_identical(cache$get_hash(key2), hash)
+  testthat::expect_equal(cache$get(key2), d, tolerance = 1e-15)
+  testthat::expect_equal(cache$get(key2, use_cache = FALSE), d,
+                         tolerance = 1e-15)
 
   ## Drop key:
-  testthat::expect_true(cache$del("aaa"))
-  testthat::expect_identical(cache$list(), "bbb")
+  testthat::expect_true(cache$del(key))
+  testthat::expect_identical(cache$list(), key2)
   testthat::expect_identical(cache$list_hashes(), hash)
-  testthat::expect_equal(cache$get("bbb"), d, tolerance=1e-15)
+  testthat::expect_equal(cache$get(key2), d, tolerance = 1e-15)
 
   ## Drop the other key:
-  testthat::expect_true(cache$del("bbb"))
+  testthat::expect_true(cache$del(key2))
   testthat::expect_identical(cache$list(), character(0))
   testthat::expect_identical(cache$list_hashes(), hash)
 
@@ -73,10 +79,11 @@ testthat::test_that("basic", {
   testthat::expect_identical(ls(cache$envir), character(0))
 
   ## Skip the cache on the way in:
-  cache$set("bbb", d, use_cache=FALSE)
+  cache$set(key2, d, use_cache = FALSE)
   testthat::expect_identical(ls(cache$envir), character(0))
-  testthat::expect_equal(cache$get("bbb"), d, tolerance=1e-15)
-  testthat::expect_equal(cache$get("bbb", use_cache=FALSE), d, tolerance=1e-15)
+  testthat::expect_equal(cache$get(key2), d, tolerance = 1e-15)
+  testthat::expect_equal(cache$get(key2, use_cache = FALSE), d,
+                         tolerance = 1e-15)
 })
 
 testthat::test_that("replace value", {
@@ -100,7 +107,7 @@ testthat::test_that("default namespace", {
   on.exit(dr$destroy())
 
   st0 <- storr(dr)
-  st <- storr(dr, default_namespace="storr")
+  st <- storr(dr, default_namespace = "storr")
   st1 <- storr(dr)
 
   testthat::expect_identical(st$default_namespace, "storr")
@@ -133,9 +140,9 @@ testthat::test_that("clear", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   st <- storr(dr)
-  st$set("a1", 1, namespace="a")
-  st$set("a2", 2, namespace="a")
-  st$set("b1", 1, namespace="b")
+  st$set("a1", 1, namespace = "a")
+  st$set("a2", 2, namespace = "a")
+  st$set("b1", 1, namespace = "b")
 
   testthat::expect_equal(sort(st$list("a")), sort(c("a1", "a2")))
   testthat::expect_equal(st$clear("a"), 2L)
@@ -145,9 +152,9 @@ testthat::test_that("clear", {
   testthat::expect_equal(st$clear(NULL), 1L)
   testthat::expect_equal(st$list("b"), character(0))
 
-  st$set("a1", 1, namespace="a")
-  st$set("a2", 2, namespace="a")
-  st$set("b1", 1, namespace="b")
+  st$set("a1", 1, namespace = "a")
+  st$set("a2", 2, namespace = "a")
+  st$set("b1", 1, namespace = "b")
   testthat::expect_equal(st$clear(NULL), 3L)
   testthat::expect_equal(st$clear(NULL), 0L)
   testthat::expect_equal(st$clear("no_such_namespace"), 0L)
@@ -157,9 +164,9 @@ test_that("reconnect", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   st <- storr(dr)
-  st$set("a1", 1, namespace="a")
-  st$set("a2", 2, namespace="a")
-  st$set("b1", 1, namespace="b")
+  st$set("a1", 1, namespace = "a")
+  st$set("a2", 2, namespace = "a")
+  st$set("b1", 1, namespace = "b")
 
   dr2 <- .driver_create(dr)
   st2 <- storr(dr2)
