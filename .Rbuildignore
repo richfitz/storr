@@ -9,3 +9,4 @@
 ^TODO\.md$
 ^autodoc\.R$
 ^man-roxygen$
+^\.lintr$

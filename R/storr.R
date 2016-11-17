@@ -13,7 +13,7 @@
 ##' (\href{https://github.com/ropensci/rrlite}{rrlite} or
 ##' \href{https://github.com/richfitz/redux}{redux}).  New drivers are
 ##' relatively easy to add -- see the "drivers" vignette
-##' (\code{vignette("drivers", package="storr")}).
+##' (\code{vignette("drivers", package = "storr")}).
 ##'
 ##' There are convenience functions (e.g.,
 ##' \code{\link{storr_environment}} and \code{\link{storr_rds}}) that
@@ -67,12 +67,12 @@
 ##' ## not "objects" by using the \code{default_namespace} argument (this
 ##' ## one also points at the same memory as the first storr).
 ##' st2 <- storr(driver_environment(st$driver$envir),
-##'              default_namespace="namespace2")
+##'              default_namespace = "namespace2")
 ##' ## All functions now use "namespace2" as the default namespace:
 ##' st2$list()
 ##' st2$del("x")
 ##' st2$del("y")
-storr <- function(driver, default_namespace="objects") {
+storr <- function(driver, default_namespace = "objects") {
   R6_storr$new(driver, default_namespace)
 }
 
@@ -85,16 +85,16 @@ storr <- function(driver, default_namespace="objects") {
 ##' @importFrom R6 R6Class
 R6_storr <- R6::R6Class(
   "storr",
-  public=list(
+  public = list(
     driver = NULL,
     envir = NULL,
     default_namespace = NULL,
     traits = NULL,
     hash_raw = NULL,
 
-    initialize=function(driver, default_namespace) {
+    initialize = function(driver, default_namespace) {
       self$driver <- driver
-      self$envir <- new.env(parent=emptyenv())
+      self$envir <- new.env(parent = emptyenv())
       self$default_namespace <- default_namespace
       self$traits <- storr_traits(driver$traits)
       self$hash_raw <-
@@ -102,35 +102,37 @@ R6_storr <- R6::R6Class(
                                     !self$traits$drop_r_version)
     },
 
-    destroy=function() {
+    destroy = function() {
       self$driver$destroy()
       self$driver <- NULL
     },
 
-    flush_cache=function() {
-      rm(list=ls(self$envir, all.names=TRUE), envir=self$envir)
+    flush_cache = function() {
+      rm(list = ls(self$envir, all.names = TRUE), envir = self$envir)
     },
 
-    set=function(key, value, namespace=self$default_namespace, use_cache=TRUE) {
+    set = function(key, value, namespace = self$default_namespace,
+                   use_cache = TRUE) {
       hash <- self$set_value(value, use_cache)
       self$driver$set_hash(key, namespace, hash)
       invisible(hash)
     },
 
-    set_by_value=function(value, namespace=self$default_namespace, use_cache=TRUE) {
+    set_by_value = function(value, namespace = self$default_namespace,
+                            use_cache = TRUE) {
       hash <- self$set_value(value, use_cache)
       self$driver$set_hash(hash, namespace, hash)
       invisible(hash)
     },
 
-    get=function(key, namespace=self$default_namespace, use_cache=TRUE) {
+    get = function(key, namespace = self$default_namespace, use_cache = TRUE) {
       self$get_value(self$get_hash(key, namespace), use_cache)
     },
 
-    get_hash=function(key, namespace=self$default_namespace) {
+    get_hash = function(key, namespace = self$default_namespace) {
       if (self$traits$throw_missing) {
         tryCatch(self$driver$get_hash(key, namespace),
-                 error=function(e) stop(KeyError(key, namespace)))
+                 error = function(e) stop(KeyError(key, namespace)))
       } else {
         if (self$exists(key, namespace)) {
           self$driver$get_hash(key, namespace)
@@ -140,36 +142,36 @@ R6_storr <- R6::R6Class(
       }
     },
 
-    del=function(key, namespace=self$default_namespace) {
+    del = function(key, namespace = self$default_namespace) {
       invisible(self$driver$del_hash(key, namespace))
     },
-    clear=function(namespace=self$default_namespace) {
+    clear = function(namespace = self$default_namespace) {
       if (is.null(namespace)) {
         invisible(sum(viapply(self$list_namespaces(), self$clear)))
       } else {
         invisible(length(vlapply(self$list(namespace), self$del, namespace)))
       }
     },
-    exists=function(key, namespace=self$default_namespace) {
+    exists = function(key, namespace = self$default_namespace) {
       self$driver$exists_hash(key, namespace)
     },
 
-    exists_object=function(hash) {
+    exists_object = function(hash) {
       self$driver$exists_object(hash)
     },
 
-    gc=function() {
+    gc = function() {
       storr_gc(self$driver, self$envir)
     },
 
-    get_value=function(hash, use_cache=TRUE) {
+    get_value = function(hash, use_cache = TRUE) {
       envir <- self$envir
       if (use_cache && exists0(hash, envir)) {
         value <- envir[[hash]]
       } else {
         if (self$traits$throw_missing) {
           value <- tryCatch(self$driver$get_object(hash),
-                            error=function(e) stop(HashError(hash)))
+                            error = function(e) stop(HashError(hash)))
         } else {
           if (!self$driver$exists_object(hash)) {
             stop(HashError(hash))
@@ -183,7 +185,7 @@ R6_storr <- R6::R6Class(
       value
     },
 
-    set_value=function(value, use_cache=TRUE) {
+    set_value = function(value, use_cache = TRUE) {
       traits <- self$traits
 
       value_ser <- serialize_object(value,
@@ -205,26 +207,26 @@ R6_storr <- R6::R6Class(
     },
 
     ## We guarantee key sort here; underlying driver does not have to.
-    list=function(namespace=self$default_namespace) {
+    list = function(namespace = self$default_namespace) {
       sort(self$driver$list_keys(namespace))
     },
 
-    list_hashes=function() {
+    list_hashes = function() {
       sort(self$driver$list_hashes())
     },
 
-    list_namespaces=function() {
+    list_namespaces = function() {
       sort(self$driver$list_namespaces())
     },
 
     ## To/from R environments (distinct from the environment driver)
-    import=function(src, list=NULL, namespace=self$default_namespace) {
+    import = function(src, list = NULL, namespace = self$default_namespace) {
       storr_copy(self, src, list, namespace)$names
     },
 
     ## The logic here is taken from remake's object_store, which is
     ## useful as this is destined to replace that object.
-    export=function(dest, list=NULL, namespace=self$default_namespace) {
+    export = function(dest, list = NULL, namespace = self$default_namespace) {
       invisible(storr_copy(dest, self, list, namespace)$dest)
     },
 
@@ -232,14 +234,14 @@ R6_storr <- R6::R6Class(
     ## allow a vector of namespaces here.  The place to implement this
     ## would be in storr_copy because it would flow through
     ## everything else.
-    archive_export=function(path, names=NULL,
-                            namespace=self$default_namespace) {
-      self$export(storr_rds(path, mangle_key=TRUE), names, namespace)
+    archive_export = function(path, names = NULL,
+                              namespace = self$default_namespace) {
+      self$export(storr_rds(path, mangle_key = TRUE), names, namespace)
     },
 
-    archive_import=function(path, names=NULL,
-                            namespace=self$default_namespace) {
-      self$import(storr_rds(path, mangle_key=TRUE), names, namespace)
+    archive_import = function(path, names = NULL,
+                              namespace = self$default_namespace) {
+      self$import(storr_rds(path, mangle_key = TRUE), names, namespace)
     }))
 
 ## This one is complicated enough to come out.

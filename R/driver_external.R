@@ -19,7 +19,7 @@
 ##'   \code{\link{storr}})
 ##' @export
 storr_external <- function(storage_driver, fetch_hook,
-                           default_namespace="objects") {
+                           default_namespace = "objects") {
   R6_storr_external$new(storage_driver, fetch_hook, default_namespace)
 }
 
@@ -36,21 +36,21 @@ storr_external <- function(storage_driver, fetch_hook,
 ## just take the driver element from it (possibly with a clone).
 R6_storr_external <- R6::R6Class(
   "storr_external",
-  inherit=R6_storr,
-  public=list(
-    fetch_hook=NULL,
-    initialize=function(storage_driver, fetch_hook, default_namespace) {
+  inherit = R6_storr,
+  public = list(
+    fetch_hook = NULL,
+    initialize = function(storage_driver, fetch_hook, default_namespace) {
       super$initialize(storage_driver, default_namespace)
       self$fetch_hook <- check_external_fetch_hook(fetch_hook)
     },
-    ## NOTE: This is *always* using use_cache=TRUE in the set phase.
+    ## NOTE: This is *always* using use_cache = TRUE in the set phase.
     ## I think that's OK because it doesn't make a great deal of sense
     ## to expose use_cache in the get_hash function which generally
     ## will not touch the cache.
-    get_hash=function(key, namespace) {
+    get_hash = function(key, namespace) {
       if (!self$exists(key, namespace)) {
         value <- tryCatch(self$fetch_hook(key, namespace),
-                          error=function(e)
+                          error = function(e)
                             stop(KeyErrorExternal(key, namespace, e)))
         hash <- self$set(key, value, namespace)
         hash
@@ -87,7 +87,7 @@ check_external_fetch_hook <- function(fetch_hook) {
 ##' @examples
 ##' hook <- fetch_hook_read(
 ##'     function(key, namespace) paste0(key, ".csv"),
-##'     function(filename) read.csv(filename, stringsAsFactors=FALSE))
+##'     function(filename) read.csv(filename, stringsAsFactors = FALSE))
 fetch_hook_read <- function(fpath, fread) {
   check_external_fetch_hook(fpath)
   assert_function(fread)

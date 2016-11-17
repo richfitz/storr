@@ -42,7 +42,7 @@ testthat::test_that("set", {
   } else {
     dr$set_object(h, d)
   }
-  testthat::expect_equal(dr$get_object(h), d, tolerance=1e-15)
+  testthat::expect_equal(dr$get_object(h), d, tolerance = 1e-15)
 
   ## Then, set a key to address that hash:
   dr$set_hash(k, ns, h)
@@ -83,7 +83,7 @@ testthat::test_that("namespace", {
   } else {
     dr$set_object(h, d)
   }
-  testthat::expect_equal(dr$get_object(h), d, tolerance=1e-15)
+  testthat::expect_equal(dr$get_object(h), d, tolerance = 1e-15)
   testthat::expect_true(dr$exists_object(h))
 
   dr$set_hash(k, ns, h)
@@ -118,7 +118,7 @@ testthat::test_that("traits: throw_missing", {
   helper <- spec_helper(dr)
 
   if (isTRUE(dr$traits[["throw_missing"]])) {
-    str <- paste(sample(letters), collapse="")
+    str <- paste(sample(letters), collapse = "")
     testthat::expect_error(dr$get_hash(str, "objects"))
     testthat::expect_error(dr$get_object(helper$hash_object(str)))
   }

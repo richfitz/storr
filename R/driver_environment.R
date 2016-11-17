@@ -45,24 +45,24 @@ storr_environment <- function(envir = NULL, hash_algorithm = NULL,
 ##' @rdname storr_environment
 driver_environment <- function(envir = NULL, hash_algorithm = NULL) {
   if (is.null(envir)) {
-    envir <- new.env(parent=emptyenv())
+    envir <- new.env(parent = emptyenv())
   }
   R6_driver_environment$new(envir, hash_algorithm)
 }
 
 R6_driver_environment <- R6::R6Class(
   "driver_environment",
-  public=list(
+  public = list(
     envir = NULL,
     hash_algorithm = NULL,
 
-    initialize=function(envir, hash_algorithm) {
+    initialize = function(envir, hash_algorithm) {
       if (!is.null(hash_algorithm)) {
         assert_scalar_character(hash_algorithm)
       }
       if (is.null(envir$data)) {
         envir$keys <- list()
-        envir$data <- new.env(parent=emptyenv())
+        envir$data <- new.env(parent = emptyenv())
         envir$hash_algorithm <- hash_algorithm <- hash_algorithm %||% "md5"
       } else {
         assert_environment(envir$data)
@@ -80,59 +80,59 @@ R6_driver_environment <- R6::R6Class(
       self$hash_algorithm <- hash_algorithm
     },
 
-    type=function() {
+    type = function() {
       "environment"
     },
-    destroy=function() {
+    destroy = function() {
       self$envir$keys <- NULL
       self$envir$list <- NULL
       self$envir$data <- NULL
       self$envir <- NULL
     },
 
-    get_hash=function(key, namespace) {
+    get_hash = function(key, namespace) {
       self$ensure_envir(namespace)[[key]]
     },
-    set_hash=function(key, namespace, hash) {
+    set_hash = function(key, namespace, hash) {
       e <- self$ensure_envir(namespace)
       e[[key]] <- hash
     },
-    get_object=function(hash) {
+    get_object = function(hash) {
       self$envir$data[[hash]]
     },
-    set_object=function(hash, value) {
+    set_object = function(hash, value) {
       self$envir$data[[hash]] <- value
     },
 
-    exists_hash=function(key, namespace) {
+    exists_hash = function(key, namespace) {
       exists0(key, self$ensure_envir(namespace))
     },
-    exists_object=function(hash) {
+    exists_object = function(hash) {
       exists0(hash, self$envir$data)
     },
 
-    del_hash=function(key, namespace) {
+    del_hash = function(key, namespace) {
       rm0(key, self$ensure_envir(namespace))
     },
-    del_object=function(hash) {
+    del_object = function(hash) {
       rm0(hash, self$envir$data)
     },
 
-    list_hashes=function() {
+    list_hashes = function() {
       ls(self$envir$data)
     },
-    list_keys=function(namespace) {
+    list_keys = function(namespace) {
       ls(self$ensure_envir(namespace))
     },
-    list_namespaces=function() {
+    list_namespaces = function() {
       as.character(names(self$envir$keys))
     },
 
-    ensure_envir=function(namespace) {
+    ensure_envir = function(namespace) {
       force(namespace) # avoid obscure missing argument error
       ret <- self$envir$keys[[namespace]]
       if (is.null(ret)) {
-        ret <- self$envir$keys[[namespace]] <- new.env(parent=emptyenv())
+        ret <- self$envir$keys[[namespace]] <- new.env(parent = emptyenv())
       }
       ret
     }

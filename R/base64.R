@@ -59,9 +59,7 @@ decode64 <- function(x, char62 = "-", char63 = "_") {
 
   n_byte <- length(y)
   n_block <- ceiling(n_byte / 4L)
-  nd_byte <- 3L * n_block
 
-  ## Hmm.
   y <- matrix(c(y, integer(4L * n_block - n_byte)), 4L, n_block)
   x <- matrix(integer(3 * n_block), 3, n_block)
   x[1L, ] <- bitwOr(bitwShiftL(y[1L, ], 2L), bitwShiftR(y[2L, ], 4L))

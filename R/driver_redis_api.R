@@ -30,74 +30,74 @@ driver_redis_api <- function(prefix, con, hash_algorithm = NULL) {
 
 R6_driver_redis_api <- R6::R6Class(
   "driver_redis_api",
-  public=list(
+  public = list(
     con = NULL,
     prefix = NULL,
     traits = list(accept_raw = TRUE, throw_missing = TRUE),
     hash_algorithm = NULL,
 
-    initialize=function(prefix, con, hash_algorithm) {
+    initialize = function(prefix, con, hash_algorithm) {
       self$prefix <- prefix
       self$con <- con
       self$hash_algorithm <- driver_redis_api_config(
         con, prefix, "hash_algorithm", hash_algorithm, "md5", TRUE)
     },
-    type=function() {
-      paste("redis_api", self$con$type(), sep="/")
+    type = function() {
+      paste("redis_api", self$con$type(), sep = "/")
     },
-    destroy=function() {
+    destroy = function() {
       redis_drop_keys(self$con, paste0(self$prefix, "*"))
       self$con <- NULL
     },
 
-    get_hash=function(key, namespace) {
+    get_hash = function(key, namespace) {
       res <- self$con$GET(self$name_key(key, namespace))
       if (is.null(res)) {
         stop("No such hash")
       }
       res
     },
-    set_hash=function(key, namespace, hash) {
+    set_hash = function(key, namespace, hash) {
       self$con$SET(self$name_key(key, namespace), hash)
     },
-    get_object=function(hash) {
+    get_object = function(hash) {
       res <- self$con$GET(self$name_hash(hash))
       if (is.null(res)) {
         stop("No such object")
       }
       unserialize(res)
     },
-    set_object=function(hash, value) {
+    set_object = function(hash, value) {
       assert_raw(value)
       self$con$SET(self$name_hash(hash), value)
     },
 
-    exists_hash=function(key, namespace) {
+    exists_hash = function(key, namespace) {
       self$con$EXISTS(self$name_key(key, namespace)) == 1L
     },
-    exists_object=function(hash) {
+    exists_object = function(hash) {
       self$con$EXISTS(self$name_hash(hash)) == 1L
     },
 
-    del_hash=function(key, namespace) {
+    del_hash = function(key, namespace) {
       self$con$DEL(self$name_key(key, namespace)) == 1L
     },
-    del_object=function(hash) {
+    del_object = function(hash) {
       self$con$DEL(self$name_hash(hash)) == 1L
     },
 
     ## This suggests that dir(), ls(), etc could all work with these in
     ## the same way pretty easily.  But the str_drop_start is a pretty big
     ## assumption.
-    list_hashes=function() {
+    list_hashes = function() {
       start <- sprintf("%s:data:%s", self$prefix, "")
       str_drop_start(redis_list_keys(self$con, paste0(start, "*")), start)
     },
-    list_keys=function(namespace) {
+    list_keys = function(namespace) {
       start <- self$name_key("", namespace)
       str_drop_start(redis_list_keys(self$con, paste0(start, "*")), start)
     },
-    list_namespaces=function() {
+    list_namespaces = function() {
       ## For this to work, consider disallowing ":" in namespace
       ## names, or sanitising them on the way in?
       pattern <- self$name_key("*", "*")
@@ -105,10 +105,10 @@ R6_driver_redis_api <- R6::R6Class(
       unique(sub(re, "\\1", redis_list_keys(self$con, pattern)))
     },
 
-    name_hash=function(hash) {
+    name_hash = function(hash) {
       sprintf("%s:data:%s", self$prefix, hash)
     },
-    name_key=function(key, namespace) {
+    name_key = function(key, namespace) {
       sprintf("%s:keys:%s:%s", self$prefix, namespace, key)
     }
   ))

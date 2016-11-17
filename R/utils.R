@@ -5,7 +5,7 @@ hash_object <- function(x, hash_algorithm = "md5", ...) {
 make_hash_serialised_object <- function(hash_algorithm, skip_version) {
   ## i <- -seq_len(14L) -- if using openssl
   hash <- digest::digest
-  hash_algotithm <- hash_algorithm %||% "md5"
+  hash_algorithm <- hash_algorithm %||% "md5"
   skip <- if (skip_version) 14L else 0L
   function(x) {
     hash(x, hash_algorithm, skip = skip, serialize = FALSE)
@@ -13,13 +13,13 @@ make_hash_serialised_object <- function(hash_algorithm, skip_version) {
 }
 
 exists0 <- function(name, envir) {
-  exists(name, envir=envir, inherits=FALSE)
+  exists(name, envir = envir, inherits = FALSE)
 }
 
 rm0 <- function(list, envir) {
   if (length(list) > 0L) {
     del <- exists0(list, envir)
-    rm(list=list[del], envir=envir)
+    rm(list = list[del], envir = envir)
     del
   }
 }
@@ -38,57 +38,57 @@ vcapply <- function(X, FUN, ...) {
   vapply(X, FUN, character(1), ...)
 }
 
-assert_scalar <- function(x, name=deparse(substitute(x))) {
+assert_scalar <- function(x, name = deparse(substitute(x))) {
   if (length(x) != 1) {
-    stop(sprintf("%s must be a scalar", name), call.=FALSE)
+    stop(sprintf("%s must be a scalar", name), call. = FALSE)
   }
 }
-assert_length <- function(x, n, name=deparse(substitute(x))) {
+assert_length <- function(x, n, name = deparse(substitute(x))) {
   if (length(x) != n) {
     stop(sprintf("%s must have %d elements", name, n), call. = FALSE)
   }
 }
 
-assert_function <- function(x, name=deparse(substitute(x))) {
+assert_function <- function(x, name = deparse(substitute(x))) {
   if (!is.function(x)) {
     stop(sprintf("%s must be a function", name), call. = FALSE)
   }
 }
 
-assert_environment <- function(x, name=deparse(substitute(x))) {
+assert_environment <- function(x, name = deparse(substitute(x))) {
   if (!is.environment(x)) {
     stop(sprintf("%s must be an environment", name), call. = FALSE)
   }
 }
-assert_list <- function(x, name=deparse(substitute(x))) {
+assert_list <- function(x, name = deparse(substitute(x))) {
   if (!is.list(x)) {
     stop(sprintf("%s must be a list", name), call. = FALSE)
   }
 }
 
-assert_logical <- function(x, name=deparse(substitute(x))) {
+assert_logical <- function(x, name = deparse(substitute(x))) {
   if (!is.logical(x)) {
-    stop(sprintf("%s must be logical", name), call.=FALSE)
+    stop(sprintf("%s must be logical", name), call. = FALSE)
   }
 }
-assert_scalar_logical <- function(x, name=deparse(substitute(x))) {
+assert_scalar_logical <- function(x, name = deparse(substitute(x))) {
   assert_scalar(x, name)
   assert_logical(x, name)
 }
 
-assert_character <- function(x, name=deparse(substitute(x))) {
+assert_character <- function(x, name = deparse(substitute(x))) {
   if (!is.character(x)) {
-    stop(sprintf("%s must be character", name), call.=FALSE)
+    stop(sprintf("%s must be character", name), call. = FALSE)
   }
 }
-assert_scalar_character <- function(x, name=deparse(substitute(x))) {
+assert_scalar_character <- function(x, name = deparse(substitute(x))) {
   assert_scalar(x, name)
   assert_character(x, name)
 }
 
-assert_raw <- function(x, name=deparse(substitute(x))) {
+assert_raw <- function(x, name = deparse(substitute(x))) {
   if (!is.raw(x)) {
-    stop(sprintf("%s must be raw", name), call.=FALSE)
+    stop(sprintf("%s must be raw", name), call. = FALSE)
   }
 }
 
@@ -110,7 +110,7 @@ file_remove <- function(path) {
 ## For current R (3.2.3 or thereabouts) writeBin does not work with
 ## long vectors.  We can work around this for now, but in future
 ## versions this will just use native R support.
-write_bin <- function(value, con, long=2^31 - 2) {
+write_bin <- function(value, con, long = 2^31 - 2) {
   len <- length(value)
   if (len > long) {
     i <- 1L

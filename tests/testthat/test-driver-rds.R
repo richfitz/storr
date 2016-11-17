@@ -15,7 +15,7 @@ test_that("creation", {
 
 test_that("mangling", {
   path <- tempfile()
-  dr <- driver_rds(path, mangle_key=TRUE)
+  dr <- driver_rds(path, mangle_key = TRUE)
   on.exit(dr$destroy())
   st <- storr(dr)
 
@@ -45,13 +45,13 @@ test_that("mangling", {
 test_that("mangledless compatibility", {
   path <- tempfile()
 
-  dr1 <- driver_rds(path, mangle_key=TRUE)
+  dr1 <- driver_rds(path, mangle_key = TRUE)
   expect_true(file.exists(file.path(path, "config", "mangle_key")))
   expect_equal(readLines(file.path(path, "config", "mangle_key")), "TRUE")
   expect_true(dr1$mangle_key)
 
   ## Pointing another driver here without mangling is an error:
-  expect_error(driver_rds(path, mangle_key=FALSE),
+  expect_error(driver_rds(path, mangle_key = FALSE),
                "Incompatible value for mangle_key")
 
   ## But omitting the argument (NULL mangledness) is OK
@@ -67,7 +67,7 @@ test_that("mangledless compatibility", {
   expect_false(dr3$mangle_key)
 
   ## Pointing another driver here without mangling is an error:
-  expect_error(driver_rds(path2, mangle_key=TRUE),
+  expect_error(driver_rds(path2, mangle_key = TRUE),
                "Incompatible value for mangle_key")
 
   ## But omitting the argument (NULL mangledness) is OK
@@ -88,11 +88,11 @@ test_that("large vector support", {
   file.remove(path)
 
   path <- tempfile()
-  dr <- driver_rds(path, compress=FALSE)
+  dr <- driver_rds(path, compress = FALSE)
   on.exit(dr$destroy())
 
   ## This is quite slow...
-  hash <- hash_object(x, serialize=FALSE, skip=14L)
+  hash <- hash_object(x, serialize = FALSE, skip = 14L)
   ## This is really slow and writes out the data without crashing
   ## ideally.  It does make the system very laggy though and I don't
   ## really understand why.
@@ -104,7 +104,7 @@ test_that("large vector support", {
 
 test_that("compression support", {
   ## some data that will likely compress very well:
-  data <- rep(1:10, each=500)
+  data <- rep(1:10, each = 500)
 
   st1 <- storr_rds(tempfile(), TRUE)
   st2 <- storr_rds(tempfile(), FALSE)

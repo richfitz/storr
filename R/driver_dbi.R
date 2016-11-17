@@ -87,7 +87,7 @@ R6_driver_DBI <- R6::R6Class(
   ## configuration; it could be an additional table (which seems
   ## silly).  Alternatively we could stuff a value in with a special
   ## data key.  I'm thinking that
-  public=list(
+  public = list(
     con = NULL,
     tbl_data = NULL,
     tbl_keys = NULL,
@@ -98,8 +98,8 @@ R6_driver_DBI <- R6::R6Class(
     ## throw_missing should be set, especially when assuming a recent
     ## version of RSQLite.
 
-    initialize=function(con, tbl_data, tbl_keys, binary = NULL,
-                        hash_algorithm = NULL) {
+    initialize = function(con, tbl_data, tbl_keys, binary = NULL,
+                          hash_algorithm = NULL) {
       loadNamespace("DBI")
 
       self$con <- con
@@ -156,39 +156,41 @@ R6_driver_DBI <- R6::R6Class(
       self$hash_algorithm <- config$hash_algorithm
     },
 
-    type=function() {
-      paste0("DBI/", paste(class(self$con), collapse="/"))
+    type = function() {
+      paste0("DBI/", paste(class(self$con), collapse = "/"))
     },
 
     ## Total destruction of the driver; delete all data stored in both
     ## tables, then delete our database connection to render the
     ## driver useless.
-    destroy=function() {
+    destroy = function() {
       DBI::dbRemoveTable(self$con, self$tbl_data)
       DBI::dbRemoveTable(self$con, self$tbl_keys)
       self$con <- NULL
     },
 
     ## Return the hash value given a key/namespace pair
-    get_hash=function(key, namespace) {
+    get_hash = function(key, namespace) {
       sql <- sprintf('SELECT hash FROM "%s" WHERE namespace="%s" AND key="%s"',
                      self$tbl_keys, namespace, key)
       DBI::dbGetQuery(self$con, sql)[[1]]
     },
 
     ## Set the key/namespace pair to a hash
-    set_hash=function(key, namespace, hash) {
+    set_hash = function(key, namespace, hash) {
+      ## TODO: insert or replace is not portable; sqlite supports it
+      ## but for other cases we might need more care.
       sql <- c(sprintf("INSERT OR REPLACE INTO %s", self$tbl_keys),
                sprintf('(namespace, key, hash) VALUES ("%s", "%s", "%s")',
                        namespace, key, hash))
-      DBI::dbExecute(self$con, paste(sql, collapse=" "))
+      DBI::dbExecute(self$con, paste(sql, collapse = " "))
     },
 
     ## Return a (deserialised) R object, given a hash
-    get_object=function(hash) {
+    get_object = function(hash) {
       sql <- c(sprintf("SELECT value FROM %s", self$tbl_data),
                sprintf('WHERE hash = "%s"', hash))
-      value <- DBI::dbGetQuery(self$con, paste(sql, collapse=" "))[[1]]
+      value <- DBI::dbGetQuery(self$con, paste(sql, collapse = " "))[[1]]
       if (self$binary) unserialize(value[[1]]) else unserialize_str(value[[1]])
     },
 
@@ -207,11 +209,11 @@ R6_driver_DBI <- R6::R6Class(
     ## kludge for backward compatibility when not needed though, and
     ## it does involve using a function that will be deprecated in the
     ## alarmingly near future.
-    set_object=function(hash, value) {
+    set_object = function(hash, value) {
       if (self$binary) {
         sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
                      "(hash, value) VALUES (:hash, :value)")
-        dat <- list(hash=hash, value=list(serialize(value, NULL)))
+        dat <- list(hash = hash, value = list(serialize(value, NULL)))
       } else {
         sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
                      "(hash, value) VALUES (?, ?)")
@@ -221,13 +223,13 @@ R6_driver_DBI <- R6::R6Class(
     },
 
     ## Check if a key/namespace pair exists.
-    exists_hash=function(key, namespace) {
+    exists_hash = function(key, namespace) {
       sql <- sprintf('SELECT 1 FROM %s WHERE namespace = "%s" AND key = "%s"',
                      self$tbl_keys, namespace, key)
       nrow(DBI::dbGetQuery(self$con, sql)) > 0L
     },
     ## Check if a hash exists
-    exists_object=function(hash) {
+    exists_object = function(hash) {
       sql <- sprintf('SELECT 1 FROM %s WHERE hash = "%s"',
                      self$tbl_data, hash)
       nrow(DBI::dbGetQuery(self$con, sql)) > 0L
@@ -236,7 +238,7 @@ R6_driver_DBI <- R6::R6Class(
     ## Delete a key.  Because of the requirement to return TRUE/FALSE on
     ## successful/unsuccessful key deletion this includes an exists_hash()
     ## step first.
-    del_hash=function(key, namespace) {
+    del_hash = function(key, namespace) {
       if (self$exists_hash(key, namespace)) {
         sql <- sprintf('DELETE FROM %s WHERE namespace = "%s" AND key = "%s"',
                        self$tbl_keys, namespace, key)
@@ -247,7 +249,7 @@ R6_driver_DBI <- R6::R6Class(
       }
     },
     ## Delete a hash
-    del_object=function(hash) {
+    del_object = function(hash) {
       if (self$exists_object(hash)) {
         sql <- sprintf('DELETE FROM %s WHERE hash = "%s"', self$tbl_data, hash)
         DBI::dbExecute(self$con, sql)
@@ -259,16 +261,16 @@ R6_driver_DBI <- R6::R6Class(
 
     ## List hashes, namespaces and keys.  Because the SQLite driver seems to
     ## return numeric(0) if the result set is empty, we need as.character here.
-    list_hashes=function() {
+    list_hashes = function() {
       sql <- sprintf("SELECT hash FROM %s", self$tbl_data)
       setdiff(as.character(DBI::dbGetQuery(self$con, sql)[[1]]),
               STORR_DBI_CONFIG_HASH)
     },
-    list_namespaces=function() {
+    list_namespaces = function() {
       sql <- sprintf("SELECT DISTINCT namespace FROM %s", self$tbl_keys)
       as.character(DBI::dbGetQuery(self$con, sql)[[1]])
     },
-    list_keys=function(namespace) {
+    list_keys = function(namespace) {
       sql <- sprintf('SELECT key FROM %s WHERE namespace="%s"',
                      self$tbl_keys, namespace)
       as.character(DBI::dbGetQuery(self$con, sql)[[1]])

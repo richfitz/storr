@@ -3,12 +3,12 @@ context("base64")
 test_that("base64", {
   rand_str_len <- function(n) {
     pos <- as.raw(32:126)
-    rawToChar(sample(pos, n, replace=TRUE))
+    rawToChar(sample(pos, n, replace = TRUE))
   }
   if ("base64enc" %in% .packages(TRUE)) {
     cmp <- function(x) {
       ret <- base64enc::base64encode(charToRaw(x))
-      gsub("+", "-", gsub("/", "_", ret, fixed=TRUE), fixed=TRUE)
+      gsub("+", "-", gsub("/", "_", ret, fixed = TRUE), fixed = TRUE)
     }
   } else {
     cmp <- encode64

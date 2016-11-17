@@ -18,7 +18,7 @@
 ##' Because the actual file will be stored with mangled names it is
 ##' not safe to use the same path for a storr with and without
 ##' mangling.  So once an rds storr has been created its "mangledness"
-##' is set.  Using \code{mangle_key=NULL} uses whatever mangledness
+##' is set.  Using \code{mangle_key = NULL} uses whatever mangledness
 ##' exists (or no mangledness if creating a new storr).
 ##'
 ##' @title rds object cache driver
@@ -60,7 +60,7 @@
 ##'
 ##' # The solution to this is to "mangle" the key names.  Storr can do
 ##' # this for you:
-##' st2 <- storr_rds(tempfile(), mangle_key=TRUE)
+##' st2 <- storr_rds(tempfile(), mangle_key = TRUE)
 ##' st2$set("foo/bar", letters)
 ##' st2$list()
 ##' st2$get("foo/bar")
@@ -73,7 +73,7 @@
 ##' st2$destroy()
 storr_rds <- function(path, compress = NULL, mangle_key = NULL,
                       hash_algorithm = NULL,
-                      default_namespace="objects") {
+                      default_namespace = "objects") {
   storr(driver_rds(path, compress, mangle_key, hash_algorithm),
         default_namespace)
 }
@@ -87,16 +87,16 @@ driver_rds <- function(path, compress = NULL, mangle_key = NULL,
 
 R6_driver_rds <- R6::R6Class(
   "driver_rds",
-  public=list(
+  public = list(
     ## TODO: things like hash_algorithm: do they belong in traits?
     ## This needs sorting before anyone writes their own driver!
     path = NULL,
     compress = NULL,
     mangle_key = NULL,
     hash_algorithm = NULL,
-    traits=list(accept_raw=TRUE),
+    traits = list(accept_raw = TRUE),
 
-    initialize=function(path, compress, mangle_key, hash_algorithm) {
+    initialize = function(path, compress, mangle_key, hash_algorithm) {
       dir_create(path)
       dir_create(file.path(path, "data"))
       dir_create(file.path(path, "keys"))
@@ -121,24 +121,24 @@ R6_driver_rds <- R6::R6Class(
                                                hash_algorithm, "md5", TRUE)
     },
 
-    type=function() {
+    type = function() {
       "rds"
     },
-    destroy=function() {
-      unlink(self$path, recursive=TRUE)
+    destroy = function() {
+      unlink(self$path, recursive = TRUE)
     },
 
-    get_hash=function(key, namespace) {
+    get_hash = function(key, namespace) {
       readLines(self$name_key(key, namespace))
     },
-    set_hash=function(key, namespace, hash) {
+    set_hash = function(key, namespace, hash) {
       dir_create(self$name_key("", namespace))
       writeLines(hash, self$name_key(key, namespace))
     },
-    get_object=function(hash) {
+    get_object = function(hash) {
       readRDS(self$name_hash(hash))
     },
-    set_object=function(hash, value) {
+    set_object = function(hash, value) {
       ## NOTE: this takes advantage of having the serialised value
       ## already and avoids seralising twice.
       assert_raw(value)
@@ -148,35 +148,35 @@ R6_driver_rds <- R6::R6Class(
       write_bin(value, con)
     },
 
-    exists_hash=function(key, namespace) {
+    exists_hash = function(key, namespace) {
       file.exists(self$name_key(key, namespace))
     },
-    exists_object=function(hash) {
+    exists_object = function(hash) {
       file.exists(self$name_hash(hash))
     },
 
-    del_hash=function(key, namespace) {
+    del_hash = function(key, namespace) {
       file_remove(self$name_key(key, namespace))
     },
-    del_object=function(hash) {
+    del_object = function(hash) {
       file_remove(self$name_hash(hash))
     },
 
-    list_hashes=function() {
+    list_hashes = function() {
       sub("\\.rds$", "", dir(file.path(self$path, "data")))
     },
-    list_namespaces=function() {
+    list_namespaces = function() {
       dir(file.path(self$path, "keys"))
     },
-    list_keys=function(namespace) {
+    list_keys = function(namespace) {
       ret <- dir(file.path(self$path, "keys", namespace))
       if (self$mangle_key) decode64(ret, TRUE) else ret
     },
 
-    name_hash=function(hash) {
+    name_hash = function(hash) {
       file.path(self$path, "data", paste0(hash, ".rds"))
     },
-    name_key=function(key, namespace) {
+    name_key = function(key, namespace) {
       if (self$mangle_key) {
         key <- encode64(key)
       }

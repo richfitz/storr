@@ -7,7 +7,7 @@
 ##' to the test suite to guard against regressions.
 ##'
 ##' The test suite is included in the package as
-##' \code{system.file("spec", package="storr")}.
+##' \code{system.file("spec", package = "storr")}.
 ##'
 ##' The procedure for each test block is:
 ##' \enumerate{
@@ -65,13 +65,13 @@ test_driver <- function(create) {
     })
   }
 
-  files <- dir(system.file("spec", package="storr"),
-               pattern="^test-", full.names=TRUE)
-  env <- new.env(parent=environment(test_driver))
+  files <- dir(system.file("spec", package = "storr"),
+               pattern = "^test-", full.names = TRUE)
+  env <- new.env(parent = environment(test_driver))
   env$.driver_name <- create()$type()
   env$.driver_create <- create
-  res <- lapply(files, testthat::test_file, env=env,
-                reporter=reporter, start_end_reporter=FALSE)
+  res <- lapply(files, testthat::test_file, env = env,
+                reporter = reporter, start_end_reporter = FALSE)
 
   if (standalone) {
     res <- do.call("rbind", lapply(res, as.data.frame))
@@ -84,7 +84,7 @@ test_driver <- function(create) {
                    nerr, ngettext(nerr, "error", "errors"),
                    nfail, ngettext(nfail, "failure", "failures"),
                    ntest)
-    if (ok) message(msg) else stop(msg, call.=FALSE)
+    if (ok) message(msg) else stop(msg, call. = FALSE)
     invisible(res)
   }
 }
@@ -99,7 +99,7 @@ test_driver <- function(create) {
 spec_helper <- function(driver) {
   drop_r_version <- storr_traits(driver$traits)$drop_r_version
   hash_algorithm <- driver$hash_algorithm %||% "md5"
-  hash <- make_hash_serialised_object(driver$hash_algorithm, !drop_r_version)
+  hash <- make_hash_serialised_object(hash_algorithm, !drop_r_version)
   do_serialize <- function(object) {
     serialize_object(object, drop_r_version = drop_r_version)
   }

@@ -9,7 +9,7 @@ test_that("rds", {
 })
 
 test_that("dbi", {
-  if (requireNamespace("RSQLite", quietly=TRUE)) {
+  if (requireNamespace("RSQLite", quietly = TRUE)) {
     new_sqlite <- function() {
       DBI::dbConnect(RSQLite::SQLite(), ":memory:")
     }

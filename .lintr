@@ -1,0 +1,2 @@
+linters: with_defaults(commented_code_linter = NULL)
+exclusions: list("inst/doc/drivers.R", "inst/doc/external.R", "inst/doc/storr.R")
