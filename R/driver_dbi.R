@@ -224,15 +224,33 @@ R6_driver_DBI <- R6::R6Class(
 
     ## Check if a key/namespace pair exists.
     exists_hash = function(key, namespace) {
-      sql <- sprintf('SELECT 1 FROM %s WHERE namespace = "%s" AND key = "%s"',
-                     self$tbl_keys, namespace, key)
-      nrow(DBI::dbGetQuery(self$con, sql)) > 0L
+      nk <- join_key_namespace(key, namespace)
+      if (nk$n == 1L) {
+        sql <- sprintf('SELECT 1 FROM %s WHERE namespace = "%s" AND key = "%s"',
+                       self$tbl_keys, namespace, key)
+        nrow(DBI::dbGetQuery(self$con, sql)) > 0L
+      } else if (nk$n == 0L) {
+        logical(0)
+      } else {
+        tmp <- driver_dbi_mkey_prepare(nk$key, nk$namespace)
+        sql <- sprintf('SELECT key, namespace FROM %s WHERE %s',
+                       self$tbl_keys, tmp$where)
+        tmp$requested %in% tmp$returned(DBI::dbGetQuery(self$con, sql))
+      }
     },
+
     ## Check if a hash exists
     exists_object = function(hash) {
-      sql <- sprintf('SELECT 1 FROM %s WHERE hash = "%s"',
-                     self$tbl_data, hash)
-      nrow(DBI::dbGetQuery(self$con, sql)) > 0L
+      ## TODO: how does this deal with zero length
+      if (length(hash) == 1) {
+        sql <- sprintf('SELECT 1 FROM %s WHERE hash = "%s"',
+                       self$tbl_data, hash)
+        nrow(DBI::dbGetQuery(self$con, sql)) > 0L
+      } else {
+        sql <- sprintf('SELECT hash FROM %s WHERE hash in (%s)',
+                       self$tbl_data, paste(squote(hash), collapse = ", "))
+        hash %in% DBI::dbGetQuery(self$con, sql)$hash
+      }
     },
 
     ## Delete a key.  Because of the requirement to return TRUE/FALSE on
@@ -325,3 +343,35 @@ dbi_use_binary <- function(con, tbl_data, binary) {
 
 ## 15 'f's - no hash algo has this length
 STORR_DBI_CONFIG_HASH <- paste(rep("f", 15), collapse = "")
+
+driver_dbi_mkey_prepare <- function(key, namespace) {
+  nk <- unique(cbind(namespace, key))
+  ns_uniq <- nk[, 1L]
+  key_uniq <- nk[, 2L]
+
+  n_key <- length(unique(key_uniq))
+  n_namespace <- length(unique(ns_uniq))
+
+  ## TODO: don't use IN for the single cases, use '='; this requires
+  ## some treatment in the final clause too, which repeats this whole
+  ## thing.
+  if (n_namespace == 1) {
+    where <- sprintf("namespace = '%s' AND key IN (%s)",
+                     ns_uniq[[1L]],
+                     paste(squote(key_uniq), collapse=", "))
+  } else if (n_key == 1) {
+    where <- sprintf("key = '%s' AND namespace IN (%s)",
+                     key_uniq[[1L]],
+                     paste(squote(ns_uniq), collapse=", "))
+  } else {
+    i <- unname(split(seq_along(ns_uniq), ns_uniq))
+    tmp <- vcapply(i, function(j)
+      sprintf("(namespace = '%s' AND key IN (%s))",
+              ns_uniq[[j[[1L]]]],
+              paste(squote(key_uniq[j]), collapse=", ")))
+    where <- paste(tmp, collapse = " OR ")
+  }
+  list(requested = paste(key, namespace, sep = "\r"),
+       returned = function(dat) paste(dat$key, dat$namespace, sep = "\r"),
+       where = where)
+}

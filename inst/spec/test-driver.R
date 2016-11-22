@@ -123,3 +123,40 @@ testthat::test_that("traits: throw_missing", {
     testthat::expect_error(dr$get_object(helper$hash_object(str)))
   }
 })
+
+testthat::test_that("exists (vector input)", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  helper <- spec_helper(dr)
+
+  st <- storr(dr)
+
+  aaa <- runif(10)
+  bbb <- runif(20)
+  st$set("aaa", aaa)
+  st$set("bbb", bbb)
+
+  ## From one namespace:
+  testthat::expect_equal(dr$exists_hash(character(0), "objects"), logical(0))
+  testthat::expect_equal(dr$exists_hash("aaa", "objects"), TRUE)
+  testthat::expect_equal(dr$exists_hash(c("aaa", "bbb"), "objects"),
+                         c(TRUE, TRUE))
+  testthat::expect_equal(dr$exists_hash(c("aaa", "bbb", "ccc"), "objects"),
+               c(TRUE, TRUE, FALSE))
+
+  ## Empty namespace:
+  testthat::expect_equal(dr$exists_hash("aaa", character(0)), logical(0))
+
+  ## Multiple namespaces, single key:
+  testthat::expect_equal(dr$exists_hash("aaa", c("objects", "another")),
+                         c(TRUE, FALSE))
+
+  ## Multiple namespaces, multiple keys:
+  testthat::expect_equal(dr$exists_hash(c("aaa", "bbb", "aaa"),
+                              c("objects", "another", "another")),
+               c(TRUE, FALSE, FALSE))
+
+  h <- st$list_hashes()
+  testthat::expect_equal(dr$exists_object(h), c(TRUE, TRUE))
+  testthat::expect_equal(dr$exists_object(character(0)), logical(0))
+})

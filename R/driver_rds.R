@@ -174,7 +174,11 @@ R6_driver_rds <- R6::R6Class(
     },
 
     name_hash = function(hash) {
-      file.path(self$path, "data", paste0(hash, ".rds"))
+      if (length(hash) > 0L) {
+        file.path(self$path, "data", paste0(hash, ".rds"))
+      } else {
+        character(0)
+      }
     },
     name_key = function(key, namespace) {
       if (self$mangle_key) {

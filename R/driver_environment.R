@@ -105,10 +105,18 @@ R6_driver_environment <- R6::R6Class(
     },
 
     exists_hash = function(key, namespace) {
-      exists0(key, self$ensure_envir(namespace))
+      kn <- join_key_namespace(key, namespace)
+      key <- kn$key
+      namespace <- kn$namespace
+      f <- function(k, n) {
+        e <- self$envir$keys[[n]]
+        is.environment(e) && exists0(k, e)
+      }
+      vlapply(seq_along(key), function(i) f(key[[i]], namespace[[i]]))
     },
+
     exists_object = function(hash) {
-      exists0(hash, self$envir$data)
+      vlapply(hash, exists0, self$envir$data, USE.NAMES = FALSE)
     },
 
     del_hash = function(key, namespace) {

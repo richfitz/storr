@@ -152,3 +152,7 @@ serialize_object_drop_r_version <- function(object, xdr = TRUE) {
 `%||%` <- function(a, b) {
   if (is.null(a)) b else a
 }
+
+squote <- function(x) {
+  sprintf("'%s'", x)
+}

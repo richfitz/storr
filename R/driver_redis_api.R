@@ -41,6 +41,7 @@ R6_driver_redis_api <- R6::R6Class(
       self$con <- con
       self$hash_algorithm <- driver_redis_api_config(
         con, prefix, "hash_algorithm", hash_algorithm, "md5", TRUE)
+      mexists_load(con)
     },
     type = function() {
       paste("redis_api", self$con$type(), sep = "/")
@@ -73,10 +74,10 @@ R6_driver_redis_api <- R6::R6Class(
     },
 
     exists_hash = function(key, namespace) {
-      self$con$EXISTS(self$name_key(key, namespace)) == 1L
+      mexists_run(self$con, self$name_key(key, namespace))
     },
     exists_object = function(hash) {
-      self$con$EXISTS(self$name_hash(hash)) == 1L
+      mexists_run(self$con, self$name_hash(hash))
     },
 
     del_hash = function(key, namespace) {
@@ -159,4 +160,27 @@ driver_redis_api_config <- function(con, prefix, name, value, default,
   }
 
   value
+}
+
+## This is an alternative to redux::redis_scripts(), which isolates
+## the grossness a bit.
+'local result = {}
+for _, val in pairs(KEYS) do
+  result[#result + 1] = redis.call("EXISTS", val)
+end
+return result' -> MEXISTS_LUA
+## openssl::sha1(MEXISTS_LUA)
+MEXISTS_SHA <- "4e5f23528c00d56a29f35459fa2f558fb6848e19"
+mexists_load <- function(con) {
+  sha <- con$SCRIPT_LOAD(MEXISTS_LUA)
+  if (sha != MEXISTS_SHA) {
+    stop("failure in loading load script") # nocov
+  }
+}
+mexists_run <- function(con, keys) {
+  if (length(keys) == 1L) {
+    con$EXISTS(keys) == 1L
+  } else {
+    unlist(con$EVALSHA(MEXISTS_SHA, length(keys), keys, character(0))) == 1L
+  }
 }

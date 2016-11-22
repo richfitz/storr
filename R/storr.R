@@ -76,12 +76,6 @@ storr <- function(driver, default_namespace = "objects") {
   R6_storr$new(driver, default_namespace)
 }
 
-## NOTE: without some fairly ugly gymnastics, this is a **build-time**
-## dependency on R6, rather than a runtime dependency, so the import
-## directive is required to avoid a NOTE.  The alternative is to set
-## up dummy bindings, make generating functions and set the bindings
-## during .onLoad(); that's not ideal though because it makes the code
-## a lot more obfuscated.
 ##' @importFrom R6 R6Class
 R6_storr <- R6::R6Class(
   "storr",
@@ -256,4 +250,23 @@ storr_gc <- function(driver, envir) {
   }
   rm0(unused, envir)
   invisible(unused)
+}
+
+check_length <- function(key, namespace) {
+  n_key <- length(key)
+  n_namespace <- length(namespace)
+  if (n_key == n_namespace || n_namespace == 1) {
+    n_key
+  } else if (n_key == 1) {
+    n_namespace
+  } else {
+    stop("Incompatible lengths for key and namespace")
+  }
+}
+
+join_key_namespace <- function(key, namespace) {
+  n <- check_length(key, namespace)
+  list(n = n,
+       key = rep_len(key, n),
+       namespace = rep_len(namespace, n))
 }
