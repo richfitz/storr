@@ -96,7 +96,9 @@ R6_driver_DBI <- R6::R6Class(
 
     ## TODO: some traits, especially accept_raw but possibly also
     ## throw_missing should be set, especially when assuming a recent
-    ## version of RSQLite.
+    ## version of RSQLite.  We are free to set that during
+    ## initialisation here so can be pretty flexible really (we
+    ## already do that with binary)
 
     initialize = function(con, tbl_data, tbl_keys, binary = NULL,
                           hash_algorithm = NULL) {
@@ -176,6 +178,16 @@ R6_driver_DBI <- R6::R6Class(
       DBI::dbGetQuery(self$con, sql)[[1]]
     },
 
+    mget_hash = function(key, namespace) {
+      tmp <- driver_dbi_mkey_prepare(key, namespace)
+      if (is.null(tmp)) {
+        return(character(0))
+      }
+      sql <- sprintf('SELECT * FROM "%s" WHERE %s', self$tbl_keys, tmp$where)
+      dat <- DBI::dbGetQuery(self$con, sql)
+      as.character(dat$hash)[match(tmp$requested, tmp$returned(dat))]
+    },
+
     ## Set the key/namespace pair to a hash
     set_hash = function(key, namespace, hash) {
       ## TODO: insert or replace is not portable; sqlite supports it
@@ -186,12 +198,41 @@ R6_driver_DBI <- R6::R6Class(
       DBI::dbExecute(self$con, paste(sql, collapse = " "))
     },
 
+    mset_hash = function(key, namespace, hash) {
+      ## TODO: insert or replace is not portable; sqlite supports it
+      ## but for other cases we might need more care.
+      ##
+      ## NOTE: hash is guaranteed to be correct (and canonical) length
+      ## for key/namespace
+      if (length(hash) == 0L) {
+        return()
+      }
+      tmp <- driver_dbi_mkey_prepare(key, namespace)
+      dat <- as.list(rbind(namespace, key, hash, deparse.level = 0))
+      sql_values <- paste(rep("(?, ?, ?)", tmp$n), collapse = ", ")
+      sql <- c(sprintf("INSERT OR REPLACE INTO %s", self$tbl_keys),
+               sprintf('(namespace, key, hash) VALUES %s', sql_values))
+      DBI::dbExecute(self$con, paste(sql, collapse = " "), dat)
+    },
+
     ## Return a (deserialised) R object, given a hash
     get_object = function(hash) {
       sql <- c(sprintf("SELECT value FROM %s", self$tbl_data),
                sprintf('WHERE hash = "%s"', hash))
       value <- DBI::dbGetQuery(self$con, paste(sql, collapse = " "))[[1]]
       if (self$binary) unserialize(value[[1]]) else unserialize_str(value[[1]])
+    },
+
+    mget_object = function(hash) {
+      ## In general we will not ask the driver to return values that
+      ## are not found, but here we need to hedge against that a bit.
+      sql <- sprintf("SELECT * FROM %s WHERE hash IN (%s)",
+                     self$tbl_data,
+                     paste(squote(unique(hash)), collapse = ", "))
+      value <- DBI::dbGetQuery(self$con, sql)
+      f <- if (self$binary) unserialize else unserialize_str
+      lapply(value$value[match(hash, value$hash)], function(x)
+        if (is.null(x)) x else f(x))
     },
 
     ## TODO: Once supported, the new parameterised queries in recent
@@ -220,6 +261,26 @@ R6_driver_DBI <- R6::R6Class(
         dat <- list(hash, serialize_str(value))
       }
       DBI::dbExecute(self$con, sql, dat)
+    },
+
+    mset_object = function(hash, value) {
+      if (length(value) == 0L) {
+        return()
+      }
+      i <- seq_along(value)
+      names(hash) <- paste0("hash", i)
+      names(value) <- paste0("value", i)
+      sql_values <- paste(sprintf("(:%s, :%s)", names(hash), names(value)),
+                          collapse = ", ")
+      sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
+                   sprintf("(hash, value) VALUES %s", sql_values))
+      if (self$binary) {
+        value <- lapply(value, function(x) list(serialize(x, NULL)))
+      } else {
+        value <- lapply(value, serialize_str)
+      }
+
+      DBI::dbExecute(self$con, sql, c(value, hash))
     },
 
     ## Check if a key/namespace pair exists.
@@ -258,6 +319,7 @@ R6_driver_DBI <- R6::R6Class(
     del_hash = function(key, namespace) {
       exists <- self$exists_hash(key, namespace)
       if (any(exists)) {
+        ## NOTE: at least one key guaranteed here:
         tmp <- driver_dbi_mkey_prepare(key, namespace)
         sql <- sprintf('DELETE FROM %s WHERE %s', self$tbl_keys, tmp$where)
         DBI::dbExecute(self$con, sql)
@@ -351,10 +413,19 @@ dbi_use_binary <- function(con, tbl_data, binary) {
 STORR_DBI_CONFIG_HASH <- paste(rep("f", 15), collapse = "")
 
 driver_dbi_mkey_prepare <- function(key, namespace) {
-  nk <- unique(cbind(namespace, key))
-  ns_uniq <- nk[, 1L]
-  key_uniq <- nk[, 2L]
+  nk <- join_key_namespace(key, namespace)
+  if (nk$n == 0L) {
+    return(NULL)
+  }
 
+  ## NOTE: this is the same strategy as used by unique.matrix; it's
+  ## not pretty but given the constraints of sql databases is probably
+  ## pretty good here?
+  requested <- paste(nk$key, nk$namespace, sep = "\r")
+  keep <- !duplicated(requested)
+
+  key_uniq <- nk$key[keep]
+  ns_uniq <- nk$namespace[keep]
   n_key <- length(unique(key_uniq))
   n_namespace <- length(unique(ns_uniq))
 
@@ -377,7 +448,8 @@ driver_dbi_mkey_prepare <- function(key, namespace) {
               paste(squote(key_uniq[j]), collapse=", ")))
     where <- paste(tmp, collapse = " OR ")
   }
-  list(requested = paste(key, namespace, sep = "\r"),
+  list(requested = requested,
        returned = function(dat) paste(dat$key, dat$namespace, sep = "\r"),
-       where = where)
+       where = where,
+       n = nk$n)
 }

@@ -127,7 +127,6 @@ testthat::test_that("traits: throw_missing", {
 testthat::test_that("exists (vector input)", {
   dr <- .driver_create()
   on.exit(dr$destroy())
-  helper <- spec_helper(dr)
 
   st <- storr(dr)
 
@@ -164,7 +163,6 @@ testthat::test_that("exists (vector input)", {
 testthat::test_that("del (vector input)", {
   dr <- .driver_create()
   on.exit(dr$destroy())
-  helper <- spec_helper(dr)
   st <- storr(dr)
 
   aaa <- runif(10)
@@ -202,4 +200,116 @@ testthat::test_that("del (vector input)", {
   testthat::expect_equal(dr$del_object(h), h == ha)
   st$set("bbb", bbb, use_cache = FALSE)
   testthat::expect_equal(dr$del_object(h), h != ha)
+})
+
+testthat::test_that("mget_object", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+
+  if (!is.null(dr$mget_object)) {
+    st <- storr(dr)
+    h1 <- st$set("a", 1)
+    h2 <- st$set("b", 2)
+    testthat::expect_equal(dr$mget_object(character(0)), list())
+    testthat::expect_equal(dr$mget_object(h1), list(1))
+    testthat::expect_equal(dr$mget_object(c(h1, h2)), list(1, 2))
+    testthat::expect_equal(dr$mget_object("aaaaaa"), list(NULL))
+    testthat::expect_equal(dr$mget_object(c(h1, "aaaaaa")), list(1, NULL))
+  }
+})
+
+testthat::test_that("mget_hash", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+
+  if (!is.null(dr$mget_hash)) {
+    st <- storr(dr)
+    h1 <- st$set("a", 1)
+    h2 <- st$set("b", 2)
+    h3 <- st$set("c", 3, "other")
+    testthat::expect_equal(dr$mget_hash(character(0), "objects"), character(0))
+    testthat::expect_equal(dr$mget_hash("a", character(0)), character(0))
+
+    testthat::expect_equal(dr$mget_hash("a", "objects"), h1)
+    testthat::expect_equal(dr$mget_hash("b", "objects"), h2)
+    testthat::expect_equal(dr$mget_hash("c", "objects"), NA_character_)
+
+    testthat::expect_equal(dr$mget_hash(c("a", "b"), "objects"),
+                           c(h1, h2))
+    testthat::expect_equal(dr$mget_hash(c("a", "c", "b"), "objects"),
+                           c(h1, NA, h2))
+
+    testthat::expect_equal(dr$mget_hash(c("a", "b", "c"),
+                                        c("objects", "objects", "other")),
+                           c(h1, h2, h3))
+
+    testthat::expect_equal(dr$mget_hash("a", c("objects", "other")),
+                           c(h1, NA_character_))
+
+    ## duplicate keys:
+    testthat::expect_equal(dr$mget_hash(c("a", "b", "a", "b", "c"), "objects"),
+                           c(h1, h2, h1, h2, NA))
+  }
+})
+
+testthat::test_that("mset_object", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+
+  if (!is.null(dr$mset_object)) {
+    st <- storr(dr)
+    helper <- spec_helper(dr)
+
+    ## Lots of faff here:
+    a <- runif(10)
+    b <- runif(3)
+    ha <- helper$hash_object(a)
+    hb <- helper$hash_object(b)
+    if (isTRUE(dr$traits[["accept_raw"]])) {
+      sa <- helper$serialize(a)
+      sb <- helper$serialize(b)
+    } else {
+      sa <- a
+      sb <- b
+    }
+
+    ## Test the empty one
+    testthat::expect_silent(dr$mset_object(list(), character(0)))
+    testthat::expect_equal(dr$list_hashes(), character(0))
+
+    ## Actually insert some data
+    dr$mset_object(c(ha, hb), list(sa, sb))
+    testthat::expect_equal(sort(dr$list_hashes()),
+                           sort(c(ha, hb)))
+
+    testthat::expect_equal(dr$get_object(ha), a)
+    testthat::expect_equal(dr$get_object(hb), b)
+  }
+})
+
+testthat::test_that("mset_hash", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+
+  if (!is.null(dr$mset_hash)) {
+    ns <- "objects"
+    testthat::expect_silent(dr$mset_hash(character(0), ns, character(0)))
+    testthat::expect_silent(dr$mset_hash("a", character(0), character(0)))
+    testthat::expect_equal(dr$list_keys(ns), character(0))
+
+    ## Then start actually setting things:
+    dr$mset_hash("a", ns, "aaa")
+    testthat::expect_equal(dr$get_hash("a", ns), "aaa")
+
+    dr$mset_hash(c("a", "b"), ns, c("AAA", "BBB"))
+    testthat::expect_equal(dr$get_hash("a", ns), "AAA")
+    testthat::expect_equal(dr$get_hash("b", ns), "BBB")
+
+    ## Duplicate keys; take the last one:
+    dr$mset_hash(c("x", "x"), ns, c("aaa", "bbb"))
+    testthat::expect_equal(dr$get_hash("x", ns), "bbb")
+
+    dr$mset_hash(c("x", "x"), ns, c("bbb", "aaa"))
+    testthat::expect_equal(dr$get_hash("x", ns), "aaa")
+  }
 })

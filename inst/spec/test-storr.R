@@ -233,3 +233,50 @@ testthat::test_that("get_value", {
   testthat::expect_error(st$get_value("nosuchhash"),
                          "hash 'nosuchhash' not found")
 })
+
+## Really simple test to make sure that mget works correctly.  This is
+## primarily up to storr, rather than the driver, because we'll test
+## mget at the driver level separately.
+testthat::test_that("mget", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  st <- storr(dr)
+
+  h1 <- st$set("foo", 1)
+  h2 <- st$set("bar", 2)
+  h3 <- st$set("baz", 3, "other")
+
+  testthat::expect_equal(st$mget(character(0)), list())
+  testthat::expect_equal(st$mget("foo"), list(1))
+  testthat::expect_equal(st$mget(c("foo", "bar")), list(1, 2))
+  testthat::expect_equal(st$mget(c("foo", "baz", "bar")),
+                         structure(list(1, NULL, 2), missing = 2))
+
+  expect_equal(st$mget_hash(c("foo", "bar")), c(h1, h2))
+  expect_equal(st$mget_hash(character(0)), character(0))
+  expect_equal(st$mget_hash("baz"), NA_character_)
+  testthat::expect_equal(st$mget_hash(c("foo", "baz", "bar")),
+                         c(h1, NA, h2))
+
+  testthat::expect_equal(st$mget_hash(c("foo", "baz", "bar"),
+                                      c("objects", "other", "objects")),
+                         c(h1, h3, h2))
+})
+
+testthat::test_that("mset", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  st <- storr(dr)
+
+  h <- st$mset(c("foo", "bar"), c(1, 2))
+  testthat::expect_equal(st$mget_hash(c("foo", "bar")), h)
+
+  ## Multiple namespaces at once:
+  h <- st$mset(c("a", "b", "c"), 1:3, c("x", "y", "z"))
+  testthat::expect_equal(st$get("a", "x"), 1)
+  testthat::expect_equal(st$get("b", "y"), 2)
+  testthat::expect_equal(st$get("c", "z"), 3)
+
+  ## TODO: test that when value is the wrong length for the hashes we
+  ## throw an error.  The drivers are allowed to assume this.
+})

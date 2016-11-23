@@ -112,6 +112,27 @@ R6_storr <- R6::R6Class(
       invisible(hash)
     },
 
+    mset = function(key, value, namespace = self$default_namespace,
+                    use_cache = TRUE) {
+      n <- check_length(key, value)
+      assert_length(value, n)
+      hash <- self$mset_value(value, use_cache)
+      if (is.null(self$driver$mset_hash)) {
+        for (i in seq_len(n)) {
+          key <- rep_len(key, n)
+          namespace <- rep_len(namespace, n)
+          self$driver$set_hash(key[[i]], namespace[[i]], hash[[i]])
+        }
+      } else {
+        self$driver$mset_hash(key, namespace, hash)
+      }
+      invisible(hash)
+    },
+
+    ## TODO: could do with an mset_by_value here; it's not that hard
+    ## to implement because we already have mset_value and mset_hash.
+    ## Factor out the dummy mset functions into free functions so that
+    ## they don't clutter up the object quite so much add this in.
     set_by_value = function(value, namespace = self$default_namespace,
                             use_cache = TRUE) {
       hash <- self$set_value(value, use_cache)
@@ -120,7 +141,13 @@ R6_storr <- R6::R6Class(
     },
 
     get = function(key, namespace = self$default_namespace, use_cache = TRUE) {
+      assert_scalar_character(key)
+      assert_scalar_character(namespace)
       self$get_value(self$get_hash(key, namespace), use_cache)
+
+    },
+    mget = function(key, namespace = self$default_namespace, use_cache = TRUE) {
+      self$mget_value(self$mget_hash(key, namespace), use_cache)
     },
 
     get_hash = function(key, namespace = self$default_namespace) {
@@ -133,6 +160,20 @@ R6_storr <- R6::R6Class(
         } else {
           stop(KeyError(key, namespace))
         }
+      }
+    },
+
+    mget_hash = function(key, namespace = self$default_namespace) {
+      n <- check_length(key, namespace)
+      if (is.null(self$driver$mget_hash)) {
+        m <- cbind(key, namespace)
+        vcapply(seq_len(n), function(i)
+          tryCatch(self$get_hash(m[i, 1L], m[i, 2L]),
+                   KeyError = function(e) NA_character_),
+          USE.NAMES = FALSE)
+      } else {
+        ## TODO: this skips the throw_missing branch because
+        self$driver$mget_hash(key, namespace)
       }
     },
 
@@ -184,23 +225,94 @@ R6_storr <- R6::R6Class(
       value
     },
 
+    mget_value = function(hash, use_cache = TRUE, missing = NULL) {
+      envir <- self$envir
+      value <- vector("list", length(hash))
+      cached <- logical(length(hash))
+      is_missing <- is.na(hash)
+
+      if (use_cache) {
+        i <- vlapply(hash, exists0, envir)
+        value[i] <- lapply(hash[i], function(h) envir[[h]])
+        cached[i] <- TRUE
+      }
+
+      cached[is_missing] <- TRUE
+      value[is_missing] <- list(missing)
+
+      if (any(!cached)) {
+        if (is.null(self$driver$mget_object)) {
+          value[!cached] <- lapply(hash[!cached], self$get_value, FALSE)
+        } else {
+          value[!cached] <- self$driver$mget_object(hash[!cached])
+        }
+
+        if (use_cache) {
+          for (i in which(!cached)) {
+            envir[[hash[[i]]]] <- value[[i]]
+          }
+        }
+      }
+
+      if (any(is_missing)) {
+        attr(value, "missing") <- which(is_missing)
+      }
+      value
+    },
+
     set_value = function(value, use_cache = TRUE) {
       traits <- self$traits
-
-      value_ser <- serialize_object(value,
-                                    drop_r_version = traits$drop_r_version)
+      value_ser <-
+        serialize_object(value, drop_r_version = traits$drop_r_version)
       hash <- self$hash_raw(value_ser)
 
-      ## NOTE: This exists/set roundtrip here always seems useful to
-      ## avoid sending (potentially large) data over a connection, but
-      ## it's possible that some drivers could do this more
-      ## efficiently themselves during negotiation.
-      if (!self$driver$exists_object(hash)) {
-        value_send <- if (traits$accept_raw) value_ser else value
-        self$driver$set_object(hash, value_send)
+      if (!(use_cache && exists0(hash, self$envir))) {
+        ## NOTE: This exists/set roundtrip here always seems useful to
+        ## avoid sending (potentially large) data over a connection, but
+        ## it's possible that some drivers could do this more
+        ## efficiently themselves during negotiation.
+        if (!self$driver$exists_object(hash)) {
+          value_send <- if (traits$accept_raw) value_ser else value
+          self$driver$set_object(hash, value_send)
+        }
+        if (use_cache) {
+          assign(hash, value, self$envir)
+        }
       }
-      if (use_cache && !exists0(hash, self$envir)) {
-        assign(hash, value, self$envir)
+      invisible(hash)
+    },
+
+    mset_value = function(values, use_cache = TRUE) {
+      traits <- self$traits
+      values_ser <- lapply(values, serialize_object,
+                           drop_r_version = traits$drop_r_version)
+      hash <- vcapply(values_ser, self$hash_raw)
+      cached <- logical(length(hash))
+
+      if (use_cache) {
+        cached <- vlapply(hash, exists0, self$envir)
+        upload <- logical(length(hash))
+        upload[!cached] <- !self$driver$exists_object(hash[!cached])
+      } else {
+        cached <- logical(length(hash))
+        upload <- !self$driver$exists_object(hash)
+      }
+
+      if (any(upload)) {
+        values_send <- if (traits$accept_raw) values_ser else values
+        if (is.null(self$driver$mset_object)) {
+          for (i in which(upload)) {
+            self$driver$set_object(hash[[i]], values_send[[i]])
+          }
+        } else {
+          self$driver$mset_object(hash[upload], values_send[upload])
+        }
+      }
+
+      if (use_cache) {
+        for (i in which(!cached)) {
+          assign(hash[[i]], values[[i]], self$envir)
+        }
       }
       invisible(hash)
     },
