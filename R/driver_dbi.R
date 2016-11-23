@@ -241,7 +241,6 @@ R6_driver_DBI <- R6::R6Class(
 
     ## Check if a hash exists
     exists_object = function(hash) {
-      ## TODO: how does this deal with zero length
       if (length(hash) == 1) {
         sql <- sprintf('SELECT 1 FROM %s WHERE hash = "%s"',
                        self$tbl_data, hash)
@@ -257,24 +256,31 @@ R6_driver_DBI <- R6::R6Class(
     ## successful/unsuccessful key deletion this includes an exists_hash()
     ## step first.
     del_hash = function(key, namespace) {
-      if (self$exists_hash(key, namespace)) {
-        sql <- sprintf('DELETE FROM %s WHERE namespace = "%s" AND key = "%s"',
-                       self$tbl_keys, namespace, key)
+      exists <- self$exists_hash(key, namespace)
+      if (any(exists)) {
+        tmp <- driver_dbi_mkey_prepare(key, namespace)
+        sql <- sprintf('DELETE FROM %s WHERE %s', self$tbl_keys, tmp$where)
         DBI::dbExecute(self$con, sql)
-        TRUE
-      } else {
-        FALSE
       }
+      exists
     },
+
     ## Delete a hash
     del_object = function(hash) {
-      if (self$exists_object(hash)) {
-        sql <- sprintf('DELETE FROM %s WHERE hash = "%s"', self$tbl_data, hash)
+      exists <- self$exists_object(hash)
+      if (any(exists)) {
+        hash_del <- hash[exists]
+        if (length(hash_del) == 1L) {
+          sql <- sprintf('DELETE FROM %s WHERE hash = "%s"',
+                         self$tbl_data, hash_del)
+        } else {
+          sql <- sprintf('DELETE FROM %s WHERE hash IN (%s)',
+                         self$tbl_data,
+                         paste(squote(hash_del), collapse = ", "))
+        }
         DBI::dbExecute(self$con, sql)
-        TRUE
-      } else {
-        FALSE
       }
+      exists
     },
 
     ## List hashes, namespaces and keys.  Because the SQLite driver seems to

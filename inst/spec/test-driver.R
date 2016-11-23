@@ -160,3 +160,46 @@ testthat::test_that("exists (vector input)", {
   testthat::expect_equal(dr$exists_object(h), c(TRUE, TRUE))
   testthat::expect_equal(dr$exists_object(character(0)), logical(0))
 })
+
+testthat::test_that("del (vector input)", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  helper <- spec_helper(dr)
+  st <- storr(dr)
+
+  aaa <- runif(10)
+  bbb <- runif(20)
+  st$set("aaa", aaa)
+  st$set("bbb", bbb)
+
+  ## remove two at once:
+  testthat::expect_equal(dr$del_hash(c("aaa", "bbb"), "objects"),
+                         c(TRUE, TRUE))
+  testthat::expect_equal(dr$del_hash(c("aaa", "bbb"), "objects"),
+                         c(FALSE, FALSE))
+
+  ## Remove none:
+  testthat::expect_equal(dr$del_hash(character(0), "objects"), logical(0))
+  testthat::expect_equal(dr$del_hash("aaa", character(0)), logical(0))
+
+  ## Mixed removal:
+  st$set("aaa", aaa)
+  testthat::expect_equal(dr$del_hash(c("aaa", "bbb"), "objects"),
+                         c(TRUE, FALSE))
+  st$set("bbb", bbb)
+  testthat::expect_equal(dr$del_hash(c("aaa", "bbb"), "objects"),
+                         c(FALSE, TRUE))
+
+  ## Remove the actual data:
+  h <- st$list_hashes()
+  testthat::expect_equal(dr$del_object(character(0)), logical(0))
+  testthat::expect_equal(dr$del_object(h), c(TRUE, TRUE))
+  testthat::expect_equal(dr$del_object(h), c(FALSE, FALSE))
+
+  ## Mixed removal:
+  st$set("aaa", aaa, use_cache = FALSE)
+  ha <- st$get_hash("aaa")
+  testthat::expect_equal(dr$del_object(h), h == ha)
+  st$set("bbb", bbb, use_cache = FALSE)
+  testthat::expect_equal(dr$del_object(h), h != ha)
+})

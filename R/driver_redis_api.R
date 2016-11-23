@@ -41,7 +41,7 @@ R6_driver_redis_api <- R6::R6Class(
       self$con <- con
       self$hash_algorithm <- driver_redis_api_config(
         con, prefix, "hash_algorithm", hash_algorithm, "md5", TRUE)
-      mexists_load(con)
+      storr_lua_load(con)
     },
     type = function() {
       paste("redis_api", self$con$type(), sep = "/")
@@ -74,17 +74,17 @@ R6_driver_redis_api <- R6::R6Class(
     },
 
     exists_hash = function(key, namespace) {
-      mexists_run(self$con, self$name_key(key, namespace))
+      mcmd_run(self$con, "EXISTS", self$name_key(key, namespace))
     },
     exists_object = function(hash) {
-      mexists_run(self$con, self$name_hash(hash))
+      mcmd_run(self$con, "EXISTS", self$name_hash(hash))
     },
 
     del_hash = function(key, namespace) {
-      self$con$DEL(self$name_key(key, namespace)) == 1L
+      mcmd_run(self$con, "DEL", self$name_key(key, namespace))
     },
     del_object = function(hash) {
-      self$con$DEL(self$name_hash(hash)) == 1L
+      mcmd_run(self$con, "DEL", self$name_hash(hash))
     },
 
     ## This suggests that dir(), ls(), etc could all work with these in
@@ -163,24 +163,26 @@ driver_redis_api_config <- function(con, prefix, name, value, default,
 }
 
 ## This is an alternative to redux::redis_scripts(), which isolates
-## the grossness a bit.
+## the grossness a bit.  These commands (vectorised delete and exists)
+## have basically the same form, so this approach combines them
+## together in a single lua script.
 'local result = {}
 for _, val in pairs(KEYS) do
-  result[#result + 1] = redis.call("EXISTS", val)
+  result[#result + 1] = redis.call(ARGV[1], val)
 end
-return result' -> MEXISTS_LUA
-## openssl::sha1(MEXISTS_LUA)
-MEXISTS_SHA <- "4e5f23528c00d56a29f35459fa2f558fb6848e19"
-mexists_load <- function(con) {
-  sha <- con$SCRIPT_LOAD(MEXISTS_LUA)
-  if (sha != MEXISTS_SHA) {
+return result' -> STORR_LUA
+STORR_LUA_SHA <- "ef97af5300a280cb6fd597e18899dc2ffb000f96"
+storr_lua_load <- function(con) {
+  sha <- con$SCRIPT_LOAD(STORR_LUA)
+  if (sha != STORR_LUA_SHA) {
     stop("failure in loading load script") # nocov
   }
+  sha
 }
-mexists_run <- function(con, keys) {
+mcmd_run <- function(con, cmd, keys) {
   if (length(keys) == 1L) {
-    con$EXISTS(keys) == 1L
+    con[[cmd]](keys) == 1L
   } else {
-    unlist(con$EVALSHA(MEXISTS_SHA, length(keys), keys, character(0))) == 1L
+    unlist(con$EVALSHA(STORR_LUA_SHA, length(keys), keys, cmd)) == 1L
   }
 }

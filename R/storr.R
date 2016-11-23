@@ -137,8 +137,12 @@ R6_storr <- R6::R6Class(
     },
 
     del = function(key, namespace = self$default_namespace) {
+      n <- check_length(key, namespace)
       invisible(self$driver$del_hash(key, namespace))
     },
+    ## NOTE: No del_hash exposed here; this is because otherwise
+    ## things can get pretty messy when actual data is being deleted.
+
     clear = function(namespace = self$default_namespace) {
       if (is.null(namespace)) {
         invisible(sum(viapply(self$list_namespaces(), self$clear)))
@@ -146,6 +150,7 @@ R6_storr <- R6::R6Class(
         invisible(length(vlapply(self$list(namespace), self$del, namespace)))
       }
     },
+
     exists = function(key, namespace = self$default_namespace) {
       self$driver$exists_hash(key, namespace)
     },

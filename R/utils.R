@@ -99,10 +99,9 @@ dir_create <- function(path) {
 }
 
 file_remove <- function(path) {
-  assert_scalar(path)
   exists <- file.exists(path)
-  if (exists) {
-    file.remove(path)
+  if (any(exists)) {
+    file.remove(path[exists])
   }
   invisible(exists)
 }
