@@ -58,9 +58,29 @@ R6_driver_redis_api <- R6::R6Class(
       }
       res
     },
+
+    mget_hash = function(key, namespace) {
+      dat <- join_key_namespace(key, namespace)
+      if (dat$n == 0L) {
+        return(character(0))
+      }
+      res <- self$con$MGET(self$name_key(dat$key, dat$namespace))
+      i <- vlapply(res, is.null)
+      res[i] <- NA_character_
+      unlist(res, use.names = FALSE)
+    },
+
     set_hash = function(key, namespace, hash) {
       self$con$SET(self$name_key(key, namespace), hash)
     },
+
+    mset_hash = function(key, namespace, hash) {
+      if (length(hash) == 0L) {
+        return()
+      }
+      self$con$MSET(self$name_key(key, namespace), hash)
+    },
+
     get_object = function(hash) {
       res <- self$con$GET(self$name_hash(hash))
       if (is.null(res)) {
@@ -68,9 +88,29 @@ R6_driver_redis_api <- R6::R6Class(
       }
       unserialize(res)
     },
+
+    mget_object = function(hash) {
+      if (length(hash) == 0) {
+        return(list())
+      }
+      res <- self$con$MGET(self$name_hash(hash))
+      i <- !vlapply(res, is.null)
+      res[i] <- lapply(res[i], unserialize)
+      res
+    },
+
     set_object = function(hash, value) {
       assert_raw(value)
       self$con$SET(self$name_hash(hash), value)
+    },
+
+    mset_object = function(hash, value) {
+      ## TODO: probably storr should avoid passing in zero-length
+      ## requests for iformation throughout (all four m*et functions).
+      if (length(value) == 0L) {
+        return()
+      }
+      self$con$MSET(self$name_hash(hash), value)
     },
 
     exists_hash = function(key, namespace) {
