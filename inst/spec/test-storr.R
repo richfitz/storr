@@ -96,10 +96,10 @@ testthat::test_that("replace value", {
   y <- runif(10)
 
   st$set("key", x)
-  expect_equal(st$get("key", use_cache = FALSE), x)
+  testthat::expect_equal(st$get("key", use_cache = FALSE), x)
 
   st$set("key", y)
-  expect_equal(st$get("key", use_cache = FALSE), y)
+  testthat::expect_equal(st$get("key", use_cache = FALSE), y)
 })
 
 testthat::test_that("default namespace", {
@@ -171,8 +171,8 @@ test_that("reconnect", {
   dr2 <- .driver_create(dr)
   st2 <- storr(dr2)
 
-  expect_equal(st2$list_namespaces(), st$list_namespaces())
-  expect_equal(st2$list("a"), st$list("a"))
+  testthat::expect_equal(st2$list_namespaces(), st$list_namespaces())
+  testthat::expect_equal(st2$list("a"), st$list("a"))
 })
 
 testthat::test_that("hash_algorithm", {
@@ -252,9 +252,9 @@ testthat::test_that("mget", {
   testthat::expect_equal(st$mget(c("foo", "baz", "bar")),
                          structure(list(1, NULL, 2), missing = 2))
 
-  expect_equal(st$mget_hash(c("foo", "bar")), c(h1, h2))
-  expect_equal(st$mget_hash(character(0)), character(0))
-  expect_equal(st$mget_hash("baz"), NA_character_)
+  testthat::expect_equal(st$mget_hash(c("foo", "bar")), c(h1, h2))
+  testthat::expect_equal(st$mget_hash(character(0)), character(0))
+  testthat::expect_equal(st$mget_hash("baz"), NA_character_)
   testthat::expect_equal(st$mget_hash(c("foo", "baz", "bar")),
                          c(h1, NA, h2))
 
@@ -288,8 +288,6 @@ testthat::test_that("avoiding caching", {
   dr <- .driver_create()
   on.exit(dr$destroy())
   st <- storr(dr)
-
-  st <- storr_environment()
 
   st$mset(c("a", "b"), 1:2, use_cache = FALSE)
   testthat::expect_equal(ls(st$envir), character(0))
