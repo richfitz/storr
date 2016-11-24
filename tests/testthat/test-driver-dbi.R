@@ -101,4 +101,7 @@ test_that("non-binary storage", {
   expect_equal(st$list_hashes(), h)
 
   expect_equal(st$get_value(h, FALSE), x)
+
+  st$mset(c("a", "b"), list(1, 2))
+  expect_equal(st$mget(c("a", "b")), list(1, 2))
 })
