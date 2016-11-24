@@ -280,3 +280,18 @@ testthat::test_that("mset", {
   ## TODO: test that when value is the wrong length for the hashes we
   ## throw an error.  The drivers are allowed to assume this.
 })
+
+## This is really a test of storr, and if the tests above pass these
+## should all pass easily.  Putting them here means that they test
+## both the with-mget and without-mget branches though.
+testthat::test_that("avoiding caching", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  st <- storr(dr)
+
+  st <- storr_environment()
+
+  st$mset(c("a", "b"), 1:2, use_cache = FALSE)
+  testthat::expect_equal(ls(st$envir), character(0))
+  testthat::expect_equal(st$mget(c("a", "b")), list(1, 2))
+})

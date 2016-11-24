@@ -114,7 +114,7 @@ R6_storr <- R6::R6Class(
 
     mset = function(key, value, namespace = self$default_namespace,
                     use_cache = TRUE) {
-      n <- check_length(key, value)
+      n <- check_length(key, namespace)
       assert_length(value, n)
       hash <- self$mset_value(value, use_cache)
       if (is.null(self$driver$mset_hash)) {
@@ -146,8 +146,9 @@ R6_storr <- R6::R6Class(
       self$get_value(self$get_hash(key, namespace), use_cache)
 
     },
-    mget = function(key, namespace = self$default_namespace, use_cache = TRUE) {
-      self$mget_value(self$mget_hash(key, namespace), use_cache)
+    mget = function(key, namespace = self$default_namespace, use_cache = TRUE,
+                    missing = NULL) {
+      self$mget_value(self$mget_hash(key, namespace), use_cache, missing)
     },
 
     get_hash = function(key, namespace = self$default_namespace) {

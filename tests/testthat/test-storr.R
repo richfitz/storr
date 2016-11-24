@@ -30,3 +30,24 @@ test_that("traits", {
                "if drop_r_version is TRUE, then accept_raw must also be TRUE",
                fixed = TRUE)
 })
+
+test_that("mset edge cases", {
+  st <- storr_environment()
+  expect_error(st$mset(c("a", "b"), list(1, 2, 3), c("x", "y", "z")),
+               "Incompatible lengths for key and namespace")
+  expect_error(st$mset(c("a", "b"), list(1, 2, 3)),
+               "value must have 2 elements")
+})
+
+test_that("missing", {
+  st <- storr_environment()
+  x <- st$mget("foo")
+  expect_equal(x, structure(list(NULL), missing = 1L))
+
+  x <- st$mget("foo", missing = NA_integer_)
+  expect_equal(x, structure(list(NA_integer_), missing = 1L))
+
+  st$set("a", 1)
+  x <- st$mget(c("a", "b", "a"))
+  expect_equal(x, structure(list(1, NULL, 1), missing = 2L))
+})
