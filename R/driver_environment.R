@@ -121,13 +121,19 @@ R6_driver_environment <- R6::R6Class(
 
     del_hash = function(key, namespace) {
       kn <- join_key_namespace(key, namespace)
-      key <- kn$key
-      namespace <- kn$namespace
-      f <- function(k, n) {
-        e <- self$envir$keys[[n]]
-        is.environment(e) && rm0(k, e)
+
+      idx <- split(seq_len(kn$n), kn$namespace)
+      ret <- logical(kn$n)
+
+      for (i in seq_along(idx)) {
+        e <- self$envir$keys[[names(idx)[[i]]]]
+        if (is.environment(e)) {
+          j <- idx[[i]]
+          ret[j] <- rm0(kn$key[j], e)
+        }
       }
-      vlapply(seq_along(key), function(i) f(key[[i]], namespace[[i]]))
+
+      ret
     },
     del_object = function(hash) {
       rm0(hash, self$envir$data)
