@@ -13,15 +13,15 @@ make_hash_serialised_object <- function(hash_algorithm, skip_version) {
 }
 
 exists0 <- function(name, envir) {
-  exists(name, envir = envir, inherits = FALSE)
+  vlapply(name, exists, envir = envir, inherits = FALSE, USE.NAMES = FALSE)
 }
 
 rm0 <- function(list, envir) {
-  if (length(list) > 0L) {
-    del <- exists0(list, envir)
+  del <- exists0(list, envir)
+  if (any(del)) {
     rm(list = list[del], envir = envir)
-    del
   }
+  del
 }
 
 str_drop_start <- function(x, sub) {

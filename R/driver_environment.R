@@ -130,7 +130,7 @@ R6_driver_environment <- R6::R6Class(
       vlapply(seq_along(key), function(i) f(key[[i]], namespace[[i]]))
     },
     del_object = function(hash) {
-      vlapply(hash, rm0, self$envir$data, USE.NAMES = FALSE)
+      rm0(hash, self$envir$data)
     },
 
     list_hashes = function() {
