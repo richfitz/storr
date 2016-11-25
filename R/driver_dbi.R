@@ -93,6 +93,7 @@ R6_driver_DBI <- R6::R6Class(
     tbl_keys = NULL,
     binary = NULL,
     hash_algorithm = NULL,
+    sql = NULL,
 
     ## TODO: some traits, especially accept_raw but possibly also
     ## throw_missing should be set, especially when assuming a recent
@@ -110,23 +111,33 @@ R6_driver_DBI <- R6::R6Class(
 
       ## There's some logic in here:
       self$binary <- dbi_use_binary(con, tbl_data, binary)
+      ## TODO:
+      ## self$traits <- storr_traits(accept_raw = self$binary)
+
+      self$sql <- driver_dbi_sql_compat(con, tbl_data, tbl_keys)
 
       ## Initialise the tables.
-      data_type <- if (self$binary) "BLOB" else "STRING"
-      sql <- c(sprintf("CREATE TABLE if NOT EXISTS %s", tbl_data),
-               "(hash STRING PRIMARY KEY NOT NULL,",
-               sprintf("value %s NOT NULL)", data_type))
-      DBI::dbExecute(self$con, paste(sql, collapse = " "))
+      if (!DBI::dbExistsTable(self$con, tbl_data)) {
+        data_type <- if (self$binary) "BLOB" else "TEXT"
+        sql <- c(sprintf("CREATE TABLE %s", dquote(tbl_data)),
+                 "(hash TEXT PRIMARY KEY NOT NULL,",
+                 sprintf("value %s NOT NULL)", data_type))
+        DBI::dbExecute(self$con, paste(sql, collapse = " "))
+      }
 
-      sql <- c(sprintf("CREATE TABLE IF NOT EXISTS %s", tbl_keys),
-               "(namespace STRING NOT NULL,",
-               ## TODO: hash here could has a proper length (CHAR(X))
-               ## which might give better performance.  Probably worth
-               ## checking at some point.
-               "key STRING NOT NULL,",
-               "hash STRING NOT NULL,",
-               "PRIMARY KEY (namespace, key))")
-      DBI::dbExecute(self$con, paste(sql, collapse = " "))
+      if (!DBI::dbExistsTable(self$con, tbl_keys)) {
+        ## TODO: hash here could has a proper length (CHAR(X))
+        ## which might give better performance.  Probably worth
+        ## checking at some point.
+        ##
+        ## Also, TEXT is not standard, though widely supported
+        sql <- c(sprintf("CREATE TABLE %s", dquote(tbl_keys)),
+                 "(namespace TEXT NOT NULL,",
+                 "key TEXT NOT NULL,",
+                 "hash TEXT NOT NULL,",
+                 "PRIMARY KEY (namespace, key))")
+        DBI::dbExecute(self$con, paste(sql, collapse = " "))
+      }
 
       ## TODO: This will work just fine unless we do set the hash to
       ## have a very particular length.
@@ -137,14 +148,14 @@ R6_driver_DBI <- R6::R6Class(
       if (self$exists_object(STORR_DBI_CONFIG_HASH)) {
         config <- self$get_object(STORR_DBI_CONFIG_HASH)
       } else {
-        config <- NULL
+        config <- list()
       }
       if (!is.null(hash_algorithm)) {
         assert_scalar_character(hash_algorithm)
       }
       if (is.null(config$hash_algorithm)) {
         config$hash_algorithm <- hash_algorithm %||% "md5"
-        self$set_object(STORR_DBI_CONFIG_HASH, config)
+        hh <- self$set_object(STORR_DBI_CONFIG_HASH, config)
       } else {
         if (is.null(hash_algorithm)) {
           hash_algorithm <- config$hash_algorithm
@@ -159,6 +170,8 @@ R6_driver_DBI <- R6::R6Class(
     },
 
     type = function() {
+      ## TODO: now that we have a dialect detection thing it might be
+      ## good to list that here.
       paste0("DBI/", paste(class(self$con), collapse = "/"))
     },
 
@@ -173,156 +186,141 @@ R6_driver_DBI <- R6::R6Class(
 
     ## Return the hash value given a key/namespace pair
     get_hash = function(key, namespace) {
-      sql <- sprintf('SELECT hash FROM "%s" WHERE namespace="%s" AND key="%s"',
-                     self$tbl_keys, namespace, key)
-      DBI::dbGetQuery(self$con, sql)[[1]]
+      DBI::dbGetQuery(self$con, self$sql$get_hash, list(namespace, key))[[1]]
     },
 
     mget_hash = function(key, namespace) {
-      tmp <- driver_dbi_mkey_prepare(key, namespace)
+      tmp <- driver_dbi_mkey_prepare(key, namespace, self$sql$placeholder)
       if (is.null(tmp)) {
         return(character(0))
       }
-      sql <- sprintf('SELECT * FROM "%s" WHERE %s', self$tbl_keys, tmp$where)
-      dat <- DBI::dbGetQuery(self$con, sql)
+      sql <- sprintf(self$sql$mget_hash, tmp$where)
+      dat <- DBI::dbGetQuery(self$con, sql, tmp$values)
       as.character(dat$hash)[match(tmp$requested, tmp$returned(dat))]
     },
 
     ## Set the key/namespace pair to a hash
     set_hash = function(key, namespace, hash) {
-      ## TODO: insert or replace is not portable; sqlite supports it
-      ## but for other cases we might need more care.
-      sql <- c(sprintf("INSERT OR REPLACE INTO %s", self$tbl_keys),
-               sprintf('(namespace, key, hash) VALUES ("%s", "%s", "%s")',
-                       namespace, key, hash))
-      DBI::dbExecute(self$con, paste(sql, collapse = " "))
+      dat <- list(namespace, key, hash)
+      DBI::dbExecute(self$con, self$sql$set_hash, dat)
     },
 
     mset_hash = function(key, namespace, hash) {
-      ## TODO: insert or replace is not portable; sqlite supports it
-      ## but for other cases we might need more care.
-      ##
       ## NOTE: hash is guaranteed to be correct (and canonical) length
       ## for key/namespace
       if (length(hash) == 0L) {
         return()
       }
-      tmp <- driver_dbi_mkey_prepare(key, namespace)
-      dat <- as.list(rbind(namespace, key, hash, deparse.level = 0))
-      sql_values <- paste(rep("(?, ?, ?)", tmp$n), collapse = ", ")
-      sql <- c(sprintf("INSERT OR REPLACE INTO %s", self$tbl_keys),
-               sprintf('(namespace, key, hash) VALUES %s', sql_values))
-      DBI::dbExecute(self$con, paste(sql, collapse = " "), dat)
+      dat <- rbind(namespace, key, hash, deparse.level = 0)
+      keep <- !duplicated(t(dat[1:2, , drop = FALSE]), fromLast = TRUE)
+      if (all(keep)) {
+        dat <- as.list(dat)
+      } else {
+        dat <- as.list(dat[, keep, drop = FALSE])
+      }
+      p <- group_placeholders(self$sql$placeholder, 3L, sum(keep))
+      DBI::dbExecute(self$con, sprintf(self$sql$mset_hash, p), dat)
     },
 
     ## Return a (deserialised) R object, given a hash
     get_object = function(hash) {
-      sql <- c(sprintf("SELECT value FROM %s", self$tbl_data),
-               sprintf('WHERE hash = "%s"', hash))
-      value <- DBI::dbGetQuery(self$con, paste(sql, collapse = " "))[[1]]
+      value <- DBI::dbGetQuery(self$con, self$sql$get_object, list(hash))[[1L]]
       if (self$binary) unserialize(value[[1]]) else unserialize_str(value[[1]])
     },
 
     mget_object = function(hash) {
-      ## In general we will not ask the driver to return values that
-      ## are not found, but here we need to hedge against that a bit.
-      sql <- sprintf("SELECT * FROM %s WHERE hash IN (%s)",
-                     self$tbl_data,
-                     paste(squote(unique(hash)), collapse = ", "))
-      value <- DBI::dbGetQuery(self$con, sql)
-      f <- if (self$binary) unserialize else unserialize_str
-      lapply(value$value[match(hash, value$hash)], function(x)
-        if (is.null(x)) x else f(x))
+      if (length(hash) == 0L){
+        return(list())
+      }
+      sql <- self$sql$mget_object
+      p <- paste(sprintf(self$sql$placeholder, seq_along(hash)),
+                 collapse = ", ")
+      value <- DBI::dbGetQuery(self$con, sprintf(sql, p), hash)
+      value <- value$value[match(hash, value$hash)]
+      if (self$binary) {
+        lapply(value, function(x) if (is.null(x)) NULL else unserialize(x))
+      } else {
+        lapply(value, function(x) if (is.na(x)) NULL else unserialize_str(x))
+      }
     },
 
-    ## TODO: Once supported, the new parameterised queries in recent
-    ## DBIs make this much nicer, even when not using the binary
-    ## interface.
-    ##
-    ## TODO: There is never a need to REPLACE the value here; we
-    ## should offer to pass without ever sending the data.  Not sure
-    ## how to do that without paying for a roundtrip though.  Check
-    ## what support DBI has for not setting things, and see if that
-    ## makes this any faster.
-    ##
-    ## TODO: Not sure, but it might be worth supporting the old-style
-    ## SQLite interface here?  Seems a bad idea to start off with a
-    ## kludge for backward compatibility when not needed though, and
-    ## it does involve using a function that will be deprecated in the
-    ## alarmingly near future.
     set_object = function(hash, value) {
+      ## TODO: Could tidy up the serialization inteface (I'm sure I
+      ## have helpers for that somewhere).  Though OTOH if we accept
+      ## binary we can skip the serialisation here anyway with
+      ## appropriate setting of traits.
       if (self$binary) {
-        sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
-                     "(hash, value) VALUES (:hash, :value)")
-        dat <- list(hash = hash, value = list(serialize(value, NULL)))
+        dat <- list(hash, list(serialize(value, NULL)))
       } else {
-        sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
-                     "(hash, value) VALUES (?, ?)")
         dat <- list(hash, serialize_str(value))
       }
-      DBI::dbExecute(self$con, sql, dat)
+      DBI::dbExecute(self$con, self$sql$set_object, dat)
     },
 
     mset_object = function(hash, value) {
       if (length(value) == 0L) {
         return()
       }
-      i <- seq_along(value)
-      names(hash) <- paste0("hash", i)
-      names(value) <- paste0("value", i)
-      sql_values <- paste(sprintf("(:%s, :%s)", names(hash), names(value)),
-                          collapse = ", ")
-      sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
-                   sprintf("(hash, value) VALUES %s", sql_values))
+      dat <- vector("list", length(value) * 2L)
+      j <- seq.int(1L, by = 2L, length.out = length(value))
+      dat[j] <- hash
       if (self$binary) {
-        value <- lapply(value, function(x) list(serialize(x, NULL)))
+        dat[j + 1L] <- lapply(value, function(x) list(serialize(x, NULL)))
       } else {
-        value <- lapply(value, serialize_str)
+        dat[j + 1L] <- lapply(value, serialize_str)
       }
 
-      DBI::dbExecute(self$con, sql, c(value, hash))
+      p <- group_placeholders(self$sql$placeholder, 2L, length(value))
+      DBI::dbExecute(self$con, sprintf(self$sql$mset_object, p), dat)
     },
 
     ## Check if a key/namespace pair exists.
     exists_hash = function(key, namespace) {
       nk <- join_key_namespace(key, namespace)
       if (nk$n == 1L) {
-        sql <- sprintf('SELECT 1 FROM %s WHERE namespace = "%s" AND key = "%s"',
-                       self$tbl_keys, namespace, key)
+        sql <- sprintf(
+          "SELECT 1 FROM \"%s\" WHERE namespace = '%s' AND key = '%s'",
+          self$tbl_keys, namespace, key)
         nrow(DBI::dbGetQuery(self$con, sql)) > 0L
       } else if (nk$n == 0L) {
         logical(0)
       } else {
-        tmp <- driver_dbi_mkey_prepare(nk$key, nk$namespace)
-        sql <- sprintf('SELECT key, namespace FROM %s WHERE %s',
+        tmp <-
+          driver_dbi_mkey_prepare(nk$key, nk$namespace, self$sql$placeholder)
+        sql <- sprintf('SELECT key, namespace FROM "%s" WHERE %s',
                        self$tbl_keys, tmp$where)
-        tmp$requested %in% tmp$returned(DBI::dbGetQuery(self$con, sql))
+        res <- tmp$returned(DBI::dbGetQuery(self$con, sql, tmp$values))
+        tmp$requested %in% res
       }
     },
 
     ## Check if a hash exists
     exists_object = function(hash) {
-      if (length(hash) == 1) {
-        sql <- sprintf('SELECT 1 FROM %s WHERE hash = "%s"',
+      if (length(hash) == 0L) {
+        logical(0)
+      } else if (length(hash) == 1L) {
+        sql <- sprintf("SELECT 1 FROM \"%s\" WHERE hash = '%s'",
                        self$tbl_data, hash)
         nrow(DBI::dbGetQuery(self$con, sql)) > 0L
       } else {
-        sql <- sprintf('SELECT hash FROM %s WHERE hash in (%s)',
+        sql <- sprintf("SELECT hash FROM \"%s\" WHERE hash IN (%s)",
                        self$tbl_data, paste(squote(hash), collapse = ", "))
         hash %in% DBI::dbGetQuery(self$con, sql)$hash
       }
     },
 
-    ## Delete a key.  Because of the requirement to return TRUE/FALSE on
-    ## successful/unsuccessful key deletion this includes an exists_hash()
-    ## step first.
+    ## Delete a key.  Because of the requirement to return TRUE/FALSE
+    ## on successful/unsuccessful key deletion this includes an
+    ## exists_hash() step first, otherwise we need to some very ugly
+    ## (and probably non-portable) queries to return booleans as we
+    ## delete things.
     del_hash = function(key, namespace) {
       exists <- self$exists_hash(key, namespace)
       if (any(exists)) {
         ## NOTE: at least one key guaranteed here:
-        tmp <- driver_dbi_mkey_prepare(key, namespace)
-        sql <- sprintf('DELETE FROM %s WHERE %s', self$tbl_keys, tmp$where)
-        DBI::dbExecute(self$con, sql)
+        tmp <- driver_dbi_mkey_prepare(key, namespace, self$sql$placeholder)
+        sql <- sprintf('DELETE FROM "%s" WHERE %s', self$tbl_keys, tmp$where)
+        DBI::dbExecute(self$con, sql, tmp$values)
       }
       exists
     },
@@ -333,10 +331,10 @@ R6_driver_DBI <- R6::R6Class(
       if (any(exists)) {
         hash_del <- hash[exists]
         if (length(hash_del) == 1L) {
-          sql <- sprintf('DELETE FROM %s WHERE hash = "%s"',
+          sql <- sprintf("DELETE FROM \"%s\" WHERE hash = '%s'",
                          self$tbl_data, hash_del)
         } else {
-          sql <- sprintf('DELETE FROM %s WHERE hash IN (%s)',
+          sql <- sprintf("DELETE FROM \"%s\" WHERE hash IN (%s)",
                          self$tbl_data,
                          paste(squote(hash_del), collapse = ", "))
         }
@@ -348,16 +346,18 @@ R6_driver_DBI <- R6::R6Class(
     ## List hashes, namespaces and keys.  Because the SQLite driver seems to
     ## return numeric(0) if the result set is empty, we need as.character here.
     list_hashes = function() {
-      sql <- sprintf("SELECT hash FROM %s", self$tbl_data)
+      sql <- sprintf('SELECT hash FROM "%s"', self$tbl_data)
       setdiff(as.character(DBI::dbGetQuery(self$con, sql)[[1]]),
               STORR_DBI_CONFIG_HASH)
     },
+
     list_namespaces = function() {
-      sql <- sprintf("SELECT DISTINCT namespace FROM %s", self$tbl_keys)
+      sql <- sprintf('SELECT DISTINCT namespace FROM "%s"', self$tbl_keys)
       as.character(DBI::dbGetQuery(self$con, sql)[[1]])
     },
+
     list_keys = function(namespace) {
-      sql <- sprintf('SELECT key FROM %s WHERE namespace="%s"',
+      sql <- sprintf("SELECT key FROM \"%s\" WHERE namespace = '%s'",
                      self$tbl_keys, namespace)
       as.character(DBI::dbGetQuery(self$con, sql)[[1]])
     }
@@ -412,7 +412,87 @@ dbi_use_binary <- function(con, tbl_data, binary) {
 ## 15 'f's - no hash algo has this length
 STORR_DBI_CONFIG_HASH <- paste(rep("f", 15), collapse = "")
 
-driver_dbi_mkey_prepare <- function(key, namespace) {
+## This is going to hold prepared queries for the core bits of the
+## SQL; these vary fairly wildly by dialect, and some care is needed
+## here.
+##
+## Drivers to get working:
+##
+##   * sqlite (SQLiteConnection)
+##   * postgres (PqConnection - also check the one on CRAN?)
+##   * mysql (unknown)
+##   * crate (varies though)
+##
+## With ODBC drivers getting the underlying dialect is what is important.
+##
+## THis might be a bit fragile but I don't really see how to
+## generalise it that much (short of something huge like Python's
+## sqlalchemy).
+driver_dbi_sql_compat <- function(con, tbl_data, tbl_keys) {
+  j <- function(...) {
+    paste(c(...), collapse = " ")
+  }
+  dialect <- driver_dbi_dialect(con)
+  if (dialect == "sqlite") {
+    ret <- list(
+      ## Scalar:
+      get_hash = j("SELECT hash FROM", dquote(tbl_keys),
+                   "WHERE namespace = ? AND KEY = ?"),
+      set_hash = j("INSERT OR REPLACE INTO", dquote(tbl_keys),
+                   "(namespace, key, hash) VALUES (?, ?, ?)"),
+      get_object = j("SELECT value FROM", dquote(tbl_data),
+                     "WHERE hash = ?"),
+      set_object = j("INSERT OR REPLACE INTO", dquote(tbl_data),
+                     "(hash, value) VALUES (?, ?)"),
+      ## Vector:
+      mget_hash = j("SELECT * FROM", dquote(tbl_keys),
+                    "WHERE %s"),
+      mset_hash = j("INSERT OR REPLACE INTO", dquote(tbl_keys),
+                    "(namespace, key, hash) VALUES %s"),
+      mget_object = j("SELECT * FROM", dquote(tbl_data),
+                      "WHERE hash IN (%s)"),
+      mset_object = j("INSERT OR REPLACE INTO", dquote(tbl_data),
+                      "(hash, value) VALUES %s"),
+      placeholder = "?"
+    )
+  } else if (dialect == "postgresql") {
+    v <- numeric_version(DBI::dbGetQuery(con, "show server_version")[[1]])
+    if (v <= numeric_version("0.9.5")) {
+      stop("this version of postgres server is not supported")
+    }
+    ret <- list(
+      get_hash = j("SELECT hash FROM", dquote(tbl_keys),
+                   "WHERE namespace = $1 AND KEY = $2"),
+      set_hash = j("INSERT INTO", dquote(tbl_keys),
+                   "(namespace, key, hash) VALUES ($1, $2, $3)",
+                   "ON CONFLICT (namespace, key) DO UPDATE",
+                   "SET hash = excluded.hash"),
+      get_object = j("SELECT value FROM", dquote(tbl_data),
+                     "WHERE hash = $1"),
+      set_object = j("INSERT INTO", dquote(tbl_data),
+                     "(hash, value) VALUES ($1, $2)",
+                     "ON CONFLICT (hash) DO NOTHING"),
+      ## Vector:
+      mget_hash = j("SELECT * FROM", dquote(tbl_keys),
+                    "WHERE %s"),
+      mset_hash = j("INSERT INTO", dquote(tbl_keys),
+                    "(namespace, key, hash) VALUES %s",
+                    "ON CONFLICT (namespace, key) DO UPDATE",
+                    "SET hash = excluded.hash"),
+      mget_object = j("SELECT * FROM", dquote(tbl_data),
+                      "WHERE hash IN (%s)"),
+      mset_object = j("INSERT INTO", dquote(tbl_data),
+                      "(hash, value) VALUES %s",
+                      "ON CONFLICT (hash) DO NOTHING"),
+      placeholder = "$%d"
+    )
+  } else {
+    stop("Unsupported SQL dialect ", dialect)
+  }
+  ret
+}
+
+driver_dbi_mkey_prepare <- function(key, namespace, placeholder) {
   nk <- join_key_namespace(key, namespace)
   if (nk$n == 0L) {
     return(NULL)
@@ -433,23 +513,48 @@ driver_dbi_mkey_prepare <- function(key, namespace) {
   ## some treatment in the final clause too, which repeats this whole
   ## thing.
   if (n_namespace == 1) {
-    where <- sprintf("namespace = '%s' AND key IN (%s)",
-                     ns_uniq[[1L]],
-                     paste(squote(key_uniq), collapse=", "))
+    values <- c(ns_uniq[1L], key_uniq)
+    p <- sprintf(placeholder, seq_along(values))
+    where <- sprintf("namespace = %s AND key IN (%s)",
+                     p[[1L]], paste(p[-1L], collapse = ", "))
   } else if (n_key == 1) {
-    where <- sprintf("key = '%s' AND namespace IN (%s)",
-                     key_uniq[[1L]],
-                     paste(squote(ns_uniq), collapse=", "))
+    values <- c(key_uniq[1L], ns_uniq)
+    p <- sprintf(placeholder, seq_along(values))
+    where <- sprintf("key = %s AND namespace IN (%s)",
+                     p[[1L]], paste(p[-1L], collapse = ", "))
   } else {
+    ## There's a big hassle here of getting things nailed into place
     i <- unname(split(seq_along(ns_uniq), ns_uniq))
-    tmp <- vcapply(i, function(j)
-      sprintf("(namespace = '%s' AND key IN (%s))",
-              ns_uniq[[j[[1L]]]],
-              paste(squote(key_uniq[j]), collapse=", ")))
-    where <- paste(tmp, collapse = " OR ")
+    len <- lengths(i)
+
+    ## A little abuse of R semantics here to interleave namespaces with values:
+    values <- unlist(rbind(lapply(i, function(j) ns_uniq[[j[[1L]]]]),
+                           lapply(i, function(j) key_uniq[j])))
+
+    p <- sprintf(placeholder, seq_along(values))
+    p <- unname(split(p, rep(seq_along(len), len + 1)))
+    where <- paste(vcapply(p, function(x)
+      sprintf("namespace = %s AND key IN (%s)",
+              x[[1L]], paste(x[-1L], collapse = ", "))), collapse = " OR ")
   }
   list(requested = requested,
        returned = function(dat) paste(dat$key, dat$namespace, sep = "\r"),
        where = where,
-       n = nk$n)
+       n = nk$n,
+       values = values)
+}
+
+driver_dbi_dialect <- function(con) {
+  if (inherits(con, "SQLiteConnection")) {
+    "sqlite"
+  } else if (inherits(con, "PqConnection")) {
+    "postgresql"
+  } else {
+    stop("Unsupported SQL driver")
+  }
+}
+
+group_placeholders <- function(placeholder, n, times) {
+  p <- matrix(sprintf(placeholder, seq_len(n * times)), n)
+  paste(sprintf("(%s)", apply(p, 2, paste, collapse = ", ")), collapse = ", ")
 }

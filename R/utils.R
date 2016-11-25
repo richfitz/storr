@@ -156,3 +156,6 @@ serialize_object_drop_r_version <- function(object, xdr = TRUE) {
 squote <- function(x) {
   sprintf("'%s'", x)
 }
+dquote <- function(x) {
+  sprintf('"%s"', x)
+}
