@@ -356,18 +356,33 @@ R6_storr <- R6::R6Class(
       self$import(storr_rds(path, mangle_key = TRUE), names, namespace)
     }))
 
+##' @export
+as.list.storr <- function(x, ...) {
+  x <- x$export(list())
+  x
+}
+
 ## This one is complicated enough to come out.
 storr_gc <- function(driver, envir) {
-  ns <- driver$list_namespaces()
-  hashes <- driver$list_hashes()
-  seen <- unique(unlist(lapply(ns, function(nsi)
-    unique(vcapply(driver$list_keys(nsi), driver$get_hash, namespace = nsi)))))
-  unused <- setdiff(hashes, seen)
-  for (h in unused) {
-    driver$del_object(h)
-  }
+  unused <- setdiff(driver$list_hashes(), storr_used_hashes(driver))
+  ## clean up unused hashes
+  driver$del_object(unused)
   rm0(unused, envir)
+  ## and let us know what was removed:
   invisible(unused)
+}
+
+storr_used_hashes <- function(driver) {
+  list_hashes <- function(ns) {
+    if (is.null(driver$mget_hash)) {
+      unique(vcapply(driver$list_keys(ns), driver$get_hash, ns,
+                     USE.NAMES = FALSE))
+    } else {
+      unique(driver$mget_hash(driver$list_keys(ns), ns))
+    }
+  }
+  unique(unlist(lapply(driver$list_namespaces(), list_hashes),
+                use.names = FALSE))
 }
 
 check_length <- function(key, namespace) {

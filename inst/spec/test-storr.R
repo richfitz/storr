@@ -293,3 +293,30 @@ testthat::test_that("avoiding caching", {
   testthat::expect_equal(ls(st$envir), character(0))
   testthat::expect_equal(st$mget(c("a", "b")), list(1, 2))
 })
+
+testthat::test_that("gc", {
+  dr <- .driver_create()
+  on.exit(dr$destroy())
+  st <- storr(dr)
+
+  x <- runif(10)
+  y <- letters
+  z <- cos
+
+  hx <- st$set("a", x)
+  hy <- st$set("b", y)
+  hz <- st$set("c", z)
+  st$set("x", x)
+  st$set("y", y, "other")
+
+  testthat::expect_equal(st$gc(), character(0))
+
+  st$del("b")
+  testthat::expect_equal(st$gc(), character(0))
+  st$del("y", "other")
+  testthat::expect_equal(st$gc(), hy)
+
+  st$del(c("a", "c", "x"))
+  testthat::expect_equal(st$list(), character(0))
+  testthat::expect_equal(sort(st$gc()), sort(c(hx, hz)))
+})
