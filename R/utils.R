@@ -40,35 +40,36 @@ vcapply <- function(X, FUN, ...) {
 
 assert_scalar <- function(x, name = deparse(substitute(x))) {
   if (length(x) != 1) {
-    stop(sprintf("%s must be a scalar", name), call. = FALSE)
+    stop(sprintf("'%s' must be a scalar", name), call. = FALSE)
   }
 }
 assert_length <- function(x, n, name = deparse(substitute(x))) {
   if (length(x) != n) {
-    stop(sprintf("%s must have %d elements", name, n), call. = FALSE)
+    stop(sprintf("'%s' must have %d elements (recieved %d)",
+                 name, n, length(x)), call. = FALSE)
   }
 }
 
 assert_function <- function(x, name = deparse(substitute(x))) {
   if (!is.function(x)) {
-    stop(sprintf("%s must be a function", name), call. = FALSE)
+    stop(sprintf("'%s' must be a function", name), call. = FALSE)
   }
 }
 
 assert_environment <- function(x, name = deparse(substitute(x))) {
   if (!is.environment(x)) {
-    stop(sprintf("%s must be an environment", name), call. = FALSE)
+    stop(sprintf("'%s' must be an environment", name), call. = FALSE)
   }
 }
 assert_list <- function(x, name = deparse(substitute(x))) {
   if (!is.list(x)) {
-    stop(sprintf("%s must be a list", name), call. = FALSE)
+    stop(sprintf("'%s' must be a list", name), call. = FALSE)
   }
 }
 
 assert_logical <- function(x, name = deparse(substitute(x))) {
   if (!is.logical(x)) {
-    stop(sprintf("%s must be logical", name), call. = FALSE)
+    stop(sprintf("'%s' must be logical", name), call. = FALSE)
   }
 }
 assert_scalar_logical <- function(x, name = deparse(substitute(x))) {
@@ -78,7 +79,7 @@ assert_scalar_logical <- function(x, name = deparse(substitute(x))) {
 
 assert_character <- function(x, name = deparse(substitute(x))) {
   if (!is.character(x)) {
-    stop(sprintf("%s must be character", name), call. = FALSE)
+    stop(sprintf("'%s' must be character", name), call. = FALSE)
   }
 }
 assert_scalar_character <- function(x, name = deparse(substitute(x))) {
@@ -88,7 +89,7 @@ assert_scalar_character <- function(x, name = deparse(substitute(x))) {
 
 assert_raw <- function(x, name = deparse(substitute(x))) {
   if (!is.raw(x)) {
-    stop(sprintf("%s must be raw", name), call. = FALSE)
+    stop(sprintf("'%s' must be raw", name), call. = FALSE)
   }
 }
 

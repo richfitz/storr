@@ -36,7 +36,7 @@ test_that("mset edge cases", {
   expect_error(st$mset(c("a", "b"), list(1, 2, 3), c("x", "y", "z")),
                "Incompatible lengths for key and namespace")
   expect_error(st$mset(c("a", "b"), list(1, 2, 3)),
-               "value must have 2 elements")
+               "'value' must have 2 elements")
 })
 
 test_that("missing", {
