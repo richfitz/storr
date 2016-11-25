@@ -39,3 +39,15 @@ test_that("unknown types", {
     st$export(numeric(), list = names(res)),
     "Invalid type for dest; can't 'set' into objects of type numeric")
 })
+
+test_that("copy with different hash algorithms", {
+  st_md5 <- storr_environment(hash_algorithm = "md5")
+  st_sha <- storr_environment(hash_algorithm = "sha1")
+
+  x <- runif(10)
+  h <- st_md5$set("x", x)
+
+  expect_equal(st_sha$import(st_md5), "x")
+  expect_equal(st_sha$get("x"), x)
+  expect_false(st_sha$get_hash("x") == h)
+})
