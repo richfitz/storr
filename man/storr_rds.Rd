@@ -52,7 +52,7 @@ so needs to contain characters that are valid in a filename.
 Because the actual file will be stored with mangled names it is
 not safe to use the same path for a storr with and without
 mangling.  So once an rds storr has been created its "mangledness"
-is set.  Using \code{mangle_key=NULL} uses whatever mangledness
+is set.  Using \code{mangle_key = NULL} uses whatever mangledness
 exists (or no mangledness if creating a new storr).
 }
 \examples{
@@ -75,7 +75,7 @@ st$set("foo/bar", letters)
 
 # The solution to this is to "mangle" the key names.  Storr can do
 # this for you:
-st2 <- storr_rds(tempfile(), mangle_key=TRUE)
+st2 <- storr_rds(tempfile(), mangle_key = TRUE)
 st2$set("foo/bar", letters)
 st2$list()
 st2$get("foo/bar")

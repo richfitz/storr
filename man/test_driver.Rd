@@ -28,7 +28,7 @@ is likely to behave itself.  As bugs are found they will be added
 to the test suite to guard against regressions.
 
 The test suite is included in the package as
-\code{system.file("spec", package="storr")}.
+\code{system.file("spec", package = "storr")}.
 
 The procedure for each test block is:
 \enumerate{

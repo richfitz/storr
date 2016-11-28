@@ -2,6 +2,7 @@
 
 * Support for using relational databases via DBI (SQLite, MySQL, Postgres) #23
 * Support for selecting hash algorithm at the driver level, so rather than being limited to md5, more robust algorithms can be used.  This is implemented for all storr drivers, and for the rds driver will safely work on storr databases from before this version
+* `mget`/`mset` added for vectorised `get`/`set` operations that reduce the number of roundtrips on some drivers.  `del` and `exists` become vectorised at the same time. This requires extensive change to drivers but is backward compatible for users
 
 ## storr 1.0.1 (2016-05-10)
 

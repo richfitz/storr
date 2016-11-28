@@ -30,6 +30,6 @@ For more information about using this, see
 \examples{
 hook <- fetch_hook_read(
     function(key, namespace) paste0(key, ".csv"),
-    function(filename) read.csv(filename, stringsAsFactors=FALSE))
+    function(filename) read.csv(filename, stringsAsFactors = FALSE))
 }
 

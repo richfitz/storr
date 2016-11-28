@@ -31,7 +31,7 @@ CRAN to function
 (\href{https://github.com/ropensci/rrlite}{rrlite} or
 \href{https://github.com/richfitz/redux}{redux}).  New drivers are
 relatively easy to add -- see the "drivers" vignette
-(\code{vignette("drivers", package="storr")}).
+(\code{vignette("drivers", package = "storr")}).
 
 There are convenience functions (e.g.,
 \code{\link{storr_environment}} and \code{\link{storr_rds}}) that
@@ -373,7 +373,7 @@ st$del("mykey")
 ## not "objects" by using the \\code{default_namespace} argument (this
 ## one also points at the same memory as the first storr).
 st2 <- storr(driver_environment(st$driver$envir),
-             default_namespace="namespace2")
+             default_namespace = "namespace2")
 ## All functions now use "namespace2" as the default namespace:
 st2$list()
 st2$del("x")
