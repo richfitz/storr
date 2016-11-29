@@ -34,14 +34,12 @@ test_that("dbi (postgres)", {
 ## These are not required on CRAN testing, but only for my own
 ## edification.
 if ("redux" %in% .packages(TRUE)) {
-  rand_str <- function() paste0(hash_object(Sys.time()), ":")
   con <- redux::hiredis()
   storr:::test_driver(function(dr = NULL, ...)
     driver_redis_api(dr$prefix %||% rand_str(), con, ...))
 }
 
 if ("rrlite" %in% .packages(TRUE)) {
-  rand_str <- function() hash_object(Sys.time())
   con <- rrlite::hirlite()
   storr:::test_driver(function(dr = NULL, ...)
     driver_redis_api(dr$prefix %||% rand_str(), con, ...))
