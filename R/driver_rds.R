@@ -142,10 +142,7 @@ R6_driver_rds <- R6::R6Class(
       ## NOTE: this takes advantage of having the serialised value
       ## already and avoids seralising twice.
       assert_raw(value)
-      filename <- self$name_hash(hash)
-      con <- (if (self$compress) gzfile else file)(filename, "wb")
-      on.exit(close(con))
-      write_bin(value, con)
+      write_serialized_rds(value, self$name_hash(hash), self$compress)
     },
 
     exists_hash = function(key, namespace) {

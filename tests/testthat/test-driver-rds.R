@@ -75,31 +75,35 @@ test_that("mangledless compatibility", {
   expect_false(dr4$mangle_key)
 })
 
-## This test takes a _lot_ of time and memory.
+## This test takes a lot of time - about 25s.  This really suggests
+## that storing objects of this size is not a sensible idea!
 test_that("large vector support", {
   skip_on_cran()
-  skip("this one is really slow but run occasionally")
-
-  data <- raw(2195148826)
-  x <- serialize(data, NULL)
-
-  path <- tempfile()
-  expect_error(writeBin(x, path), "long vectors not supported yet")
-  file.remove(path)
+  skip_long_test()
 
   path <- tempfile()
   dr <- driver_rds(path, compress = FALSE)
   on.exit(dr$destroy())
+  helper <- spec_helper(dr)
 
-  ## This is quite slow...
-  hash <- hash_object(x, serialize = FALSE, skip = 14L)
-  ## This is really slow and writes out the data without crashing
-  ## ideally.  It does make the system very laggy though and I don't
-  ## really understand why.
-  dr$set_object(hash, x)
+  data <- raw(2195148826)       # ~  1.3s to allocate the data
 
-  cmp <- dr$get_object(hash)
-  expect_identical(cmp, data)
+  x <- helper$serialize(data)   # ~  4.5s
+  hash <- helper$hash(x)        # ~  7.0s
+
+  dr$set_object(hash, x)        # ~  8.0s
+  cmp <- dr$get_object(hash)    # ~  3.4s
+  expect_identical(cmp, data)   # ~  0.3s
+  ##                            # -------
+  ##                            # ~ 24.5s
+
+  ## Check that R still doesn't support this directly; if it does
+  ## we'll move straight over and use the native support (once native
+  ## support is present, then the set_object phase will save about 4s
+  ## total)
+  tmp <- tempfile()
+  expect_error(writeBin(x, tmp), "long vectors not supported yet")
+  file.remove(tmp)
 })
 
 test_that("compression support", {

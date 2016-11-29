@@ -107,20 +107,24 @@ file_remove <- function(path) {
   invisible(exists)
 }
 
-## For current R (3.2.3 or thereabouts) writeBin does not work with
+## For current R (3.3.2 or thereabouts) writeBin does not work with
 ## long vectors.  We can work around this for now, but in future
 ## versions this will just use native R support.
-write_bin <- function(value, con, long = 2^31 - 2) {
+##
+## The workaround is to *unserialize* and then use saveRDS to
+## serialise directly to a connection.  This is far from ideal, but is
+## faster than the previous approach of iterating through the raw
+## vector and writing it bit-by-bit to a file (~30s for that approach,
+## vs ~10s for this one).
+write_serialized_rds <- function(value, filename, compress, long = 2^31 - 2) {
+  con <- (if (compress) gzfile else file)(filename, "wb")
+  on.exit(close(con))
   len <- length(value)
-  if (len > long) {
-    i <- 1L
-    while (i < len) {
-      j <- i + long - 1L
-      writeBin(value[seq(i, min(j, len))], con)
-      i <- j + 1L
-    }
-  } else {
+  if (len < long) {
     writeBin(value, con)
+  } else {
+    message("Repacking large object")
+    saveRDS(unserialize(value), con)
   }
 }
 

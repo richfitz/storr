@@ -4,10 +4,10 @@ RSCRIPT = Rscript --no-init-file
 all: install
 
 test:
-	STORR_SKIP_DOWNLOADS=true make test_all
+	${RSCRIPT} -e 'library(methods); devtools::test()'
 
 test_all:
-	${RSCRIPT} -e 'library(methods); devtools::test()'
+	STORR_RUN_LONG_TESTS=true make test
 
 roxygen:
 	@mkdir -p man

@@ -1,21 +1,23 @@
 context("utils")
 
-test_that("write_bin", {
-  bytes <- as.raw(0:255)
-  path <- tempfile()
+test_that("write_serialized_rds", {
+  x <- runif(100)
+  sx <- serialize(x, NULL)
 
-  con <- file(path, "wb")
-  on.exit({
-    close(con)
-    file.remove(path)
-  })
+  p1 <- tempfile()
+  write_serialized_rds(sx, p1, FALSE)
+  on.exit(file.remove(p1), add = TRUE)
+  expect_identical(readBin(p1, raw(), length(sx) * 2), sx)
+  expect_identical(readRDS(p1), x)
 
-  write_bin(bytes, con, 7L)
+  p2 <- tempfile()
+  write_serialized_rds(sx, p2, FALSE, length(sx) / 2)
+  on.exit(file.remove(p2), add = TRUE)
+  expect_identical(readBin(p2, raw(), length(sx) * 2), sx)
+  expect_identical(readRDS(p2), x)
 
-  close(con)
-  on.exit(file.remove(path))
-
-  expect_identical(readBin(path, raw(), 1000), bytes)
+  expect_equal(unname(tools::md5sum(p1)),
+               unname(tools::md5sum(p2)))
 })
 
 test_that("assertions", {
