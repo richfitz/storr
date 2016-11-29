@@ -143,7 +143,8 @@ R6_driver_environment <- R6::R6Class(
       ls(self$envir$data)
     },
     list_keys = function(namespace) {
-      ls(self$ensure_envir(namespace))
+      e <- self$ensure_envir(namespace)
+      ls(e)
     },
     list_namespaces = function() {
       as.character(names(self$envir$keys))

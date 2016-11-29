@@ -17,3 +17,9 @@ test_that("shared environment regression check", {
   expect_identical(sort(st2$list()), cmp)
   expect_identical(sort(st3$list()), cmp)
 })
+
+test_that("missing namespace error", {
+  ## Avoid a regression and interaction between ls() and force
+  expect_error(storr_environment()$list(xxxx),
+               "'xxxx' not found")
+})
