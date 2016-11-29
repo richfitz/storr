@@ -70,3 +70,27 @@ test_that("copy multiple namespaces", {
   expect_equal(lapply(st1$list_namespaces(), st1$list),
                lapply(st2$list_namespaces(), st2$list))
 })
+
+test_that("named export", {
+  st1 <- storr_environment()
+  st1$set("a", runif(10))
+  st1$set("b", runif(10))
+  st1$set("x", runif(10), "other")
+
+  st2 <- storr_environment()
+  res <- st2$import(st1, c(A = "a", B = "b"))
+  expect_equal(res[, "name"], c("A", "B"))
+  expect_equal(st2$get("A"), st1$get("a"))
+  expect_equal(st2$get("B"), st1$get("b"))
+
+  st3 <- storr_environment()
+  st1$export(st3, c(A = "a", B = "b"))
+  expect_equal(res[, "name"], c("A", "B"))
+  expect_equal(st3$get("A"), st1$get("a"))
+  expect_equal(st3$get("B"), st1$get("b"))
+
+  st4 <- storr_environment()
+  res <- st4$import(st1, namespace = c(import = "objects"))
+  expect_equal(res[, "namespace"], rep("import", 2L))
+  expect_equal(sort(res[, "name"]), st1$list())
+})
