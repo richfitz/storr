@@ -163,3 +163,7 @@ squote <- function(x) {
 dquote <- function(x) {
   sprintf('"%s"', x)
 }
+
+is_storr <- function(x) {
+  inherits(x, "storr")
+}

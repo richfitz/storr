@@ -333,12 +333,22 @@ R6_storr <- R6::R6Class(
 
     ## To/from R environments (distinct from the environment driver)
     import = function(src, list = NULL, namespace = self$default_namespace) {
-      storr_copy(self, src, list, namespace)$names
+      if (is.null(namespace)) {
+        if (inherits(src, "storr")) {
+          namespace <- src$list_namespaces()
+        } else {
+          stop("Can't do this")
+        }
+      }
+      invisible(storr_copy(self, src, list, namespace)$info)
     },
 
     ## The logic here is taken from remake's object_store, which is
     ## useful as this is destined to replace that object.
     export = function(dest, list = NULL, namespace = self$default_namespace) {
+      if (is.null(namespace)) {
+        namespace <- self$list_namespaces()
+      }
       invisible(storr_copy(dest, self, list, namespace)$dest)
     },
 

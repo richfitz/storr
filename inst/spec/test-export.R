@@ -26,7 +26,7 @@ testthat::test_that("export", {
 
   e$dat <- iris
   nms <- cache$import(e)
-  testthat::expect_identical(nms, c("d", "dat"))
+  testthat::expect_identical(nms[, "name"], c("d", "dat"))
   testthat::expect_equal(cache$get("dat"), iris)
 
   env <- cache$export(new.env(parent = emptyenv()))

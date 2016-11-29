@@ -5,7 +5,8 @@ test_that("copy list", {
 
   src <- list(a = 1, b = 2)
   res <- st$import(src)
-  expect_equal(sort(res), sort(names(src)))
+  expect_equal(sort(res[, "name"]), sort(names(src)))
+  expect_equal(res[, "namespace"], rep("objects", 2L))
 
   expect_equal(st$get("a"), src$a)
   expect_equal(st$get("b"), src$b)
@@ -47,7 +48,25 @@ test_that("copy with different hash algorithms", {
   x <- runif(10)
   h <- st_md5$set("x", x)
 
-  expect_equal(st_sha$import(st_md5), "x")
+  res <- st_sha$import(st_md5)
+  expect_equal(unname(res[, "name"]), "x")
+  expect_equal(unname(res[, "namespace"]), "objects")
   expect_equal(st_sha$get("x"), x)
   expect_false(st_sha$get_hash("x") == h)
+})
+
+test_that("copy multiple namespaces", {
+  st1 <- storr_environment()
+  st1$set("a", runif(10))
+  st1$set("b", runif(10))
+  st1$set("x", runif(10), "other")
+
+  st2 <- storr_environment()
+  dat <- st2$import(st1, namespace = NULL)
+
+  expect_equal(nrow(dat), 3L)
+  expect_equal(st1$list_hashes(), st2$list_hashes())
+  expect_equal(st1$list_namespaces(), st2$list_namespaces())
+  expect_equal(lapply(st1$list_namespaces(), st1$list),
+               lapply(st2$list_namespaces(), st2$list))
 })
