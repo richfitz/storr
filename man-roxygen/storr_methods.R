@@ -224,7 +224,8 @@
 ##'   Import R objects from an environment.
 ##'
 ##'   \emph{Usage:}
-##'   \code{import(src, list = NULL, namespace = self$default_namespace)}
+##'   \code{import(src, list = NULL, namespace = self$default_namespace,
+##'       skip_missing = FALSE)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \itemize{
@@ -234,7 +235,10 @@
 ##'     \item{\code{list}:   Names of of objects to import (or \code{NULL} to import all objects in \code{envir}.  If given it must be a character vector.  If named, the names of the character vector will be the names of the objects as created in the storr.
 ##'     }
 ##'
-##'     \item{\code{namespace}:   Namespace to get objects from, and to put objects into.
+##'     \item{\code{namespace}:   Namespace to get objects from, and to put objects into.  If \code{NULL}, all namespaces from \code{src} will be imported. If named, then the same rule is followed as \code{list}; \code{namespace = c(a = b)} will import the contents of namespace \code{b} as namespace \code{a}.
+##'     }
+##'
+##'     \item{\code{skip_missing}:   Logical, indicating if missing keys (specified in \code{list}) should be skipped over, rather than being treated as an error (the default).
 ##'     }
 ##'   }
 ##' }
@@ -242,7 +246,8 @@
 ##'   Export objects from the storr into something else.
 ##'
 ##'   \emph{Usage:}
-##'   \code{export(dest, list = NULL, namespace = self$default_namespace)}
+##'   \code{export(dest, list = NULL, namespace = self$default_namespace,
+##'       skip_missing = FALSE)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \itemize{
@@ -252,18 +257,21 @@
 ##'     \item{\code{list}:   Names of objects to export, with the same rules as \code{list} in \code{$import}.
 ##'     }
 ##'
-##'     \item{\code{namespace}:   Namespace to get objects from, and to put objects into.
+##'     \item{\code{namespace}:   Namespace to get objects from, and to put objects into.  If \code{NULL}, then this will export namespaces from this (source) storr into the destination; if there is more than one namespace,this is only possible if \code{dest} is a storr (otherwise there will be an error).
+##'     }
+##'
+##'     \item{\code{skip_missing}:   Logical, indicating if missing keys (specified in \code{list}) should be skipped over, rather than being treated as an error (the default).
 ##'     }
 ##'   }
 ##'
 ##'   \emph{Value}:
-##'   Invisibly, \code{dest}, which allows use of \code{e <- st$export(new.env())}.
+##'   Invisibly, \code{dest}, which allows use of \code{e <- st$export(new.env())} and \code{x <- st$export(list())}.
 ##' }
 ##' \item{\code{archive_export}}{
 ##'   Export objects from the storr into a special "archive" storr, which is an \code{\link{storr_rds}} with name mangling turned on (which encodes keys with base64 so that they do not voilate filesystem naming conventions).
 ##'
 ##'   \emph{Usage:}
-##'   \code{archive_export(path, names = NULL, namespace = self$default_namespace)}
+##'   \code{archive_export(path, names = NULL, namespace = NULL)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \itemize{
@@ -273,7 +281,7 @@
 ##'     \item{\code{names}:   As for \code{$export}
 ##'     }
 ##'
-##'     \item{\code{namespace}:   Namespace to get objects from.
+##'     \item{\code{namespace}:   Namespace to get objects from.  If \code{NULL}, then exports all namespaces found in this (source) storr.
 ##'     }
 ##'   }
 ##' }
@@ -281,7 +289,7 @@
 ##'   Inverse of \code{archive_export}; import objects from a storr that was created by \code{archive_export}.
 ##'
 ##'   \emph{Usage:}
-##'   \code{archive_import(path, names = NULL, namespace = self$default_namespace)}
+##'   \code{archive_import(path, names = NULL, namespace = NULL)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \itemize{
@@ -291,7 +299,7 @@
 ##'     \item{\code{names}:   As for \code{$import}
 ##'     }
 ##'
-##'     \item{\code{namespace}:   Namespace to import objects into.
+##'     \item{\code{namespace}:   Namespace to import objects into.  If \code{NULL}, then imports al namespaces from the source storr.
 ##'     }
 ##'   }
 ##' }

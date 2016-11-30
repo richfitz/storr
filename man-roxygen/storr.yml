@@ -118,6 +118,7 @@ list_hashes:
 list_namespaces:
   short: List all namespaces known to the database
   value: *sorted_char
+
 import:
   short: Import R objects from an environment.
   params:
@@ -130,7 +131,16 @@ import:
       vector.  If named, the names of the character vector will be the
       names of the objects as created in the storr.
     namespace: >-
-      Namespace to get objects from, and to put objects into.
+      Namespace to get objects from, and to put objects into.  If
+      \code{NULL}, all namespaces from \code{src} will be imported.
+      If named, then the same rule is followed as \code{list};
+      \code{namespace = c(a = b)} will import the contents of
+      namespace \code{b} as namespace \code{a}.
+    skip_missing: >-
+      Logical, indicating if missing keys (specified in \code{list})
+      should be skipped over, rather than being treated as an error
+      (the default).
+
 export:
   short: Export objects from the storr into something else.
   params:
@@ -142,10 +152,18 @@ export:
       Names of objects to export, with the same rules as \code{list}
       in \code{$import}.
     namespace: >-
-      Namespace to get objects from, and to put objects into.
+      Namespace to get objects from, and to put objects into.  If
+      \code{NULL}, then this will export namespaces from this (source)
+      storr into the destination; if there is more than one
+      namespace,this is only possible if \code{dest} is a storr
+      (otherwise there will be an error).
+    skip_missing: >-
+      Logical, indicating if missing keys (specified in \code{list})
+      should be skipped over, rather than being treated as an error
+      (the default).
   value: >-
     Invisibly, \code{dest}, which allows use of \code{e <-
-    st$export(new.env())}.
+    st$export(new.env())} and \code{x <- st$export(list())}.
 
 archive_export:
   short: >-
@@ -156,7 +174,10 @@ archive_export:
   params:
     path: Path to create the storr at; can exist already.
     names: As for \code{$export}
-    namespace: Namespace to get objects from.
+    namespace: >-
+      Namespace to get objects from.  If \code{NULL}, then exports all
+      namespaces found in this (source) storr.
+
 archive_import:
   short: >-
     Inverse of \code{archive_export}; import objects from a storr that
@@ -164,4 +185,6 @@ archive_import:
   params:
     path: Path of the exported storr.
     names: As for \code{$import}
-    namespace: Namespace to import objects into.
+    namespace: >-
+      Namespace to import objects into.  If \code{NULL}, then imports
+      al namespaces from the source storr.
