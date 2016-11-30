@@ -1,4 +1,4 @@
-storr_copy <- function(dest, src, list, namespace, skip_missing = FALSE) {
+storr_copy <- function(dest, src, list, namespace, skip_missing) {
   if (length(namespace) > 1L) {
     if (!(is_storr(dest) && is_storr(src))) {
       stop("If exporting multiple namespaces, both dest and src must be storrs")
@@ -43,12 +43,22 @@ storr_copy <- function(dest, src, list, namespace, skip_missing = FALSE) {
   missing <- attr(values, "missing", exact = TRUE)
   if (!is.null(missing)) {
     if (skip_missing) {
-      values <- values[!missing]
-      names_dest <- names_dest[!missing]
-      namespace_dest <- namespace_dest[!missing]
+      values <- values[-missing]
+      names_dest <- names_dest[-missing]
+      namespace_dest <- namespace_dest[-missing]
     } else {
-      ## TODO: information on the missing values needed
-      stop("Missing values; can't copy")
+      ## Here we need to find and nicely display all the missing keys,
+      ## sorted by namespace.  It's a bit of a faff, really.
+      msg <-
+        cbind(namespace = namespace_src, name = list)[missing, , drop = FALSE]
+      msg <- split(msg[, "name"], msg[, "namespace"])
+      msg <- vcapply(names(msg), function(ns)
+        sprintf("from namespace %s, %s: %s", squote(ns),
+                ngettext(length(msg[[ns]]), "key", "keys"),
+                paste(squote(msg[[ns]]), collapse = ", ")),
+        USE.NAMES = FALSE)
+      msg <- paste0("\t- ", msg, collapse = "\n")
+      stop("Missing values; can't copy:\n", msg)
     }
   }
 

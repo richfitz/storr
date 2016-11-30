@@ -94,3 +94,51 @@ test_that("named export", {
   expect_equal(res[, "namespace"], rep("import", 2L))
   expect_equal(sort(res[, "name"]), st1$list())
 })
+
+test_that("missing values on export", {
+  st1 <- storr_environment()
+  st1$set("a", runif(10))
+  st1$set("b", runif(10))
+
+  st2 <- storr_environment()
+  expect_error(st2$import(st1, c("a", "b", "c")),
+               "Missing values; can't copy")
+  expect_equal(st2$list_hashes(), character(0))
+  expect_equal(st2$list(), character(0))
+
+  st2 <- storr_environment()
+  res <- st2$import(st1, c("a", "b", "c"), skip_missing = TRUE)
+  expect_equal(nrow(res), 2L)
+  expect_equal(st2$list(), c("a", "b"))
+})
+
+test_that("can't export multiple namespaces to a list", {
+  st1 <- storr_environment()
+  st1$set("a", runif(10))
+  st1$set("b", runif(10))
+  st1$set("x", runif(10), "other")
+  expect_error(st1$export(list(), namespace = NULL),
+               "both dest and src must be storrs")
+  expect_error(st1$export(new.env(parent = emptyenv()), namespace = NULL),
+               "both dest and src must be storrs")
+  expect_error(as.list(st1, namespace = NULL),
+               "both dest and src must be storrs")
+})
+
+test_that("effect of default namespaces", {
+  st1 <- storr_environment(default_namespace = "ns1")
+  st2 <- storr_environment(default_namespace = "ns2")
+
+  st1$set("a", runif(10))
+  st2$set("b", runif(10))
+
+  ## Both import and export default to import/export from the *self*
+  ## default namespace, so this is a noop:
+  res <- st1$import(st2)
+  expect_equal(nrow(res), 0L)
+
+  ## On the other hand, this will cause the contents of st1's ns1 to
+  ## be copied over:
+  st1$export(st2)
+  expect_equal(st2$get("a", "ns1"), st1$get("a"))
+})

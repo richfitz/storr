@@ -331,8 +331,8 @@ R6_storr <- R6::R6Class(
       sort(self$driver$list_namespaces())
     },
 
-    ## To/from R environments (distinct from the environment driver)
-    import = function(src, list = NULL, namespace = self$default_namespace) {
+    import = function(src, list = NULL, namespace = self$default_namespace,
+                      skip_missing = FALSE) {
       if (is.null(namespace)) {
         if (inherits(src, "storr")) {
           namespace <- src$list_namespaces()
@@ -340,35 +340,28 @@ R6_storr <- R6::R6Class(
           stop("Can't do this")
         }
       }
-      invisible(storr_copy(self, src, list, namespace)$info)
+      invisible(storr_copy(self, src, list, namespace, skip_missing)$info)
     },
 
-    ## The logic here is taken from remake's object_store, which is
-    ## useful as this is destined to replace that object.
-    export = function(dest, list = NULL, namespace = self$default_namespace) {
+    export = function(dest, list = NULL, namespace = self$default_namespace,
+                      skip_missing = FALSE) {
       if (is.null(namespace)) {
         namespace <- self$list_namespaces()
       }
-      invisible(storr_copy(dest, self, list, namespace)$dest)
+      invisible(storr_copy(dest, self, list, namespace, skip_missing)$dest)
     },
 
-    ## TODO: Deal with all the namespaces at once perhaps, or at least
-    ## allow a vector of namespaces here.  The place to implement this
-    ## would be in storr_copy because it would flow through
-    ## everything else.
-    archive_export = function(path, names = NULL,
-                              namespace = self$default_namespace) {
+    archive_export = function(path, names = NULL, namespace = NULL) {
       self$export(storr_rds(path, mangle_key = TRUE), names, namespace)
     },
 
-    archive_import = function(path, names = NULL,
-                              namespace = self$default_namespace) {
+    archive_import = function(path, names = NULL, namespace = NULL) {
       self$import(storr_rds(path, mangle_key = TRUE), names, namespace)
     }))
 
 ##' @export
 as.list.storr <- function(x, ...) {
-  x <- x$export(list())
+  x <- x$export(list(), ...)
   x
 }
 

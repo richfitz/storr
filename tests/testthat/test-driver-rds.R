@@ -24,13 +24,12 @@ test_that("mangling", {
 
   expect_identical(st$list(), "foo")
 
-
   expect_identical(dir(file.path(path, "keys", "objects")),
                    encode64("foo"))
 
   st3 <- storr_environment()
   x <- st3$import(st)
-  expect_identical(x, "foo")
+  expect_identical(unname(x[, "name"]), "foo")
   expect_identical(st3$list(), "foo")
 
   st4 <- storr_environment()
