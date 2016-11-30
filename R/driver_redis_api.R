@@ -206,11 +206,11 @@ driver_redis_api_config <- function(con, prefix, name, value, default,
 ## the grossness a bit.  These commands (vectorised delete and exists)
 ## have basically the same form, so this approach combines them
 ## together in a single lua script.
-'local result = {}
+"local result = {}
 for _, val in pairs(KEYS) do
   result[#result + 1] = redis.call(ARGV[1], val)
 end
-return result' -> STORR_LUA
+return result" -> STORR_LUA
 STORR_LUA_SHA <- "ef97af5300a280cb6fd597e18899dc2ffb000f96"
 storr_lua_load <- function(con) {
   sha <- con$SCRIPT_LOAD(STORR_LUA)

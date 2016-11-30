@@ -43,7 +43,7 @@ fetch_hook_gh_description <- function(key, namespace) {
   fmt <- "https://raw.githubusercontent.com/%s/master/DESCRIPTION"
   path <- tempfile("gh_description_")
   on.exit(file.remove(path))
-  code <- download.file(sprintf(fmt, key), path, method="libcurl")
+  code <- download.file(sprintf(fmt, key), path, mode = "wb")
   if (code != 0L) {
     stop("Error downloading file")
   }
@@ -92,7 +92,7 @@ st$list()
 ## If an external resource cannot be located, storr will throw an
 ## error of class `KeyErrorExternal`:
 tryCatch(st$get("richfitz/no_such_repo"),
-         KeyErrorExternal=function(e)
+         KeyErrorExternal = function(e)
            message(sprintf("** Repository %s not found", e$key)))
 
 ## This would happen for all errors, including lack of internet
@@ -103,17 +103,17 @@ tryCatch(st$get("richfitz/no_such_repo"),
 ## still work as expected.
 
 ## For more details on storr exception handling, see the `storr`
-## vignette (`vignette("storr", package="storr")`)
+## vignette (`vignette("storr", package = "storr")`)
 
 ## Note that if you want to persist the storage of the descriptions
 ## you would need to mangle the key:
-st_rds <- st$export(storr::storr_rds(tempfile(), mangle_key=TRUE))
+st_rds <- st$export(storr::storr_rds(tempfile(), mangle_key = TRUE))
 st_rds$list()
 st_rds$get("richfitz/storr")$Version
 
 ## The `st_rds` storr does not include the fetch hook; it is a plain storr.
 
-###+ echo=FALSE
+###+ echo = FALSE
 st_rds$destroy()
 
 ## # Memoisation
@@ -130,8 +130,8 @@ f <- function(a, b) {
 
 ## and a set of parameters to run the function over, with each
 ## parameter set (row) associated with an id:
-pars <- data.frame(id=as.character(1:10), a=runif(10), b=runif(10),
-                   stringsAsFactors=FALSE)
+pars <- data.frame(id = as.character(1:10), a = runif(10), b = runif(10),
+                   stringsAsFactors = FALSE)
 
 ## The `hook` here simply looks the parameters up and arranges to run them:
 hook <- function(key, namespace) {
@@ -153,12 +153,12 @@ identical(st$get("1"), x)
 ## *functions* in the storr so that we lose the dependency on the
 ## global variables:
 st <- storr::storr_environment()
-st$set("experiment1", pars, namespace="parameters")
-st$set("experiment1", f, namespace="functions")
+st$set("experiment1", pars, namespace = "parameters")
+st$set("experiment1", f, namespace = "functions")
 
 hook2 <- function(key, namespace) {
-  f <- st$get(namespace, namespace="functions")
-  pars <- st$get(namespace, namespace="parameters")
+  f <- st$get(namespace, namespace = "functions")
+  pars <- st$get(namespace, namespace = "parameters")
   p <- pars[match(key, pars$id), -1]
   f(p$a, p$b)
 }
@@ -171,14 +171,16 @@ x2 <- st_use$get("1", "experiment1")
 ## Memoisation in the style of the `memoise` package is possible to
 ## implement, but is not provided in the package.  Implementation is
 ## straightforward and will work with any driver:
-memoise <- function(f, driver=storr::driver_environment()) {
+memoise <- function(f, driver = storr::driver_environment()) {
   force(f)
   st <- storr::storr(driver)
   function(...) {
+    ## NOTE: also digesting the inputs as a key here (in addition to
+    ## storr's usual digesting of values)
     key <- digest::digest(list(...))
     tryCatch(
       st$get(key),
-      KeyError=function(e) {
+      KeyError = function(e) {
         ans <- f(...)
         st$set(key, ans)
         ans
@@ -207,7 +209,7 @@ g(1)
 ## overhead is approximately half of one call to `message()` so it's
 ## not that bad.
 
-##+ eval=FALSE, echo=FALSE
+##+ eval = FALSE, echo = FALSE
 f <- function(x) x * 2
 g <- memoise(f)
 h <- memoise::memoise(f)
