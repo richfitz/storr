@@ -30,11 +30,9 @@ autodoc:
 
 vignettes/storr.Rmd: vignettes/src/storr.R
 	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
-vignettes/drivers.Rmd: vignettes/src/drivers.R
-	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
 vignettes/external.Rmd: vignettes/src/external.R
 	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
-vignettes: vignettes/storr.Rmd vignettes/drivers.Rmd vignettes/external.Rmd
+vignettes: vignettes/storr.Rmd vignettes/external.Rmd
 	${RSCRIPT} -e 'library(methods); devtools::build_vignettes()'
 
 staticdocs:
