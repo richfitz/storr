@@ -1,6 +1,6 @@
 language: r
 cache: packages
-sudo: false
+sudo: true
 
 # NOTE: there is quite a bit of extra installation required here; this
 # is to ensure that all tests can be run on travis while keeping the
