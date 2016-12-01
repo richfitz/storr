@@ -8,19 +8,50 @@ make_hash_serialized_object <- function(hash_algorithm, skip_version) {
   }
 }
 
-make_serialize_object <- function(drop_r_version) {
-  force(drop_r_version)
-  function(value) {
-    serialize_object(value, drop_r_version = drop_r_version)
+make_serialize_object <- function(drop_r_version, string, xdr = TRUE) {
+  if (string) {
+    ## TODO: check R version is at least 3.2.0 here
+    function(object) rawToChar(serialize(object, NULL, NA, xdr))
+  } else if (drop_r_version) {
+    function(object) serialize_object_drop_r_version(object, xdr)
+  } else {
+    function(object) serialize(object, NULL, FALSE, xdr)
   }
 }
 
-serialize_object <- function(object, xdr = TRUE, drop_r_version = FALSE) {
-  if (drop_r_version) {
-    serialize_object_drop_r_version(object, xdr)
+## serialize_object <- function(object, xdr = TRUE, drop_r_version = FALSE) {
+##   if (drop_r_version) {
+##     serialize_object_drop_r_version(object, xdr)
+##   } else {
+##     serialize(object, NULL, xdr = xdr)
+##   }
+## }
+
+## serialize_str <- function(x) {
+##   rawToChar(serialize(x, NULL, TRUE))
+## }
+## unserialize_str <- function(x) {
+##   unserialize(charToRaw(x))
+## }
+
+unserialize_safe <- function(x) {
+  if (is.character(x)) {
+    unserialize(charToRaw(x))
+  } else if (is.raw(x)) {
+    unserialize(x)
   } else {
-    serialize(object, NULL, xdr = xdr)
+    stop("Invalid input")
   }
+}
+
+## This is needed to support the case where the hash must apply to the
+## *entire* structure, just just the relevant bytes.
+STORR_R_VERSION_BE <- as.raw(c(0L, 3L, 2L, 0L))
+STORR_R_VERSION_LE <- as.raw(c(0L, 2L, 3L, 0L))
+serialize_object_drop_r_version <- function(object, xdr = TRUE) {
+  dat <- serialize(object, NULL, xdr = xdr, version = 2L)
+  dat[7:10] <- if (xdr) STORR_R_VERSION_BE else STORR_R_VERSION_LE
+  dat
 }
 
 ## For current R (3.3.2 or thereabouts) writeBin does not work with
@@ -42,21 +73,4 @@ write_serialized_rds <- function(value, filename, compress, long = 2^31 - 2) {
     message("Repacking large object")
     saveRDS(unserialize(value), con)
   }
-}
-
-serialize_str <- function(x) {
-  rawToChar(serialize(x, NULL, TRUE))
-}
-unserialize_str <- function(x) {
-  unserialize(charToRaw(x))
-}
-
-## This is needed to support the case where the hash must apply to the
-## *entire* structure, just just the relevant bytes.
-STORR_R_VERSION_BE <- as.raw(c(0L, 3L, 2L, 0L))
-STORR_R_VERSION_LE <- as.raw(c(0L, 2L, 3L, 0L))
-serialize_object_drop_r_version <- function(object, xdr = TRUE) {
-  dat <- serialize(object, NULL, xdr = xdr, version = 2L)
-  dat[7:10] <- if (xdr) STORR_R_VERSION_BE else STORR_R_VERSION_LE
-  dat
 }

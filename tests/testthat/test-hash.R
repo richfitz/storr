@@ -1,8 +1,8 @@
 context("hash")
 
 test_that("serialize, dropping R version", {
-  s1 <- serialize_object(NULL, TRUE, FALSE)
-  s2 <- serialize_object(NULL, TRUE, TRUE)
+  s1 <- make_serialize_object(FALSE, FALSE)(NULL) # no drop, binary
+  s2 <- make_serialize_object(TRUE,  FALSE)(NULL) #    drop, binary
   expect_false(identical(s1, s2))
   i <- 7:10
   expect_identical(s1[-i], s2[-i])
@@ -34,8 +34,8 @@ test_that("reverse engineering", {
   ## 3. version of R written by
   ## 4. minimum version of r to read the file
 
-  s1 <- serialize_object(NULL, TRUE,  FALSE)
-  s2 <- serialize_object(NULL, FALSE, FALSE)
+  s1 <- make_serialize_object(FALSE, FALSE,  TRUE)(NULL) # xdr = TRUE
+  s2 <- make_serialize_object(FALSE, FALSE, FALSE)(NULL) # xdr = FALSE
 
   s1[6] <- as.raw(3L)
   expect_error(unserialize(s1), "cannot read workspace version 3")

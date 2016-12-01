@@ -21,14 +21,15 @@ test_that("dbi (sqlite)", {
 test_that("dbi (postgres)", {
   storr:::test_driver(
     function(dr = NULL, ...) {
-    if (is.null(dr)) {
-      prefix <- paste(sample(letters, 8), collapse = "")
-      dr <- list(con = DBI::dbConnect(RPostgres::Postgres()),
-                 tbl_data = sprintf("storr_%s_data", prefix),
-                 tbl_keys = sprintf("storr_%s_keys", prefix))
+      if (is.null(dr)) {
+        prefix <- paste(sample(letters, 8), collapse = "")
+        dr <- list(con = DBI::dbConnect(RPostgres::Postgres()),
+                   tbl_data = sprintf("storr_%s_data", prefix),
+                   tbl_keys = sprintf("storr_%s_keys", prefix))
+      }
+      driver_dbi(dr$con, dr$tbl_data, dr$tbl_keys, ...)
     }
-    driver_dbi(dr$con, dr$tbl_data, dr$tbl_keys, ...)
-  })
+  )
 })
 
 ## These are not required on CRAN testing, but only for my own

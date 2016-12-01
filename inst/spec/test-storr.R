@@ -177,15 +177,21 @@ testthat::test_that("hash_algorithm", {
   hash_algos <- c("md5", "sha1")
   x <- runif(10)
   key <- "foo"
-  hmd5 <- digest::digest(x, "md5")
 
   dr <- .driver_create()
   traits <- storr_traits(dr$traits)
   dr$destroy()
-
   if (!traits$hash_algorithm) {
     skip("hash_algorithm not supported")
   }
+
+  ## TODO: This is very ugly and mimics the behaviour in storr.
+  ## However, it's required so that we don't rely on md5 being the
+  ## default hash algorithm!
+  hmd5 <-
+    make_hash_serialized_object("md5", !traits$drop_r_version)(
+      make_serialize_object(traits$drop_r_version, traits$accept == "string")(
+        x))
 
   for (h in hash_algos) {
     dr <- .driver_create(hash_algorithm = h)

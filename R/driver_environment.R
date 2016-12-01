@@ -55,6 +55,7 @@ R6_driver_environment <- R6::R6Class(
   public = list(
     envir = NULL,
     hash_algorithm = NULL,
+    traits = list(accept = "object"),
 
     initialize = function(envir, hash_algorithm) {
       if (!is.null(hash_algorithm)) {

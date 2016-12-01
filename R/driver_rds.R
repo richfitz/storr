@@ -94,7 +94,7 @@ R6_driver_rds <- R6::R6Class(
     compress = NULL,
     mangle_key = NULL,
     hash_algorithm = NULL,
-    traits = list(accept_raw = TRUE),
+    traits = list(accept = "raw"),
 
     initialize = function(path, compress, mangle_key, hash_algorithm) {
       dir_create(path)

@@ -33,7 +33,7 @@ R6_driver_redis_api <- R6::R6Class(
   public = list(
     con = NULL,
     prefix = NULL,
-    traits = list(accept_raw = TRUE, throw_missing = TRUE),
+    traits = list(accept = "raw", throw_missing = TRUE),
     hash_algorithm = NULL,
 
     initialize = function(prefix, con, hash_algorithm) {

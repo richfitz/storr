@@ -37,10 +37,10 @@ testthat::test_that("set", {
   k <- "bbb"
   ns <- "ns"
 
-  if (isTRUE(dr$traits[["accept_raw"]])) {
-    dr$set_object(h, st$serialize_object(d))
-  } else {
+  if (storr_traits(dr$traits)[["accept"]] == "object") {
     dr$set_object(h, d)
+  } else {
+    dr$set_object(h, st$serialize_object(d))
   }
   testthat::expect_equal(dr$get_object(h), d, tolerance = 1e-15)
 
@@ -78,10 +78,10 @@ testthat::test_that("namespace", {
   k <- "bbb"
   ns <- "ns"
 
-  if (isTRUE(dr$traits[["accept_raw"]])) {
-    dr$set_object(h, st$serialize_object(d))
-  } else {
+  if (storr_traits(dr$traits)[["accept"]] == "object") {
     dr$set_object(h, d)
+  } else {
+    dr$set_object(h, st$serialize_object(d))
   }
   testthat::expect_equal(dr$get_object(h), d, tolerance = 1e-15)
   testthat::expect_true(dr$exists_object(h))
@@ -264,12 +264,12 @@ testthat::test_that("mset_object", {
     b <- runif(3)
     ha <- st$hash_object(a)
     hb <- st$hash_object(b)
-    if (isTRUE(dr$traits[["accept_raw"]])) {
-      sa <- st$serialize_object(a)
-      sb <- st$serialize_object(b)
-    } else {
+    if (storr_traits(dr$traits)[["accept"]] == "object") {
       sa <- a
       sb <- b
+    } else {
+      sa <- st$serialize_object(a)
+      sb <- st$serialize_object(b)
     }
 
     ## Test the empty one

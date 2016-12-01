@@ -25,10 +25,16 @@ test_that("traits", {
   expect_equal(storr_traits(list()), storr_traits_default())
   expect_error(storr_traits(list(infinite_unicorns = TRUE)),
                "Unknown traits")
-  expect_error(storr_traits(list(drop_r_version = TRUE,
-                                 accept_raw = FALSE)),
-               "if drop_r_version is TRUE, then accept_raw must also be TRUE",
+  expect_error(storr_traits(list(drop_r_version = TRUE, accept = "object")),
+               "if 'drop_r_version' is TRUE, then 'accept'",
                fixed = TRUE)
+  expect_error(storr_traits(list(drop_r_version = TRUE, accept = "string")),
+               "if 'drop_r_version' is TRUE, then 'accept'",
+               fixed = TRUE)
+  expect_error(storr_traits(list(accept = "foo")),
+               "must be one of")
+  expect_error(storr_traits(list(accept = NULL)),
+               "must be a scalar")
 })
 
 test_that("mset edge cases", {

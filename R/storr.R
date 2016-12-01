@@ -94,10 +94,13 @@ R6_storr <- R6::R6Class(
       self$envir <- new.env(parent = emptyenv())
       self$default_namespace <- default_namespace
       self$traits <- storr_traits(driver$traits)
+      ## These control what we send and recieve from the drivers
       self$hash_raw <-
         make_hash_serialized_object(driver$hash_algorithm,
                                     !self$traits$drop_r_version)
-      self$serialize_object <- make_serialize_object(self$traits$drop_r_version)
+      self$serialize_object <-
+        make_serialize_object(self$traits$drop_r_version,
+                              self$traits$accept == "string")
     },
 
     destroy = function() {
@@ -275,7 +278,7 @@ R6_storr <- R6::R6Class(
         ## it's possible that some drivers could do this more
         ## efficiently themselves during negotiation.
         if (!self$driver$exists_object(hash)) {
-          value_send <- if (self$traits$accept_raw) value_ser else value
+          value_send <- if (self$traits$accept == "object") value else value_ser
           self$driver$set_object(hash, value_send)
         }
         if (use_cache) {
@@ -300,13 +303,13 @@ R6_storr <- R6::R6Class(
       }
 
       if (any(upload)) {
-        values_send <- if (self$traits$accept_raw) values_ser else values
+        send <- if (self$traits$accept == "object") values else values_ser
         if (is.null(self$driver$mset_object)) {
           for (i in which(upload)) {
-            self$driver$set_object(hash[[i]], values_send[[i]])
+            self$driver$set_object(hash[[i]], send[[i]])
           }
         } else {
-          self$driver$mset_object(hash[upload], values_send[upload])
+          self$driver$mset_object(hash[upload], send[upload])
         }
       }
 

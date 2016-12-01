@@ -91,15 +91,10 @@ R6_driver_DBI <- R6::R6Class(
     con = NULL,
     tbl_data = NULL,
     tbl_keys = NULL,
+    traits = NULL,
     binary = NULL,
     hash_algorithm = NULL,
     sql = NULL,
-
-    ## TODO: some traits, especially accept_raw but possibly also
-    ## throw_missing should be set, especially when assuming a recent
-    ## version of RSQLite.  We are free to set that during
-    ## initialisation here so can be pretty flexible really (we
-    ## already do that with binary)
 
     initialize = function(con, tbl_data, tbl_keys, binary = NULL,
                           hash_algorithm = NULL) {
@@ -111,9 +106,9 @@ R6_driver_DBI <- R6::R6Class(
 
       ## There's some logic in here:
       self$binary <- dbi_use_binary(con, tbl_data, binary)
-      ## TODO:
-      ## self$traits <- storr_traits(accept_raw = self$binary)
 
+      ## TODO: Is it possible to support throw_missing?
+      self$traits <- list(accept = if (self$binary) "raw" else "string")
       self$sql <- driver_dbi_sql_compat(con, tbl_data, tbl_keys)
 
       ## Initialise the tables.
@@ -155,7 +150,10 @@ R6_driver_DBI <- R6::R6Class(
       }
       if (is.null(config$hash_algorithm)) {
         config$hash_algorithm <- hash_algorithm %||% "md5"
-        hh <- self$set_object(STORR_DBI_CONFIG_HASH, config)
+        config_ser <- make_serialize_object(FALSE, !self$binary)(config)
+        ## Need to arrange to serialize the object here, because
+        ## ordinarily storr will take care of that for us.
+        hh <- self$set_object(STORR_DBI_CONFIG_HASH, config_ser)
       } else {
         if (is.null(hash_algorithm)) {
           hash_algorithm <- config$hash_algorithm
@@ -225,23 +223,27 @@ R6_driver_DBI <- R6::R6Class(
     ## Return a (deserialised) R object, given a hash
     get_object = function(hash) {
       value <- DBI::dbGetQuery(self$con, self$sql$get_object, list(hash))[[1L]]
-      if (self$binary) unserialize(value[[1]]) else unserialize_str(value[[1]])
+      unserialize_safe(value[[1L]])
     },
 
     mget_object = function(hash) {
       if (length(hash) == 0L){
         return(list())
       }
-      sql <- self$sql$mget_object
       p <- paste(sprintf(self$sql$placeholder, seq_along(hash)),
                  collapse = ", ")
-      value <- DBI::dbGetQuery(self$con, sprintf(sql, p), hash)
-      value <- value$value[match(hash, value$hash)]
-      if (self$binary) {
-        lapply(value, function(x) if (is.null(x)) NULL else unserialize(x))
+      value <- DBI::dbGetQuery(self$con, sprintf(self$sql$mget_object, p), hash)
+      i <- match(hash, value$hash)
+      j <- !is.na(i)
+      if (all(j)) {
+        ret <- lapply(value$value[i], unserialize_safe)
       } else {
-        lapply(value, function(x) if (is.na(x)) NULL else unserialize_str(x))
+        ret <- vector("list", length(hash))
+        if (any(j)) {
+          ret[j] <- lapply(value$value[i][j], unserialize_safe)
+        }
       }
+      ret
     },
 
     set_object = function(hash, value) {
@@ -249,11 +251,7 @@ R6_driver_DBI <- R6::R6Class(
       ## have helpers for that somewhere).  Though OTOH if we accept
       ## binary we can skip the serialisation here anyway with
       ## appropriate setting of traits.
-      if (self$binary) {
-        dat <- list(hash, list(serialize(value, NULL)))
-      } else {
-        dat <- list(hash, serialize_str(value))
-      }
+      dat <- list(hash, if (self$binary) list(value) else value)
       DBI::dbExecute(self$con, self$sql$set_object, dat)
     },
 
@@ -265,9 +263,9 @@ R6_driver_DBI <- R6::R6Class(
       j <- seq.int(1L, by = 2L, length.out = length(value))
       dat[j] <- hash
       if (self$binary) {
-        dat[j + 1L] <- lapply(value, function(x) list(serialize(x, NULL)))
+        dat[j + 1L] <- lapply(value, list)
       } else {
-        dat[j + 1L] <- lapply(value, serialize_str)
+        dat[j + 1L] <- value
       }
 
       p <- group_placeholders(self$sql$placeholder, 2L, length(value))

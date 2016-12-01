@@ -1,5 +1,5 @@
 storr_traits_default <- function() {
-  list(accept_raw = FALSE,
+  list(accept = "object",
        throw_missing = FALSE,
        drop_r_version = FALSE,
        hash_algorithm = TRUE)
@@ -13,8 +13,10 @@ storr_traits <- function(given) {
   }
   default[names(given)] <- given
 
-  if (default$drop_r_version && !default$accept_raw) {
-    stop("if drop_r_version is TRUE, then accept_raw must also be TRUE")
+  match_value(default$accept, c("object", "raw", "string"), "accept")
+
+  if (default$drop_r_version && default$accept != "raw") {
+    stop("if 'drop_r_version' is TRUE, then 'accept' must be \"raw\"")
   }
 
   default
