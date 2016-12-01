@@ -366,9 +366,9 @@ dbi_supports_binary <- function(con) {
   ## Very little binary support exists; requires newfangled DBI and
   ## new RSQLite.  None of the other connection types supports binary
   ## serialisation.
-  if (packageVersion("DBI") >= package_version("0.4.1")) {
+  if (utils::packageVersion("DBI") >= package_version("0.4.1")) {
     if (inherits(con, "SQLiteConnection") &&
-        packageVersion("RSQLite") > package_version("1.0.0")) {
+        utils::packageVersion("RSQLite") > package_version("1.0.0")) {
       supports_binary <- TRUE
     }
   }
