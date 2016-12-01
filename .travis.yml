@@ -1,6 +1,6 @@
 language: r
 cache: packages
-sudo: true
+sudo: false
 
 # NOTE: there is quite a bit of extra installation required here; this
 # is to ensure that all tests can be run on travis while keeping the
@@ -9,11 +9,20 @@ sudo: true
 r_packages:
   - covr
 r_github_packages:
-  - richfitz/redux
+  - richfitz/redux@merge_with_api
   - richfitz/rrlite
-apt_packages:
-  - libhiredis-dev
+  - rstats-db/RPostgres
+
+addons:
+  postgresql: "9.4"
+  apt:
+    packages:
+      - libhiredis-dev
+      - libpq-dev
+
 services:
   - redis-server
+  - postgresql
+
 after_success:
   - Rscript -e 'covr::codecov()'
