@@ -454,9 +454,14 @@ driver_dbi_sql_compat <- function(con, tbl_data, tbl_keys) {
       placeholder = "?"
     )
   } else if (dialect == "postgresql") {
+    ## Before 0.9.5 there was no simple way of implementing the
+    ## "INSERT OR REPLACE INTO" pattern (via INSERT INTO ... ON
+    ## CONFLICT REPLACE" and I'm just going to require a recent
+    ## version for simplicity.
     v <- numeric_version(DBI::dbGetQuery(con, "show server_version")[[1]])
-    if (v <= numeric_version("0.9.5")) {
-      stop("this version of postgres server is not supported")
+    if (v < numeric_version("0.9.5")) {
+      stop(sprintf(
+        "Version %s of postgresql server is not supported (need >= 0.9.5)", v))
     }
     ret <- list(
       get_hash = j("SELECT hash FROM", dquote(tbl_keys),
@@ -485,7 +490,7 @@ driver_dbi_sql_compat <- function(con, tbl_data, tbl_keys) {
       placeholder = "$%d"
     )
   } else {
-    stop("Unsupported SQL dialect ", dialect)
+    stop("Unsupported SQL dialect ", dialect, " [storr bug]") # nocov
   }
   ret
 }
@@ -548,7 +553,8 @@ driver_dbi_dialect <- function(con) {
   } else if (inherits(con, "PqConnection")) {
     "postgresql"
   } else {
-    stop("Unsupported SQL driver")
+    stop("Unsupported SQL driver of class ", paste(class(con), collapse = "/"),
+         call. = FALSE)
   }
 }
 

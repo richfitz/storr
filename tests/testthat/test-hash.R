@@ -47,3 +47,19 @@ test_that("reverse engineering", {
   s2[10:7] <- as.raw(c(0L, 6L, 5L, 4L)) # version 6.5.4
   expect_error(unserialize(s2), "6.5.4", fixed = TRUE)
 })
+
+test_that("unserialize safe", {
+  expect_error(unserialize_safe(NULL), "Invalid input")
+  x <- runif(10)
+  expect_identical(unserialize_safe(serialize(x, NULL)), x)
+  if (getRversion() >= numeric_version("3.2.0")) {
+    expect_identical(unserialize_safe(serialize(x, NULL, NA)), x)
+  }
+})
+
+test_that("make_serialize_object", {
+  with_mock("base::getRversion" = function() numeric_version("3.1.2"),
+            expect_error(make_serialize_object(FALSE, TRUE)))
+  expect_error(make_serialize_object(TRUE, TRUE),
+               "Can't combine drop_r_version and string serialization")
+})

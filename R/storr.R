@@ -339,7 +339,7 @@ R6_storr <- R6::R6Class(
         if (inherits(src, "storr")) {
           namespace <- src$list_namespaces()
         } else {
-          stop("Can't do this")
+          stop("If src is not a storr, namespace can't be NULL")
         }
       }
       invisible(storr_copy(self, src, list, namespace, skip_missing)$info)

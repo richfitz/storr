@@ -21,6 +21,7 @@ test_that("binary detection", {
 })
 
 test_that("missing data column", {
+  skip_if_not_installed("RSQLite")
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
   st <- storr_dbi(con, "data", "keys")
 
@@ -104,4 +105,19 @@ test_that("non-binary storage", {
 
   st$mset(c("a", "b"), list(1, 2))
   expect_equal(st$mget(c("a", "b")), list(1, 2))
+})
+
+test_that("unknown dialects", {
+  expect_error(driver_dbi_dialect(NULL),
+               "Unsupported SQL driver")
+})
+
+test_that("old postgres", {
+  con <- structure(list(), class = "PqConnection")
+  with_mock("DBI::dbGetQuery" = function(con, .) list(numeric_version("0.9.4")),
+            expect_error(driver_dbi_sql_compat(con, "a", "b"),
+                         "Version 0.9.4 of postgresql server is not supported"))
+  with_mock("DBI::dbGetQuery" = function(con, .) list(numeric_version("0.9.5")),
+            expect_is(driver_dbi_sql_compat(con, "a", "b"),
+                      "list"))
 })

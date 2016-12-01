@@ -24,7 +24,8 @@ storr_copy <- function(dest, src, list, namespace, skip_missing) {
     } else if (is.list(src)) {
       list <- names(src)
     } else {
-      stop("Invalid type for src")
+      ## This is unreachable, in theory, because of the checks in make_do_m*
+      stop("Invalid type for src [storr bug] ") # nocov
     }
     names_dest <- list
   } else {

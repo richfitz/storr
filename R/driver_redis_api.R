@@ -215,7 +215,7 @@ STORR_LUA_SHA <- "ef97af5300a280cb6fd597e18899dc2ffb000f96"
 storr_lua_load <- function(con) {
   sha <- con$SCRIPT_LOAD(STORR_LUA)
   if (sha != STORR_LUA_SHA) {
-    stop("failure in loading load script") # nocov
+    stop("failure in loading load script [storr bug]") # nocov
   }
   sha
 }

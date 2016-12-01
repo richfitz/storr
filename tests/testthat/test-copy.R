@@ -142,3 +142,9 @@ test_that("effect of default namespaces", {
   st1$export(st2)
   expect_equal(st2$get("a", "ns1"), st1$get("a"))
 })
+
+test_that("null namespace on import of non-storr", {
+  st <- storr_environment()
+  expect_error(st$import(list(a = 1, b = 2), NULL, NULL),
+               "namespace can't be NULL")
+})
