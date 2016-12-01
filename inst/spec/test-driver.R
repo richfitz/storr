@@ -29,16 +29,16 @@ testthat::test_that("basic (empty)", {
 testthat::test_that("set", {
   dr <- .driver_create()
   on.exit(dr$destroy())
-  helper <- spec_helper(dr)
+  st <- storr(dr)
 
   ## First, let's set some data to a hash
   d <- runif(100)
-  h <- helper$hash_object(d)
+  h <- st$hash_object(d)
   k <- "bbb"
   ns <- "ns"
 
   if (isTRUE(dr$traits[["accept_raw"]])) {
-    dr$set_object(h, helper$serialize(d))
+    dr$set_object(h, st$serialize_object(d))
   } else {
     dr$set_object(h, d)
   }
@@ -49,7 +49,7 @@ testthat::test_that("set", {
   testthat::expect_identical(dr$get_hash(k, ns), h)
 
   ## Check that *updating* a hash works.
-  h2 <- helper$hash_object(h)
+  h2 <- st$hash_object(h)
   dr$set_hash(k, ns, h2)
   testthat::expect_identical(dr$get_hash(k, ns), h2)
 
@@ -70,16 +70,16 @@ testthat::test_that("set", {
 testthat::test_that("namespace", {
   dr <- .driver_create()
   on.exit(dr$destroy())
-  helper <- spec_helper(dr)
+  st <- storr(dr)
 
   ## First, let's set some data to a hash
   d <- runif(100)
-  h <- helper$hash_object(d)
+  h <- st$hash_object(d)
   k <- "bbb"
   ns <- "ns"
 
   if (isTRUE(dr$traits[["accept_raw"]])) {
-    dr$set_object(h, helper$serialize(d))
+    dr$set_object(h, st$serialize_object(d))
   } else {
     dr$set_object(h, d)
   }
@@ -115,12 +115,12 @@ testthat::test_that("namespace", {
 testthat::test_that("traits: throw_missing", {
   dr <- .driver_create()
   on.exit(dr$destroy())
-  helper <- spec_helper(dr)
+  st <- storr(dr)
 
   if (isTRUE(dr$traits[["throw_missing"]])) {
     str <- paste(sample(letters), collapse = "")
     testthat::expect_error(dr$get_hash(str, "objects"))
-    testthat::expect_error(dr$get_object(helper$hash_object(str)))
+    testthat::expect_error(dr$get_object(st$hash_object(str)))
   }
 })
 
@@ -258,16 +258,15 @@ testthat::test_that("mset_object", {
 
   if (!is.null(dr$mset_object)) {
     st <- storr(dr)
-    helper <- spec_helper(dr)
 
     ## Lots of faff here:
     a <- runif(10)
     b <- runif(3)
-    ha <- helper$hash_object(a)
-    hb <- helper$hash_object(b)
+    ha <- st$hash_object(a)
+    hb <- st$hash_object(b)
     if (isTRUE(dr$traits[["accept_raw"]])) {
-      sa <- helper$serialize(a)
-      sb <- helper$serialize(b)
+      sa <- st$serialize_object(a)
+      sb <- st$serialize_object(b)
     } else {
       sa <- a
       sb <- b

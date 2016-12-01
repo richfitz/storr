@@ -169,7 +169,7 @@ st$set("mykey", runif(100))
 ls(st$envir)
 
 ## Extract the object from the environment and hash it
-storr:::hash_object(st$envir[[ls(st$envir)]])
+st$hash_object(st$envir[[ls(st$envir)]])
 
 ## When we look up the value stored against key `mykey`, the first
 ## step is to check the key/hash map; this returns the key above (this

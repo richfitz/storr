@@ -83,12 +83,12 @@ test_that("large vector support", {
   path <- tempfile()
   dr <- driver_rds(path, compress = FALSE)
   on.exit(dr$destroy())
-  helper <- spec_helper(dr)
+  st <- storr(dr)
 
   data <- raw(2195148826)       # ~  1.3s to allocate the data
 
-  x <- helper$serialize(data)   # ~  4.5s
-  hash <- helper$hash(x)        # ~  7.0s
+  x <- st$serialize_object(data)# ~  4.5s
+  hash <- st$hash_raw(x)        # ~  7.0s
 
   dr$set_object(hash, x)        # ~  8.0s
   cmp <- dr$get_object(hash)    # ~  3.4s

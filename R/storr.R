@@ -84,7 +84,10 @@ R6_storr <- R6::R6Class(
     envir = NULL,
     default_namespace = NULL,
     traits = NULL,
+
+    ## Utility things, to fill later:
     hash_raw = NULL,
+    serialize_object = NULL,
 
     initialize = function(driver, default_namespace) {
       self$driver <- driver
@@ -92,8 +95,9 @@ R6_storr <- R6::R6Class(
       self$default_namespace <- default_namespace
       self$traits <- storr_traits(driver$traits)
       self$hash_raw <-
-        make_hash_serialised_object(driver$hash_algorithm,
+        make_hash_serialized_object(driver$hash_algorithm,
                                     !self$traits$drop_r_version)
+      self$serialize_object <- make_serialize_object(self$traits$drop_r_version)
     },
 
     destroy = function() {
@@ -262,9 +266,7 @@ R6_storr <- R6::R6Class(
     },
 
     set_value = function(value, use_cache = TRUE) {
-      traits <- self$traits
-      value_ser <-
-        serialize_object(value, drop_r_version = traits$drop_r_version)
+      value_ser <- self$serialize_object(value)
       hash <- self$hash_raw(value_ser)
 
       if (!(use_cache && exists0(hash, self$envir))) {
@@ -273,7 +275,7 @@ R6_storr <- R6::R6Class(
         ## it's possible that some drivers could do this more
         ## efficiently themselves during negotiation.
         if (!self$driver$exists_object(hash)) {
-          value_send <- if (traits$accept_raw) value_ser else value
+          value_send <- if (self$traits$accept_raw) value_ser else value
           self$driver$set_object(hash, value_send)
         }
         if (use_cache) {
@@ -284,9 +286,7 @@ R6_storr <- R6::R6Class(
     },
 
     mset_value = function(values, use_cache = TRUE) {
-      traits <- self$traits
-      values_ser <- lapply(values, serialize_object,
-                           drop_r_version = traits$drop_r_version)
+      values_ser <- lapply(values, self$serialize_object)
       hash <- vcapply(values_ser, self$hash_raw)
       cached <- logical(length(hash))
 
@@ -300,7 +300,7 @@ R6_storr <- R6::R6Class(
       }
 
       if (any(upload)) {
-        values_send <- if (traits$accept_raw) values_ser else values
+        values_send <- if (self$traits$accept_raw) values_ser else values
         if (is.null(self$driver$mset_object)) {
           for (i in which(upload)) {
             self$driver$set_object(hash[[i]], values_send[[i]])
@@ -357,7 +357,13 @@ R6_storr <- R6::R6Class(
 
     archive_import = function(path, names = NULL, namespace = NULL) {
       self$import(storr_rds(path, mangle_key = TRUE), names, namespace)
-    }))
+    },
+
+    ## Utility function that will come in useful in a few places:
+    hash_object = function(object) {
+      self$hash_raw(self$serialize_object(object))
+    }
+  ))
 
 ##' @export
 as.list.storr <- function(x, ...) {
