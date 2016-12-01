@@ -32,7 +32,7 @@ values are "md5", "sha1", and others supported by
 }
 \description{
 Object cache driver that saves objects using R's native
-serialised file format (see \code{\link{saveRDS}}) on the
+serialized file format (see \code{\link{saveRDS}}) on the
 filesystem.
 }
 \details{

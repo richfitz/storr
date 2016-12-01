@@ -21,7 +21,7 @@ set:
       objects to be stored without risk of names colliding.  Use of
       namespaces is optional, but if used they must be a string.
     value: >-
-      Any R object to store.  The object will generally be serialised
+      Any R object to store.  The object will generally be serialized
       (this is not actually true for the environment storr) so only
       objects that would usually be expected to survive a
       \code{saveRDS}/\code{readRDS} roundtrip will work.  This

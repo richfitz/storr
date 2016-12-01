@@ -59,7 +59,7 @@ serialize_object_drop_r_version <- function(object, xdr = TRUE) {
 ## versions this will just use native R support.
 ##
 ## The workaround is to *unserialize* and then use saveRDS to
-## serialise directly to a connection.  This is far from ideal, but is
+## serialize directly to a connection.  This is far from ideal, but is
 ## faster than the previous approach of iterating through the raw
 ## vector and writing it bit-by-bit to a file (~30s for that approach,
 ## vs ~10s for this one).

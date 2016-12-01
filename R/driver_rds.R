@@ -1,5 +1,5 @@
 ##' Object cache driver that saves objects using R's native
-##' serialised file format (see \code{\link{saveRDS}}) on the
+##' serialized file format (see \code{\link{saveRDS}}) on the
 ##' filesystem.
 ##'
 ##' The \code{mangle_key} argument will run each key that is created
@@ -139,7 +139,7 @@ R6_driver_rds <- R6::R6Class(
       readRDS(self$name_hash(hash))
     },
     set_object = function(hash, value) {
-      ## NOTE: this takes advantage of having the serialised value
+      ## NOTE: this takes advantage of having the serialized value
       ## already and avoids seralising twice.
       assert_raw(value)
       write_serialized_rds(value, self$name_hash(hash), self$compress)

@@ -5,15 +5,14 @@
 ##' underlying storage driver is slow.
 ##'
 ##' To create a storr you need to provide a "driver" object.  There
-##' are three in the package: \code{\link{driver_environment}} for
+##' are four in the package: \code{\link{driver_environment}} for
 ##' ephemeral in-memory storage, \code{\link{driver_rds}} for
-##' serialised storage to disk and \code{\link{driver_redis_api}}
-##' which stores data in Redis but requires packages that are not on
-##' CRAN to function
+##' serialized storage to disk, \code{\link{driver_dbi}} for use with
+##' DBI-compliant database interfaces, and
+##' \code{\link{driver_redis_api}} which stores data in Redis but
+##' requires packages that are not on CRAN to function
 ##' (\href{https://github.com/ropensci/rrlite}{rrlite} or
-##' \href{https://github.com/richfitz/redux}{redux}).  New drivers are
-##' relatively easy to add -- see the "drivers" vignette
-##' (\code{vignette("drivers", package = "storr")}).
+##' \href{https://github.com/richfitz/redux}{redux})
 ##'
 ##' There are convenience functions (e.g.,
 ##' \code{\link{storr_environment}} and \code{\link{storr_rds}}) that

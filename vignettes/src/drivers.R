@@ -40,9 +40,9 @@
 ## 3. checks that the hash is actually present in the database
 ## 4. retrieves the object stored against the hash
 ##
-## hashes are stored as strings, while objects are *serialised R
+## hashes are stored as strings, while objects are *serialized R
 ## objects*, usually stored in binary.  The driver is responsible for
-## serialisation/deserialisation as that will depend on the properties
+## serialization/deserialization as that will depend on the properties
 ## of the driver.
 ##
 ## storr will take care of throwing appropriate errors if the object
@@ -64,7 +64,7 @@
 ## then the object has already been stored -- because saving the
 ## actual data is likely to be the slowest part it's worth avoiding).
 ##
-## 1. if the hash is not present, save the (serialised) object against
+## 1. if the hash is not present, save the (serialized) object against
 ## the hash.
 ## 2. store the hash against the key and namespace.
 
@@ -99,7 +99,7 @@ sql <- c(sprintf("CREATE TABLE IF NOT EXISTS %s", table),
          "value blob)")
 DBI::dbExecute(con, paste(sql, collapse=" "))
 
-## Then take an object, serialise it, and stuff it into the blob, then
+## Then take an object, serialize it, and stuff it into the blob, then
 ## insert that into the table.  This is the part that varies between
 ## versions.
 
@@ -120,7 +120,7 @@ if (old_sqlite) {
 }
 
 ## The pattern here is to use `dbExecute` to create and execute the
-## query, injecting the raw byte sequence of the serialised object
+## query, injecting the raw byte sequence of the serialized object
 ## into the `value` column.  This is currently supported only for
 ## RSQLite in the current release, but will probably be supported by
 ## other DBI-compatible packages over time.
@@ -157,10 +157,10 @@ identical(x, value)
 
 ## * `set_object(hash, value)` (returns NULL): Given a string `hash`
 ##   and an arbitrary object `value`, store the object against the
-##   hash.  Serialisation will likely be needed here (e.g.,
+##   hash.  Serialization will likely be needed here (e.g.,
 ##   `serialize(value, NULL)`).
 ## * `get_object(hash)` (returns object): Given a string `hash` return
-##   the R object stored against it.  Deserialisation will likely be
+##   the R object stored against it.  Deserialization will likely be
 ##   needed here (e.g., `unserialize(dat)`)
 
 ## * `exists_hash(key, namespace)` (returns logical): Given strings
@@ -266,7 +266,7 @@ R6_driver_sqlite <- R6::R6Class(
       DBI::dbExecute(self$con, paste(sql, collapse=" "))
     },
 
-    ## Return a (deserialised) R object, given a hash
+    ## Return a (deserialized) R object, given a hash
     get_object=function(hash) {
       sql <- c(sprintf("SELECT value FROM %s", self$tbl_data),
                sprintf('WHERE hash = "%s"', hash))
@@ -274,9 +274,9 @@ R6_driver_sqlite <- R6::R6Class(
       unserialize(value[[1]])
     },
 
-    ## Set a (serialised) R object against a hash.  This would be
+    ## Set a (serialized) R object against a hash.  This would be
     ## considerably simpler (but probably slower and less accurate) if we
-    ## serialised to string with:
+    ## serialized to string with:
     ##   rawToChar(serialize(value, NULL, TRUE))
     set_object=function(hash, value) {
       sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),

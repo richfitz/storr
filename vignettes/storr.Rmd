@@ -210,7 +210,7 @@ ls(st$envir)
 
 Extract the object from the environment and hash it
 ``` {r }
-storr:::hash_object(st$envir[[ls(st$envir)]])
+st$hash_object(st$envir[[ls(st$envir)]])
 ```
 
 When we look up the value stored against key `mykey`, the first

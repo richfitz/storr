@@ -23,15 +23,14 @@ underlying storage driver is slow.
 }
 \details{
 To create a storr you need to provide a "driver" object.  There
-are three in the package: \code{\link{driver_environment}} for
+are four in the package: \code{\link{driver_environment}} for
 ephemeral in-memory storage, \code{\link{driver_rds}} for
-serialised storage to disk and \code{\link{driver_redis_api}}
-which stores data in Redis but requires packages that are not on
-CRAN to function
+serialized storage to disk, \code{\link{driver_dbi}} for use with
+DBI-compliant database interfaces, and
+\code{\link{driver_redis_api}} which stores data in Redis but
+requires packages that are not on CRAN to function
 (\href{https://github.com/ropensci/rrlite}{rrlite} or
-\href{https://github.com/richfitz/redux}{redux}).  New drivers are
-relatively easy to add -- see the "drivers" vignette
-(\code{vignette("drivers", package = "storr")}).
+\href{https://github.com/richfitz/redux}{redux})
 
 There are convenience functions (e.g.,
 \code{\link{storr_environment}} and \code{\link{storr_rds}}) that
@@ -75,7 +74,7 @@ the action (get, set, del, list, import, export) will affect the
     \item{\code{key}:   The key name.  Can be any string.
     }
 
-    \item{\code{value}:   Any R object to store.  The object will generally be serialised (this is not actually true for the environment storr) so only objects that would usually be expected to survive a \code{saveRDS}/\code{readRDS} roundtrip will work.  This excludes Rcpp modules objects, external pointers, etc.  But any "normal" R object will work fine.
+    \item{\code{value}:   Any R object to store.  The object will generally be serialized (this is not actually true for the environment storr) so only objects that would usually be expected to survive a \code{saveRDS}/\code{readRDS} roundtrip will work.  This excludes Rcpp modules objects, external pointers, etc.  But any "normal" R object will work fine.
     }
 
     \item{\code{namespace}:   An optional namespace.  By default the default namespace that the storr was created with will be used (by default that is "objects").  Different namespaces allow different types of objects to be stored without risk of names colliding.  Use of namespaces is optional, but if used they must be a string.

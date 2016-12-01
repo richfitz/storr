@@ -220,7 +220,7 @@ R6_driver_DBI <- R6::R6Class(
       DBI::dbExecute(self$con, sprintf(self$sql$mset_hash, p), dat)
     },
 
-    ## Return a (deserialised) R object, given a hash
+    ## Return a (deserialized) R object, given a hash
     get_object = function(hash) {
       value <- DBI::dbGetQuery(self$con, self$sql$get_object, list(hash))[[1L]]
       unserialize_safe(value[[1L]])
