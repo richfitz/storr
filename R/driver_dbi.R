@@ -16,6 +16,9 @@
 ##' slower than) string serialisation, in contrast with my experience
 ##' with other backends.
 ##'
+##' Be aware that \code{$destroy()} will close the connection to the
+##' database.
+##'
 ##' @title DBI storr driver
 ##' @param con A DBI connection object (see example)
 ##'
@@ -179,6 +182,7 @@ R6_driver_DBI <- R6::R6Class(
     destroy = function() {
       DBI::dbRemoveTable(self$con, self$tbl_data)
       DBI::dbRemoveTable(self$con, self$tbl_keys)
+      DBI::dbDisconnect(self$con)
       self$con <- NULL
     },
 
@@ -351,13 +355,15 @@ R6_driver_DBI <- R6::R6Class(
 
     list_namespaces = function() {
       sql <- sprintf('SELECT DISTINCT namespace FROM "%s"', self$tbl_keys)
-      as.character(DBI::dbGetQuery(self$con, sql)[[1]])
+      res <- DBI::dbGetQuery(self$con, sql)
+      if (nrow(res) > 0L) res[[1L]] else character(0)
     },
 
     list_keys = function(namespace) {
       sql <- sprintf("SELECT key FROM \"%s\" WHERE namespace = '%s'",
                      self$tbl_keys, namespace)
-      as.character(DBI::dbGetQuery(self$con, sql)[[1]])
+      res <- DBI::dbGetQuery(self$con, sql)
+      if (nrow(res) > 0L) res[[1L]] else character(0)
     }
   ))
 
@@ -550,7 +556,7 @@ driver_dbi_mkey_prepare <- function(key, namespace, placeholder) {
 driver_dbi_dialect <- function(con) {
   if (inherits(con, "SQLiteConnection")) {
     "sqlite"
-  } else if (inherits(con, "PqConnection")) {
+  } else if (inherits(con, c("PqConnection", "PostgreSQLConnection"))) {
     "postgresql"
   } else {
     stop("Unsupported SQL driver of class ", paste(class(con), collapse = "/"),

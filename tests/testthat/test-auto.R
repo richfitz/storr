@@ -18,19 +18,32 @@ test_that("dbi (sqlite)", {
   }
 })
 
-test_that("dbi (postgres)", {
+pg_tester <- function(ctor) {
+  force(ctor)
+  function(dr = NULL, ...) {
+    if (is.null(dr)) {
+      prefix <- paste(sample(letters, 8), collapse = "")
+      dr <- list(con = DBI::dbConnect(ctor()),
+                 tbl_data = sprintf("storr_%s_data", prefix),
+                 tbl_keys = sprintf("storr_%s_keys", prefix))
+    }
+    driver_dbi(dr$con, dr$tbl_data, dr$tbl_keys, ...)
+  }
+}
+
+test_that("dbi (postgres via RPostgres)", {
   if (requireNamespace("RPostgres", quietly = TRUE)) {
-    storr::test_driver(
-      function(dr = NULL, ...) {
-        if (is.null(dr)) {
-          prefix <- paste(sample(letters, 8), collapse = "")
-          dr <- list(con = DBI::dbConnect(RPostgres::Postgres()),
-                     tbl_data = sprintf("storr_%s_data", prefix),
-                     tbl_keys = sprintf("storr_%s_keys", prefix))
-        }
-        driver_dbi(dr$con, dr$tbl_data, dr$tbl_keys, ...)
-      }
-    )
+    storr::test_driver(pg_tester(RPostgres::Postgres))
+  }
+})
+
+test_that("dbi (postgres via RPostgreSQL)", {
+  if (requireNamespace("RPostgreSQL", quietly = TRUE)) {
+    oo <- options(warnPartialMatchArgs = FALSE)
+    if (!is.null(oo$warnPartialMatchArgs)) {
+      on.exit(options(oo))
+    }
+    storr::test_driver(pg_tester(RPostgreSQL::PostgreSQL))
   }
 })
 

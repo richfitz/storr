@@ -53,6 +53,9 @@ Because of treatment of binary data by the underlying DBI drivers,
 binary serialistion is not any faster (and might be slightly
 slower than) string serialisation, in contrast with my experience
 with other backends.
+
+Be aware that \code{$destroy()} will close the connection to the
+database.
 }
 \examples{
 if (requireNamespace("RSQLite", quietly = TRUE)) {
