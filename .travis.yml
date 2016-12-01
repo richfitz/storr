@@ -10,7 +10,7 @@ r_packages:
   - covr
 r_github_packages:
   - richfitz/redux@merge_with_api
-  - richfitz/rrlite
+  - richfitz/rrlite@remove_redis_api
   - rstats-db/RPostgres
 
 addons:
