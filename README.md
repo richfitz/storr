@@ -13,14 +13,14 @@ Simple object cacher for R.  `storr` acts as a very simple key-value store (supp
 * Pluggable storage backends - currently
   - environment (memory)
   - rds (disk)
-  - Redis (`http://redis.io`) (via [redux](https://github.com/richfitz/redux))
-  - [rlite](https://github.com/seppo0010/rlite) (via [rrlite](https://github.com/ropensci/rrlite))
   - [DBI](http://cran.r-project.org/package=DBI) though which you can use:
     * [SQLite](https://sqlite.org) (via [RSQLite](http://cran.r-project.org/package=RSQLite))
-    * [MySQL](https://mysql.org) (via [RMySQL](http://cran.r-project.org/package=RMySQL))
-    * [Postgres](https://postgres.org) (via [RPostgres](http://cran.r-project.org/package=RPostgres))
+    * [Postgres](https://postgres.org) (via
+[RPostgresSQL](http://cran.r-project.org/package=RPostgres) or [RPostgres](https://github.com/rstats-db/RPostgres))
+  - Redis (via [redux](https://github.com/richfitz/redux))
+  - [rlite](https://github.com/seppo0010/rlite) (via [rrlite](https://github.com/ropensci/rrlite))
 
-`storr` always goes back to the common storage (database, filesystem, whatever) for the current object to hash mapping.  However, when retrieving or writing the data given a hash we can often avoid accessing the underlying storage.  This means that repeated lookups happen quickly while still being able to reflect changes elsewhere; time savings can be substantial where large objects are being stored.
+`storr` always goes back to the common storage (database, filesystem, whatever) for the current object to hash mapping, ensuring consistency when using multiple processes.  However, when retrieving or writing the data given a hash we can often avoid accessing the underlying storage.  This means that repeated lookups happen quickly while still being able to reflect changes elsewhere; time savings can be substantial where large objects are being stored.
 
 # Installation
 
@@ -33,13 +33,12 @@ install.packages("storr")
 or install the development version with
 
 ```
-devtools::install_github("richfitz/storr", upgrade = FALSE)
+remotes::install_github("richfitz/storr@develop")
 ```
 
 # Documentation
 
-`storr` comes with three vignettes:
+`storr` comes with two vignettes:
 
 * [storr](http://richfitz.github.io/storr/vignettes/storr.html) `vignette("storr")` outlines basic use and core implementation details.
 * [external](http://richfitz.github.io/storr/vignettes/external.html) `vignette("external")` shows how to use storr to cache external resources such as files, web resources, etc, using the `storr_external` object.
-* [drivers](http://richfitz.github.io/storr/vignettes/drivers.html) `vignette("drivers")` shows how to create new drivers for storr, illustrated by implementing a naive driver for DBI/SQLite.

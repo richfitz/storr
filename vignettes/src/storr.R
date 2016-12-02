@@ -15,7 +15,7 @@ library(storr)
 ## to provide the most basic set of key/value lookup functionality
 ## that is completely consistent across a range of different
 ## underlying storage drivers (in memory storage, filesystem and
-## proper database).  All the storage is _content addressable_, so
+## proper databases).  All the storage is _content addressable_, so
 ## keys map onto hashes and hashes map onto data.
 
 ## The `rds` driver stores contents at some path by saving out to rds
@@ -25,15 +25,15 @@ path <- tempfile("storr_")
 st <- storr::storr_rds(path)
 
 ## Alternatively you can create the driver explicitly:
-###+ eval=FALSE
+##+ eval=FALSE
 dr <- storr::driver_rds(path)
 
 ## With this driver object we can create the `storr` object which is
 ## what we actually interact with:
-###+ eval=FALSE
+##+ eval=FALSE
 st <- storr::storr(dr)
 
-## # Key-value store
+## ## Key-value store
 
 ## The main way of interacting with a `storr` object is
 ## `get`/`set`/`del` for getting, setting and deleting data stored at
@@ -58,8 +58,19 @@ st$del("mykey")
 st$list()
 
 ## though the actual data is still stored in the database:
-st$list_hashes()
-head(st$get_value(digest::digest(mtcars)))
+h <- st$list_hashes()
+h
+
+## The hash of an object is computed using the `digest` package, and
+## can be done using the `hash_object` method of the storr.
+st$hash_object(mtcars)
+
+## An object can be retrieved directly given its hash:
+head(st$get_value(h))
+
+## similarly, we can test to see if an object is present in the
+## database using its hash:
+st$exists_object(h)
 
 ## though now that there are no keys pointing at the data is is
 ## subject to garbage collection:
@@ -68,17 +79,74 @@ del
 
 st$list_hashes()
 
-## # Import / export
+## ## Namespaces
+
+## At some point having everything stored in a great big bucket may
+## become too instrucured.  To help with this storr implements a very
+## simple "namespace" system that may help provide some structure.  It
+## is a single layer of hierarchy above keys; so every key belongs to
+## a namespace.  The default namespace is "objects" but this can be
+## configured when the storr is created.
+st$default_namespace
+
+## The `list_namespaces()` method lists all known namespaces
+st$list_namespaces()
+
+## To create a new namespace, simply assign an object into it:
+st$set("a", runif(5), namespace = "other_things")
+st$list_namespaces()
+
+## The `list()` method lists the contents of a single namespace
+st$list()
+st$list("other_things")
+
+## To get an object, you must use the correct namespace:
+##+ error = TRUE
+st$get("a")
+st$get("a", "other_things")
+
+## ## Bulk get/set
+
+## If you have many values to get or set, for some databases it will
+## be much more efficient to get and set them in bulk; this is
+## particularly the case with high-latency database (e.g., anything
+## over a network connection, especially an internet connection).  To
+## help with this, storr implements `mget` and `mset` methods that
+## allow multiple values to retrieved or set.
+
+## The `mset` function allows multiple keys (and/or multiple
+## namespaces) and multiple data elements.  The data must have the
+## same `length()` as the number of keys being set.
+st$mset(c("a", "b", "c"), list(1, 2, 3))
+st$get("a")
+
+## The `mget` function fetches zero or more elements.
+st$mget(c("a", "b", "c"))
+
+## `mget` *always* returns a list with the same number of elements as
+## the number of keys
+st$mget("a")
+st$mget(character(0))
+
+## With both `mset` and `mget`, both key and namespace can be vectors;
+## if either non-scalar, they must have the same length so the logic
+## is fairly predictable
+st$mset("x", list("a", "b"), namespace = c("ns1", "ns2"))
+st$mget("x", c("ns1", "ns2"))
+
+st$mget(c("a", "b", "x"), c("objects", "objects", "ns1"))
+
+## ## Import / export
 
 ## Objects can be imported in and exported out of a `storr`;
 
 ## Import from a list, environment or another `storr`
-st$import(list(a=1, b=2))
+st$import(list(a = 1, b = 2))
 st$list()
 st$get("a")
 
 ## Export to an environment (or another `storr`)
-e <- st$export(new.env(parent=emptyenv()))
+e <- st$export(new.env(parent = emptyenv()))
 ls(e)
 e$a
 
@@ -86,18 +154,23 @@ st_copy <- st$export(storr_environment())
 st_copy$list()
 st$get("a")
 
-st2 <- storr::storr(driver=storr::driver_rds(tempfile("storr_")))
+st2 <- storr::storr(driver = storr::driver_rds(tempfile("storr_")))
 st2$list()
 st2$import(st)
 st2$list()
 
-## # Supported backends
+## ## Supported backends
 
 ## * environments (`driver_environment`) - mostly for debugging and
 ##   transient storage, but by far the fastest.
 ## * on disk with rds (`driver_rds`) - zero dependencies, quite fast,
 ##   will suffer under high concurrency because there is no file
 ##   locking.
+## * DBI (`driver_dbi`) - uses (abuses?) a relational database to
+##   store the data.  This is not the fastest interface but allows for
+##   interprocess key/value stores where a relational database is
+##   supported.  All databases supported by DBI are supported (so at
+##   least SQLite, MySQL and Postgres).
 ## * Redis (`driver_redis`) - uses
 ##   [`redux`](https://github.com/richfitz/redux) to store the data in a
 ##   Redis (`http://redis.io`) database.  About the same speed as rds
@@ -108,18 +181,13 @@ st2$list()
 ##   [`rrlite`](https://github.com/ropensci/rrlite).  This is quite
 ##   quick, but is stalled for general release because `rrlite` does not
 ##   support windows.
-## * DBI (`driver_dbi`) - uses (abuses?) a relational database to
-##   store the data.  This is not the fastest interface but allows for
-##   interprocess key/value stores where a relational database is
-##   supported.  All databases supported by DBI are supported (so at
-##   least SQLite, MySQL and Postgres).
 
-## # Implementation details
+## ## Implementation details
 
 ## `storr` includes a few useful features that are common to all
 ## drivers.
 
-## ## Content addressable lookup
+## ### Content addressable lookup
 
 ## The only thing that is stored against a key is the hash of some
 ## object.  Each driver does this a different way, but for the rds
@@ -134,7 +202,7 @@ st$list_hashes()
 ## in the rds driver these are stored like so:
 dir(file.path(path, "data"))
 
-## ## Environment-based caching
+## ### Environment-based caching
 
 ## Every time data passes across a `get` or `set` method, `storr`
 ## stores the data in an environment within the `storr` object.
@@ -155,7 +223,7 @@ dir(file.path(path, "data"))
 ## changes to the content (because that would mean the hash changes)
 
 ## To demonstrate:
-st <- storr::storr(driver=storr::driver_rds(tempfile("storr_")))
+st <- storr::storr(driver = storr::driver_rds(tempfile("storr_")))
 
 ## This is the caching environent; currently empty
 ls(st$envir)
@@ -182,14 +250,19 @@ st$get_hash("mykey")
 ## the driver stores it.
 st$get_value
 
-## The speed up is going to be fairly context dependent, but 10x seems
-## pretty good in this case (some of the overhead is simply a longer
-## code path as we call out to the driver).
+## The speed up is going to be fairly context dependent, but 5-10x
+## seems pretty good in this case (some of the overhead is simply a
+## longer code path as we call out to the driver).  For big bits of
+## data and slow network connections the difference will be much more
+## pronounced.
 hash <- st$get_hash("mykey")
-microbenchmark::microbenchmark(st$get_value(hash, use_cache=TRUE),
-                               st$get_value(hash, use_cache=FALSE))
+if (requireNamespace("rbenchmark")) {
+  rbenchmark::benchmark(st$get_value(hash, use_cache = TRUE),
+                        st$get_value(hash, use_cache = FALSE),
+                        replications = 1000, order = NULL)[1:4]
+}
 
-## ## Classed exceptions
+## ### Classed exceptions
 
 ## storr uses R's exception handling system and errors inspired from
 ## Python to make it easy to program with `tryCatch`.
@@ -201,7 +274,7 @@ microbenchmark::microbenchmark(st$get_value(hash, use_cache=TRUE),
 ## If you _did_ want to return `NULL` when a key is requested but not
 ## present, use tryCatch in this way:
 tryCatch(st$get("no_such_key"),
-         KeyError=function(e) NULL)
+         KeyError = function(e) NULL)
 
 ## See `?tryCatch` for details.  The idea is that key lookup errors
 ## will have the class `KeyError` so will be caught here and run the
@@ -216,8 +289,8 @@ st$set("foo", letters)
 ok <- st$driver$del_object(st$get_hash("foo"))
 st$flush_cache()
 tryCatch(st$get("foo"),
-         KeyError=function(e) NULL,
-         HashError=function(e) message("Data is deleted"))
+         KeyError = function(e) NULL,
+         HashError = function(e) message("Data is deleted"))
 
 ## Here the `HashError` is triggered.
 

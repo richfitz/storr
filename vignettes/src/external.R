@@ -208,9 +208,3 @@ g(1)
 ## it is the only thing that ever touches its cache).  However, the
 ## overhead is approximately half of one call to `message()` so it's
 ## not that bad.
-
-##+ eval = FALSE, echo = FALSE
-f <- function(x) x * 2
-g <- memoise(f)
-h <- memoise::memoise(f)
-microbenchmark::microbenchmark(f(1), g(1), h(1))

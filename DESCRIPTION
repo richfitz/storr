@@ -21,7 +21,7 @@ Suggests:
     DBI (>= 0.5-1),
     RSQLite (>= 1.1),
     knitr,
-    microbenchmark,
+    rbenchmark,
     testthat (>= 1.0.0)
 Remotes: rstats-db/RSQLite
 VignetteBuilder: knitr
