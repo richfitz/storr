@@ -78,9 +78,9 @@ if (requireNamespace("RSQLite", quietly = TRUE)) {
   # With recent RSQLite you'll get binary storage here:
   st$driver$binary
 
-  # The entire storr part of the database can be removed using "destroy":
+  # The entire storr part of the database can be removed using
+  # "destroy"; this will also close the connection to the database
   st$destroy()
-  DBI::dbListTables(con)
 }
 }
 
