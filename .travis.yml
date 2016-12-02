@@ -8,6 +8,7 @@ sudo: false
 # here into Suggests.
 r_packages:
   - covr
+  - RPostgreSQL
 r_github_packages:
   - richfitz/redux@merge_with_api
   - richfitz/rrlite@remove_redis_api
