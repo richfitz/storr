@@ -120,29 +120,23 @@ R6_storr <- R6::R6Class(
 
     mset = function(key, value, namespace = self$default_namespace,
                     use_cache = TRUE) {
-      n <- check_length(key, namespace)
-      assert_length(value, n)
+      assert_length(value, check_length(key, namespace))
       hash <- self$mset_value(value, use_cache)
-      if (is.null(self$driver$mset_hash)) {
-        for (i in seq_len(n)) {
-          key <- rep_len(key, n)
-          namespace <- rep_len(namespace, n)
-          self$driver$set_hash(key[[i]], namespace[[i]], hash[[i]])
-        }
-      } else {
-        self$driver$mset_hash(key, namespace, hash)
-      }
+      storr_mset_hash(self, key, namespace, hash)
       invisible(hash)
     },
 
-    ## TODO: could do with an mset_by_value here; it's not that hard
-    ## to implement because we already have mset_value and mset_hash.
-    ## Factor out the dummy mset functions into free functions so that
-    ## they don't clutter up the object quite so much add this in.
     set_by_value = function(value, namespace = self$default_namespace,
                             use_cache = TRUE) {
       hash <- self$set_value(value, use_cache)
       self$driver$set_hash(hash, namespace, hash)
+      invisible(hash)
+    },
+
+    mset_by_value = function(value, namespace = self$default_namespace,
+                             use_cache = TRUE) {
+      hash <- self$mset_value(value, use_cache)
+      storr_mset_hash(self, hash, namespace, hash)
       invisible(hash)
     },
 
@@ -366,6 +360,19 @@ R6_storr <- R6::R6Class(
       self$hash_raw(self$serialize_object(object))
     }
   ))
+
+storr_mset_hash <- function(obj, key, namespace, hash) {
+  if (is.null(obj$driver$mset_hash)) {
+    n <- length(hash)
+    for (i in seq_len(n)) {
+      key <- rep_len(key, n)
+      namespace <- rep_len(namespace, n)
+      obj$driver$set_hash(key[[i]], namespace[[i]], hash[[i]])
+    }
+  } else {
+    obj$driver$mset_hash(key, namespace, hash)
+  }
+}
 
 ##' @export
 as.list.storr <- function(x, ...) {

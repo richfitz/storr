@@ -57,3 +57,14 @@ test_that("missing", {
   x <- st$mget(c("a", "b", "a"))
   expect_equal(x, structure(list(1, NULL, 1), missing = 2L))
 })
+
+test_that("mset_by_value", {
+  st <- storr_environment()
+  x <- runif(10)
+  y <- runif(20)
+  h <- st$mset_by_value(list(x, y))
+  expect_equal(h, c(st$hash_object(x), st$hash_object(y)))
+  expect_equal(st$exists(h), c(TRUE, TRUE))
+  expect_equal(st$get(h[[1]]), x)
+  expect_equal(st$get(h[[2]]), y)
+})
