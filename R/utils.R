@@ -117,3 +117,11 @@ dquote <- function(x) {
 is_storr <- function(x) {
   inherits(x, "storr")
 }
+
+rand_str <- function(n = 16L, hex = TRUE) {
+  if (hex) {
+    paste(sample(as.raw(0:255), n, replace = TRUE), collapse = "")
+  } else {
+    rawToChar(sample(as.raw(32:126), n, replace = TRUE))
+  }
+}

@@ -8,7 +8,7 @@ test_that("creation", {
   on.exit(dr$destroy())
 
   expect_true(file.exists(path))
-  expect_identical(sort(dir(path)), c("config", "data", "keys"))
+  expect_identical(sort(dir(path)), c("config", "data", "direct", "keys"))
   expect_identical(dir(file.path(path, "data")), character(0))
   expect_false(dr$mangle_key)
 })

@@ -44,9 +44,6 @@ storr_environment <- function(envir = NULL, hash_algorithm = NULL,
 ##' @export
 ##' @rdname storr_environment
 driver_environment <- function(envir = NULL, hash_algorithm = NULL) {
-  if (is.null(envir)) {
-    envir <- new.env(parent = emptyenv())
-  }
   R6_driver_environment$new(envir, hash_algorithm)
 }
 
@@ -55,29 +52,47 @@ R6_driver_environment <- R6::R6Class(
   public = list(
     envir = NULL,
     hash_algorithm = NULL,
+    is_direct = NULL,
     traits = list(accept = "object"),
+    storage = NULL,
 
     initialize = function(envir, hash_algorithm) {
-      if (!is.null(hash_algorithm)) {
-        assert_scalar_character(hash_algorithm)
+      if (is.null(envir)) {
+        envir <- new.env(parent = emptyenv())
       }
-      if (is.null(envir$data)) {
-        envir$keys <- list()
+      self$envir <- envir
+
+      self$is_direct <- identical(hash_algorithm, NOHASH)
+      is_new <- is.null(envir$data)
+
+      if (is_new) {
+        envir$keys <- new.env(parent = emptyenv())
+        envir$direct <- new.env(parent = emptyenv())
         envir$data <- new.env(parent = emptyenv())
-        envir$hash_algorithm <- hash_algorithm <- hash_algorithm %||% "md5"
       } else {
         assert_environment(envir$data)
-        assert_list(envir$keys)
-        if (is.null(hash_algorithm)) {
-          hash_algorithm <- envir$hash_algorithm
+        assert_environment(envir$keys)
+        assert_environment(envir$direct)
+      }
+      self$storage <- self$envir[[if (self$is_direct) "direct" else "keys"]]
+
+      if (!self$is_direct) {
+        if (!is.null(hash_algorithm)) {
+          assert_scalar_character(hash_algorithm)
+        }
+        if (is_new) {
+          envir$hash_algorithm <- hash_algorithm <- hash_algorithm %||% "md5"
         } else {
-          if (hash_algorithm != envir$hash_algorithm) {
-            stop(ConfigError("hash_algorithm", envir$hash_algorithm,
-                             hash_algorithm))
+          if (is.null(hash_algorithm)) {
+            hash_algorithm <- envir$hash_algorithm
+          } else {
+            if (hash_algorithm != envir$hash_algorithm) {
+              stop(ConfigError("hash_algorithm", envir$hash_algorithm,
+                               hash_algorithm))
+            }
           }
         }
       }
-      self$envir <- envir
       self$hash_algorithm <- hash_algorithm
     },
 
@@ -86,8 +101,8 @@ R6_driver_environment <- R6::R6Class(
     },
     destroy = function() {
       self$envir$keys <- NULL
-      self$envir$list <- NULL
       self$envir$data <- NULL
+      self$envir$direct <- NULL
       self$envir <- NULL
     },
 
@@ -110,7 +125,7 @@ R6_driver_environment <- R6::R6Class(
       key <- kn$key
       namespace <- kn$namespace
       f <- function(k, n) {
-        e <- self$envir$keys[[n]]
+        e <- self$storage[[n]]
         is.environment(e) && exists0(k, e)
       }
       vlapply(seq_along(key), function(i) f(key[[i]], namespace[[i]]))
@@ -127,7 +142,7 @@ R6_driver_environment <- R6::R6Class(
       ret <- logical(kn$n)
 
       for (i in seq_along(idx)) {
-        e <- self$envir$keys[[names(idx)[[i]]]]
+        e <- self$storage[[names(idx)[[i]]]]
         if (is.environment(e)) {
           j <- idx[[i]]
           ret[j] <- rm0(kn$key[j], e)
@@ -148,14 +163,14 @@ R6_driver_environment <- R6::R6Class(
       ls(e)
     },
     list_namespaces = function() {
-      as.character(names(self$envir$keys))
+      as.character(names(self$storage))
     },
 
     ensure_envir = function(namespace) {
       force(namespace) # avoid obscure missing argument error
-      ret <- self$envir$keys[[namespace]]
+      ret <- self$storage[[namespace]]
       if (is.null(ret)) {
-        ret <- self$envir$keys[[namespace]] <- new.env(parent = emptyenv())
+        ret <- self$storage[[namespace]] <- new.env(parent = emptyenv())
       }
       ret
     }

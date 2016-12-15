@@ -23,7 +23,7 @@ testthat::test_that("basic (empty)", {
   testthat::expect_false(dr$exists_hash(k, ns))
 
   testthat::expect_false(dr$del_object(h))
-  testthat::expect_false(dr$del_hash(h, ns))
+  testthat::expect_false(dr$del_hash(k, ns))
 })
 
 testthat::test_that("set", {

@@ -72,7 +72,11 @@
 ##' st2$del("x")
 ##' st2$del("y")
 storr <- function(driver, default_namespace = "objects") {
-  R6_storr$new(driver, default_namespace)
+  if (isTRUE(driver$is_direct)) {
+    R6_storr_direct$new(driver, default_namespace)
+  } else {
+    R6_storr$new(driver, default_namespace)
+  }
 }
 
 ##' @importFrom R6 R6Class
@@ -353,6 +357,7 @@ R6_storr <- R6::R6Class(
       invisible(storr_copy(dest, self, list, namespace, skip_missing)$dest)
     },
 
+    ## TODO: names -> list?
     archive_export = function(path, names = NULL, namespace = NULL) {
       self$export(storr_rds(path, mangle_key = TRUE), names, namespace)
     },
@@ -414,3 +419,6 @@ join_key_namespace <- function(key, namespace) {
        key = rep_len(key, n),
        namespace = rep_len(namespace, n))
 }
+
+## This needsto be exported, so that drivers can use it.
+NOHASH <- "NOHASH"

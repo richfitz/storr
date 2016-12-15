@@ -94,14 +94,20 @@ R6_driver_rds <- R6::R6Class(
     compress = NULL,
     mangle_key = NULL,
     hash_algorithm = NULL,
+    is_direct = NULL,
     traits = list(accept = "raw"),
+    storage = NULL,
+    storage_read = NULL,
+    storage_write = NULL,
 
     initialize = function(path, compress, mangle_key, hash_algorithm) {
       dir_create(path)
       dir_create(file.path(path, "data"))
       dir_create(file.path(path, "keys"))
+      dir_create(file.path(path, "direct"))
       dir_create(file.path(path, "config"))
       self$path <- path
+      self$is_direct <- identical(hash_algorithm, NOHASH)
 
       if (!is.null(mangle_key)) {
         assert_scalar_logical(mangle_key)
@@ -114,11 +120,25 @@ R6_driver_rds <- R6::R6Class(
       self$compress <- driver_rds_config(path, "compress", compress,
                                          TRUE, FALSE)
 
-      if (!is.null(hash_algorithm)) {
-        assert_scalar_character(hash_algorithm)
+      if (self$is_direct) {
+        self$hash_algorithm <- hash_algorithm
+      } else {
+        if (!is.null(hash_algorithm)) {
+          assert_scalar_character(hash_algorithm)
+        }
+        self$hash_algorithm <- driver_rds_config(path, "hash_algorithm",
+                                                 hash_algorithm, "md5", TRUE)
       }
-      self$hash_algorithm <- driver_rds_config(path, "hash_algorithm",
-                                               hash_algorithm, "md5", TRUE)
+
+      if (self$is_direct) {
+        self$storage <- "direct"
+        self$storage_read <- readRDS
+        self$storage_write <- saveRDS
+      } else {
+        self$storage <- "keys"
+        self$storage_read <- readLines
+        self$storage_write <- writeLines
+      }
     },
 
     type = function() {
@@ -129,11 +149,11 @@ R6_driver_rds <- R6::R6Class(
     },
 
     get_hash = function(key, namespace) {
-      readLines(self$name_key(key, namespace))
+      self$storage_read(self$name_key(key, namespace))
     },
     set_hash = function(key, namespace, hash) {
       dir_create(self$name_key("", namespace))
-      writeLines(hash, self$name_key(key, namespace))
+      self$storage_write(hash, self$name_key(key, namespace))
     },
     get_object = function(hash) {
       readRDS(self$name_hash(hash))
@@ -163,10 +183,10 @@ R6_driver_rds <- R6::R6Class(
       sub("\\.rds$", "", dir(file.path(self$path, "data")))
     },
     list_namespaces = function() {
-      dir(file.path(self$path, "keys"))
+      dir(file.path(self$path, self$storage))
     },
     list_keys = function(namespace) {
-      ret <- dir(file.path(self$path, "keys", namespace))
+      ret <- dir(file.path(self$path, self$storage, namespace))
       if (self$mangle_key) decode64(ret, TRUE) else ret
     },
 
@@ -181,7 +201,7 @@ R6_driver_rds <- R6::R6Class(
       if (self$mangle_key) {
         key <- encode64(key)
       }
-      file.path(self$path, "keys", namespace, key)
+      file.path(self$path, self$storage, namespace, key)
     }
   ))
 

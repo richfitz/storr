@@ -88,3 +88,10 @@ test_driver <- function(create) {
     invisible(res)
   }
 }
+
+skip_if_no_direct <- function(driver_name, driver_create) {
+  if (driver_name %in% c("environment", "rds")) {
+    return()
+  }
+  testthat::skip("storr_direct not supported with this driver")
+}
