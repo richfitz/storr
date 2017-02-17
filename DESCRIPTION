@@ -23,6 +23,5 @@ Suggests:
     knitr,
     rbenchmark,
     testthat (>= 1.0.0)
-Remotes: rstats-db/RSQLite
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
