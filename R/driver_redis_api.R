@@ -18,7 +18,7 @@
 ##' @export
 ##' @author Rich FitzJohn
 storr_redis_api <- function(prefix, con, hash_algorithm = NULL,
-                            default_namespace="objects") {
+                            default_namespace = "objects") {
   storr(driver_redis_api(prefix, con, hash_algorithm), default_namespace)
 }
 

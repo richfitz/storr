@@ -96,7 +96,7 @@
 ##'
 ##'   \emph{Arguments:}
 ##'   \itemize{
-##'     \item{\code{key}:   The name of the key
+##'     \item{\code{key}:   A vector of names of keys
 ##'     }
 ##'
 ##'     \item{\code{namespace}:   The namespace of the key.
@@ -104,7 +104,7 @@
 ##'   }
 ##'
 ##'   \emph{Value}:
-##'   \code{TRUE} if an object was deleted, \code{FALSE} otherwise.
+##'   A logical vector the same length as the recycled length of key/namespace, with each element being \code{TRUE} if an object was deleted, \code{FALSE} otherwise.
 ##' }
 ##' \item{\code{clear}}{
 ##'   Clear a storr.  This function might be slow as it will iterate over each key.  Future versions of storr might allow drivers to implement a bulk clear method that will allow faster clearing.
@@ -126,7 +126,7 @@
 ##'
 ##'   \emph{Arguments:}
 ##'   \itemize{
-##'     \item{\code{key}:   The name of the key
+##'     \item{\code{key}:   A vector of names of keys
 ##'     }
 ##'
 ##'     \item{\code{namespace}:   The namespace of the key.
@@ -142,6 +142,76 @@
 ##'   \emph{Arguments:}
 ##'   \itemize{
 ##'     \item{\code{hash}:   Hash to test
+##'     }
+##'   }
+##' }
+##' \item{\code{mset}}{
+##'   Set multiple elements at once
+##'
+##'   \emph{Usage:}
+##'   \code{mset(key, value, namespace = self$default_namespace, use_cache = TRUE)}
+##'
+##'   \emph{Arguments:}
+##'   \itemize{
+##'     \item{\code{key}:   A vector of keys to get; zero to many valid keys
+##'     }
+##'
+##'     \item{\code{value}:   A vector of values
+##'     }
+##'
+##'     \item{\code{namespace}:   A vector of namespaces (either a single namespace or a vector)
+##'     }
+##'
+##'     \item{\code{use_cache}:   Use the internal cache to avoid reading or writing to the underlying storage if the data has already been seen (i.e., we have seen the hash of the object before).
+##'     }
+##'   }
+##'
+##'   \emph{Details:}
+##'   The arguments \code{key} and \code{namespace} are recycled such that either can be given as a scalar if the other is a vector. Other recycling is not allowed.
+##' }
+##' \item{\code{mget}}{
+##'   Get multiple elements at once
+##'
+##'   \emph{Usage:}
+##'   \code{mget(key, namespace = self$default_namespace, use_cache = TRUE,
+##'       missing = NULL)}
+##'
+##'   \emph{Arguments:}
+##'   \itemize{
+##'     \item{\code{key}:   A vector of keys to get; zero to many valid keys
+##'     }
+##'
+##'     \item{\code{namespace}:   A vector of namespaces (either a single namespace or a vector)
+##'     }
+##'
+##'     \item{\code{use_cache}:   Use the internal cache to avoid reading or writing to the underlying storage if the data has already been seen (i.e., we have seen the hash of the object before).
+##'     }
+##'
+##'     \item{\code{missing}:   Value to use for missing elements; by default \code{NULL} will be used.  IF \code{NULL} is a value that you might have stored in the storr you might want to use a different value here to distinguish "missing" from "set to NULL".  In addition, the \code{missing} attribute will indicate which values were missing.
+##'     }
+##'   }
+##'
+##'   \emph{Details:}
+##'   The arguments \code{key} and \code{namespace} are recycled such that either can be given as a scalar if the other is a vector. Other recycling is not allowed.
+##'
+##'   \emph{Value}:
+##'   A list with a length of the recycled length of \code{key} and \code{namespace}.  If any elements are missing, then an attribute \code{missing} will indicate the elements that are missing (this will be an integer vector with the indices of values were not found in the storr).
+##' }
+##' \item{\code{mset_by_value}}{
+##'   Set multiple elements at once, by value.  A cross between \code{mset} and \code{set_by_value}.
+##'
+##'   \emph{Usage:}
+##'   \code{mset_by_value(value, namespace = self$default_namespace, use_cache = TRUE)}
+##'
+##'   \emph{Arguments:}
+##'   \itemize{
+##'     \item{\code{value}:   A list or vector of values to set into the storr.
+##'     }
+##'
+##'     \item{\code{namespace}:   A vector of namespaces
+##'     }
+##'
+##'     \item{\code{use_cache}:   Use the internal cache to avoid reading or writing to the underlying storage if the data has already been seen (i.e., we have seen the hash of the object before).
 ##'     }
 ##'   }
 ##' }
@@ -186,6 +256,21 @@
 ##'
 ##'   \emph{Value}:
 ##'   Invisibly, the hash of the object.
+##' }
+##' \item{\code{mset_value}}{
+##'   Add a vector of object values, but don't add keys.  You will not need to use this very often, but it is used internally.
+##'
+##'   \emph{Usage:}
+##'   \code{mset_value(values, use_cache = TRUE)}
+##'
+##'   \emph{Arguments:}
+##'   \itemize{
+##'     \item{\code{values}:   A list of R objects to set
+##'     }
+##'
+##'     \item{\code{use_cache}:   Use the internal cache to avoid reading or writing to the underlying storage if the data has already been seen (i.e., we have seen the hash of the object before).
+##'     }
+##'   }
 ##' }
 ##' \item{\code{list}}{
 ##'   List all keys stored in a namespace.

@@ -63,9 +63,12 @@ get_hash:
 del:
   short: Delete an object fom the storr.
   params:
-    key: &key The name of the key
+    key: &key_vector A vector of names of keys
     namespace: &ns The namespace of the key.
-  value: \code{TRUE} if an object was deleted, \code{FALSE} otherwise.
+  value: >-
+    A logical vector the same length as the recycled length of
+    key/namespace, with each element being \code{TRUE} if an object
+    was deleted, \code{FALSE} otherwise.
 clear:
   short: >-
     Clear a storr.  This function might be slow as it will iterate
@@ -78,12 +81,55 @@ clear:
 exists:
   short: Test if a key exists within a namespace
   params:
-    key: *key
+    key: *key_vector
     namespace: *ns
 exists_object:
   short: Test if an object with a given hash exists within the storr
   params:
     hash: Hash to test
+
+mset:
+  short: Set multiple elements at once
+  params:
+    key: A vector of keys to get; zero to many valid keys
+    value: A vector of values
+    namespace: A vector of namespaces (either a single namespace or a vector)
+    use_cache: *use_cache
+  details: &recycling >-
+    The arguments \code{key} and \code{namespace} are recycled such
+    that either can be given as a scalar if the other is a vector.
+    Other recycling is not allowed.
+
+mget:
+  short: Get multiple elements at once
+  params:
+    key: A vector of keys to get; zero to many valid keys
+    namespace: A vector of namespaces (either a single namespace or a vector)
+    use_cache: *use_cache
+    missing: >-
+      Value to use for missing elements; by default \code{NULL} will
+      be used.  IF \code{NULL} is a value that you might have stored
+      in the storr you might want to use a different value here to
+      distinguish "missing" from "set to NULL".  In addition, the
+      \code{missing} attribute will indicate which values were
+      missing.
+  details: *recycling
+  value: >-
+    A list with a length of the recycled length of \code{key} and
+    \code{namespace}.  If any elements are missing, then an attribute
+    \code{missing} will indicate the elements that are missing (this
+    will be an integer vector with the indices of values were not
+    found in the storr).
+
+mset_by_value:
+  short: >-
+    Set multiple elements at once, by value.  A cross between
+    \code{mset} and \code{set_by_value}.
+  params:
+    value: A list or vector of values to set into the storr.
+    namespace: A vector of namespaces
+    use_cache: *use_cache
+
 gc:
   short: >-
     Garbage collect the storr.  Because keys do not directly map to
@@ -106,6 +152,13 @@ set_value:
     value: An R object to set.
     use_cache: *use_cache
   value: Invisibly, the hash of the object.
+mset_value:
+  short: >-
+    Add a vector of object values, but don't add keys.  You will not
+    need to use this very often, but it is used internally.
+  params:
+    values: A list of R objects to set
+    use_cache: *use_cache
 list:
   short: >-
     List all keys stored in a namespace.
