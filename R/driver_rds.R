@@ -32,6 +32,15 @@
 ##' @param mangle_key Mangle keys?  If TRUE, then the key is encoded
 ##'   using base64 before saving to the filesystem.  See Details.
 ##'
+##' @param mangle_key_pad Logical indicating if the filenames created
+##'   when using \code{mangle_key} should also be "padded" with the
+##'   \code{=} character to make up a round number of bytes.  Padding
+##'   is required to satisfy the document that describes base64
+##'   encoding (RFC 4648) but can cause problems in some applications
+##'   (see \href{https://github.com/richfitz/storr/issues/43}{this
+##'   issue}.  The default is to not pad \emph{new} storr archives.
+##'   This should be generally safe to leave alone.
+##'
 ##' @param hash_algorithm Name of the hash algorithm to use.  Possible
 ##'   values are "md5", "sha1", and others supported by
 ##'   \code{\link{digest}}.  If not given, then we will default to
@@ -72,17 +81,17 @@
 ##' st$destroy()
 ##' st2$destroy()
 storr_rds <- function(path, compress = NULL, mangle_key = NULL,
-                      hash_algorithm = NULL,
+                      mangle_key_pad = NULL, hash_algorithm = NULL,
                       default_namespace = "objects") {
-  storr(driver_rds(path, compress, mangle_key, hash_algorithm),
+  storr(driver_rds(path, compress, mangle_key, mangle_key_pad, hash_algorithm),
         default_namespace)
 }
 
 ##' @export
 ##' @rdname storr_rds
 driver_rds <- function(path, compress = NULL, mangle_key = NULL,
-                       hash_algorithm = NULL) {
-  R6_driver_rds$new(path, compress, mangle_key, hash_algorithm)
+                       mangle_key_pad = NULL, hash_algorithm = NULL) {
+  R6_driver_rds$new(path, compress, mangle_key, mangle_key_pad, hash_algorithm)
 }
 
 R6_driver_rds <- R6::R6Class(
@@ -93,21 +102,47 @@ R6_driver_rds <- R6::R6Class(
     path = NULL,
     compress = NULL,
     mangle_key = NULL,
+    mangle_key_pad = NULL,
     hash_algorithm = NULL,
     traits = list(accept = "raw"),
 
-    initialize = function(path, compress, mangle_key, hash_algorithm) {
+    initialize = function(path, compress, mangle_key, mangle_key_pad,
+                          hash_algorithm) {
+      is_new <- !file.exists(file.path(path, "config"))
       dir_create(path)
       dir_create(file.path(path, "data"))
       dir_create(file.path(path, "keys"))
       dir_create(file.path(path, "config"))
       self$path <- path
 
+      ## This is a bit of complicated dancing around to mantain
+      ## backward compatibility while allowing better defaults in
+      ## future versions.  I'm writing out a version number here that
+      ## future versions of driver_rds can use to patch, warn or
+      ## change behaviour with older versions of the storr.
+      if (!is_new && !file.exists(driver_rds_config_file(path, "version"))) {
+        write_if_missing("1.0.1", driver_rds_config_file(path, "version"))
+        write_if_missing("TRUE", driver_rds_config_file(path, "mangle_key_pad"))
+        write_if_missing("TRUE", driver_rds_config_file(path, "compress"))
+        write_if_missing("md5", driver_rds_config_file(path, "hash_algorithm"))
+      }
+      ## Then write out the version number:
+      write_if_missing(as.character(packageVersion("storr")),
+                       driver_rds_config_file(path, "version"))
+
       if (!is.null(mangle_key)) {
         assert_scalar_logical(mangle_key)
       }
       self$mangle_key <- driver_rds_config(path, "mangle_key", mangle_key,
                                            FALSE, TRUE)
+
+      if (!is.null(mangle_key_pad)) {
+        assert_scalar_logical(mangle_key_pad)
+      }
+      self$mangle_key_pad <-
+        driver_rds_config(path, "mangle_key_pad", mangle_key_pad,
+                          FALSE, TRUE)
+
       if (!is.null(compress)) {
         assert_scalar_logical(compress)
       }
@@ -179,7 +214,7 @@ R6_driver_rds <- R6::R6Class(
     },
     name_key = function(key, namespace) {
       if (self$mangle_key) {
-        key <- encode64(key)
+        key <- encode64(key, pad = self$mangle_key_pad)
       }
       file.path(self$path, "keys", namespace, key)
     }
@@ -195,7 +230,7 @@ R6_driver_rds <- R6::R6Class(
 ##   if mangle_key is not NULL then it is an error if it differs
 ##   from the existing storr's mangledness.
 driver_rds_config <- function(path, name, value, default, must_agree) {
-  path_opt <- file.path(path, "config", name)
+  path_opt <- driver_rds_config_file(path, name)
 
   load_value <- function() {
     if (file.exists(path_opt)) {
@@ -205,17 +240,6 @@ driver_rds_config <- function(path, name, value, default, must_agree) {
       value <- default
     }
     value
-  }
-
-  ## This is a workaround to allow hash_algorithm to be safely used
-  ## with storr databases from versions <= 1.0.1 where this was not
-  ## saved.
-  if (name == "hash_algorithm") {
-    if (!file.exists(path_opt)) {
-      if (length(dir(file.path(path, "data"))) > 0L) {
-        writeLines("md5", path_opt)
-      }
-    }
   }
 
   if (is.null(value)) {
@@ -231,4 +255,14 @@ driver_rds_config <- function(path, name, value, default, must_agree) {
   }
 
   value
+}
+
+driver_rds_config_file <- function(path, key) {
+  file.path(path, "config", key)
+}
+
+write_if_missing <- function(value, path) {
+  if (!file.exists(path)) {
+    writeLines(value, path)
+  }
 }

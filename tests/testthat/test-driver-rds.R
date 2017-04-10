@@ -74,6 +74,39 @@ test_that("mangledless compatibility", {
   expect_false(dr4$mangle_key)
 })
 
+test_that("mangledness padding compatibility", {
+  path <- tempfile()
+
+  dr1 <- driver_rds(path, mangle_key = TRUE)
+  expect_true(file.exists(file.path(path, "config", "mangle_key_pad")))
+  expect_equal(readLines(file.path(path, "config", "mangle_key_pad")), "FALSE")
+  expect_false(dr1$mangle_key_pad)
+
+  ## Pointing another driver here without mangling is an error:
+  expect_error(driver_rds(path, mangle_key_pad = TRUE),
+               "Incompatible value for mangle_key_pad")
+
+  ## But omitting the argument (NULL mangledness) is OK
+  dr2 <- driver_rds(path)
+  expect_false(dr2$mangle_key_pad)
+
+  ## In reverse:
+  path2 <- tempfile()
+
+  dr3 <- driver_rds(path2, mangle_key = TRUE, mangle_key_pad = TRUE)
+  expect_true(file.exists(file.path(path2, "config", "mangle_key_pad")))
+  expect_equal(readLines(file.path(path2, "config", "mangle_key_pad")), "TRUE")
+  expect_true(dr3$mangle_key_pad)
+
+  ## Pointing another driver here without mangling is an error:
+  expect_error(driver_rds(path2, mangle_key = TRUE, mangle_key_pad = FALSE),
+               "Incompatible value for mangle_key")
+
+  ## But omitting the argument (NULL mangledness) is OK
+  dr4 <- driver_rds(path2)
+  expect_true(dr4$mangle_key_pad)
+})
+
 ## This test takes a lot of time - about 25s.  This really suggests
 ## that storing objects of this size is not a sensible idea!
 test_that("large vector support", {
@@ -130,26 +163,34 @@ test_that("compression support", {
 test_that("backward compatibility", {
   ## In version 1.0.1 and earlier, the hash algorithm was not stored
   ## in the database and md5 was *always* used.
-  ##
-  ## Was created with:
-  ##
-  ##   unlink("tests/testthat/v1.0.1", recursive = TRUE)
-  ##   storr::storr_rds("tests/testthat/v1.0.1")$set("key", "v1.0.1")
-  copy_to_tmp <- function(src) {
-    path <- tempfile()
-    dir.create(path)
-    file.copy(src, path, recursive = TRUE)
-    file.path(path, src)
-  }
-
-  path <- copy_to_tmp("v1.0.1")
+  path <- copy_to_tmp("v1.0.1_clear")
   st <- storr_rds(path)
   expect_equal(st$list(), "key")
   expect_equal(st$get("key"), "v1.0.1")
   expect_equal(st$driver$hash_algorithm, "md5")
+  expect_false(st$driver$mangle_key)
   st$destroy()
 
-  path <- copy_to_tmp("v1.0.1")
+  path <- copy_to_tmp("v1.0.1_clear")
   expect_error(storr_rds(path, hash_algorithm = "sha1"),
                "Incompatible value for hash_algorithm")
+})
+
+test_that("mangledness padding backward compatibility", {
+  ## In version 1.0.1 and earlier, mangling was always padded
+  path <- copy_to_tmp("v1.0.1_mangled")
+  st <- storr_rds(path)
+  expect_true(st$driver$mangle_key)
+  expect_true(st$driver$mangle_key_pad)
+  expect_equal(st$get("a"), 1)
+  expect_equal(st$get("bb"), 2)
+  expect_equal(st$get("ccc"), 3)
+  expect_equal(st$list(),
+               sort(c("a", "bb", "ccc")))
+  st$set("a", "x")
+  st$set("bb", "y")
+  st$set("ccc", "z")
+  expect_equal(st$list(),
+               sort(c("a", "bb", "ccc")))
+  st$destroy()
 })

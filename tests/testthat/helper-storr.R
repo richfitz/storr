@@ -12,3 +12,10 @@ skip_long_test <- function() {
   }
   testthat::skip("Skipping long running test")
 }
+
+copy_to_tmp <- function(src) {
+  path <- tempfile()
+  dir.create(path)
+  file.copy(src, path, recursive = TRUE)
+  file.path(path, src)
+}

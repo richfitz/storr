@@ -5,11 +5,11 @@
 \alias{storr_rds}
 \title{rds object cache driver}
 \usage{
-storr_rds(path, compress = NULL, mangle_key = NULL, hash_algorithm = NULL,
-  default_namespace = "objects")
+storr_rds(path, compress = NULL, mangle_key = NULL, mangle_key_pad = NULL,
+  hash_algorithm = NULL, default_namespace = "objects")
 
 driver_rds(path, compress = NULL, mangle_key = NULL,
-  hash_algorithm = NULL)
+  mangle_key_pad = NULL, hash_algorithm = NULL)
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice
@@ -21,6 +21,15 @@ amount of space for a reasonable amount of time.}
 
 \item{mangle_key}{Mangle keys?  If TRUE, then the key is encoded
 using base64 before saving to the filesystem.  See Details.}
+
+\item{mangle_key_pad}{Logical indicating if the filenames created
+when using \code{mangle_key} should also be "padded" with the
+\code{=} character to make up a round number of bytes.  Padding
+is required to satisfy the document that describes base64
+encoding (RFC 4648) but can cause problems in some applications
+(see \href{https://github.com/richfitz/storr/issues/43}{this
+issue}.  The default is to not pad \emph{new} storr archives.
+This should be generally safe to leave alone.}
 
 \item{hash_algorithm}{Name of the hash algorithm to use.  Possible
 values are "md5", "sha1", and others supported by
