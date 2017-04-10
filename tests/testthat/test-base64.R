@@ -38,3 +38,25 @@ test_that("vector", {
   expect_equal(x, vcapply(letters, encode64, USE.NAMES = FALSE))
   expect_equal(decode64(x), letters)
 })
+
+test_that("padding", {
+  ## This duplicates much of the code above.
+  rand_str_len <- function(n) {
+    pos <- as.raw(32:126)
+    rawToChar(sample(pos, n, replace = TRUE))
+  }
+  for (len in 1:20) {
+    for (r in 1:20) {
+      s <- rand_str_len(len)
+      t1 <- encode64(s, pad = TRUE)
+      t2 <- encode64(s, pad = FALSE)
+      expect_identical(decode64(t1), s)
+      expect_identical(decode64(t2), s)
+
+      n_pad <- 2 - (len - 1) %% 3
+      expect_equal(substr(t1, nchar(t1) - n_pad + 1, nchar(t1) + 1),
+                   paste(rep("=", n_pad), collapse = ""))
+      expect_equal(nchar(t1), nchar(t2) + n_pad)
+    }
+  }
+})

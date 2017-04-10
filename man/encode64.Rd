@@ -5,7 +5,7 @@
 \alias{encode64}
 \title{Base64 encoding and decoding}
 \usage{
-encode64(x, char62 = "-", char63 = "_")
+encode64(x, char62 = "-", char63 = "_", pad = TRUE)
 
 decode64(x, char62 = "-", char63 = "_")
 }
@@ -15,6 +15,9 @@ decode64(x, char62 = "-", char63 = "_")
 \item{char62}{Character to use for the 62nd index}
 
 \item{char63}{Character to use for the 63rd index}
+
+\item{pad}{Logical, indicating if strings should be padded with
+\code{=} characters (as RFC 4648 requires)}
 }
 \description{
 Base64 encoding.  By default uses the RFC 4648 dialect (file/url

@@ -6,6 +6,8 @@
 ##' @param x A string or vector of strings to encode/decode
 ##' @param char62 Character to use for the 62nd index
 ##' @param char63 Character to use for the 63rd index
+##' @param pad Logical, indicating if strings should be padded with
+##'   \code{=} characters (as RFC 4648 requires)
 ##' @export
 ##' @examples
 ##' x <- encode64("hello")
@@ -15,7 +17,7 @@
 ##' # Encoding things into filename-safe strings is the reason for
 ##' # this function:
 ##' encode64("unlikely/to be @ valid filename")
-encode64 <- function(x, char62 = "-", char63 = "_") {
+encode64 <- function(x, char62 = "-", char63 = "_", pad = TRUE) {
   if (length(x) != 1L) {
     return(vcapply(x, encode64, char62, char63, USE.NAMES = FALSE))
   }
@@ -38,7 +40,7 @@ encode64 <- function(x, char62 = "-", char63 = "_") {
   z <- tr[bitwAnd(y, 63L) + 1L]
   if (n_pad > 0) {
     len <- length(z)
-    z[(len - n_pad + 1):len] <- "="
+    z[(len - n_pad + 1):len] <- if (pad) "=" else ""
   }
   paste0(z, collapse = "")
 }
