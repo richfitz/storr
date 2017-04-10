@@ -72,7 +72,22 @@ serialize_object_drop_r_version <- function(object, xdr = TRUE) {
 ## faster than the previous approach of iterating through the raw
 ## vector and writing it bit-by-bit to a file (~30s for that approach,
 ## vs ~10s for this one).
+##
+## We need to make sure that we only keep the file if the write has
+## been successful, otherwise the container will claim existence
+## for an object which cannot be retrieved later on, causing havoc
+## upstream.
 write_serialized_rds <- function(value, filename, compress, long = 2^31 - 2) {
+  tryCatch(
+    try_write_serialized_rds(value, filename, compress, long),
+    error = function(e) {
+      unlink(filename)
+      stop(e)
+    }
+  )
+}
+
+try_write_serialized_rds <- function(value, filename, compress, long = 2^31 - 2) {
   con <- (if (compress) gzfile else file)(filename, "wb")
   on.exit(close(con))
   len <- length(value)
