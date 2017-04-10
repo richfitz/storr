@@ -33,7 +33,9 @@ pg_tester <- function(ctor) {
 
 test_that("dbi (postgres via RPostgres)", {
   if (requireNamespace("RPostgres", quietly = TRUE)) {
-    storr::test_driver(pg_tester(RPostgres::Postgres))
+    if (has_postgres(RPostgres::Postgres)) {
+      storr::test_driver(pg_tester(RPostgres::Postgres))
+    }
   }
 })
 
@@ -43,7 +45,9 @@ test_that("dbi (postgres via RPostgreSQL)", {
     if (!is.null(oo$warnPartialMatchArgs)) {
       on.exit(options(oo))
     }
-    storr::test_driver(pg_tester(RPostgreSQL::PostgreSQL))
+    if (has_postgres(RPostgreSQL::PostgreSQL)) {
+      storr::test_driver(pg_tester(RPostgreSQL::PostgreSQL))
+    }
   }
 })
 

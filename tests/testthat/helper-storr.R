@@ -19,3 +19,7 @@ copy_to_tmp <- function(src) {
   file.copy(src, path, recursive = TRUE)
   file.path(path, src)
 }
+
+has_postgres <- function(ctor) {
+  !is.null(tryCatch(DBI::dbConnect(ctor()), error = function(e) NULL))
+}
