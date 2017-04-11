@@ -39,3 +39,31 @@ test_that("assertions", {
 test_that("str_drop_start", {
   expect_equal(str_drop_start("foo:bar", "xxx:"), "bar")
 })
+
+test_that("write_serialized_rds recovers on error", {
+  value <- serialize(1:100, NULL)
+  filename <- tempfile()
+
+  partial_failure <- function(object, con, ...) {
+    writeLines("somedata", con)
+    stop("Error writing to disk")
+  }
+  total_failure <- function(object, con, ...) {
+    stop("Error writing to disk")
+  }
+
+  testthat::with_mock(
+    `base::writeBin` = partial_failure,
+    expect_error(write_serialized_rds(value, filename, FALSE),
+                 "Error writing to disk"))
+  expect_false(file.exists(filename))
+
+  testthat::with_mock(
+    `base::writeBin` = total_failure,
+    expect_error(write_serialized_rds(value, filename, FALSE),
+                 "Error writing to disk"))
+  expect_false(file.exists(filename))
+
+  expect_silent(write_serialized_rds(value, filename, FALSE))
+  expect_identical(readRDS(filename), 1:100)
+})

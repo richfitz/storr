@@ -194,3 +194,20 @@ test_that("mangledness padding backward compatibility", {
                sort(c("a", "bb", "ccc")))
   st$destroy()
 })
+
+test_that("consistent write on failure", {
+  write_junk_and_fail <- function(value, con, ...) {
+    writeLines("this is junk", con)
+    stop("Error writing to disk")
+  }
+
+  st <- storr_rds(tempfile())
+  on.exit(st$destroy())
+
+  testthat::with_mock(
+    `base::writeBin` = write_junk_and_fail,
+    expect_error(st$set("foo", "bar"), "Error writing to disk"))
+  expect_equal(st$list(), character(0))
+  expect_equal(st$list_hashes(), character(0))
+  expect_equal(dir(file.path(st$driver$path, "data")), character(0))
+})

@@ -78,16 +78,19 @@ serialize_object_drop_r_version <- function(object, xdr = TRUE) {
 ## for an object which cannot be retrieved later on, causing havoc
 ## upstream.
 write_serialized_rds <- function(value, filename, compress, long = 2^31 - 2) {
-  tryCatch(
+  withCallingHandlers(
     try_write_serialized_rds(value, filename, compress, long),
     error = function(e) {
       unlink(filename)
-      stop(e)
     }
   )
 }
 
-try_write_serialized_rds <- function(value, filename, compress, long = 2^31 - 2) {
+## The split here helps keep the order really consistent; we will
+## close the connection on exit from try_write_serialized_rds and
+## delete the file *after* that.
+try_write_serialized_rds <- function(value, filename, compress,
+                                     long = 2^31 - 2) {
   con <- (if (compress) gzfile else file)(filename, "wb")
   on.exit(close(con))
   len <- length(value)
