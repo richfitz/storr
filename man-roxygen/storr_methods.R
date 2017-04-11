@@ -132,6 +132,9 @@
 ##'     \item{\code{namespace}:   The namespace of the key.
 ##'     }
 ##'   }
+##'
+##'   \emph{Value}:
+##'   A logical vector the same length as the recycled length of key/namespace, with each element being \code{TRUE} if the object exists and \code{FALSE} otherwise.
 ##' }
 ##' \item{\code{exists_object}}{
 ##'   Test if an object with a given hash exists within the storr

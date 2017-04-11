@@ -83,6 +83,10 @@ exists:
   params:
     key: *key_vector
     namespace: *ns
+  value: >-
+    A logical vector the same length as the recycled length of
+    key/namespace, with each element being \code{TRUE} if the object
+    exists and \code{FALSE} otherwise.
 exists_object:
   short: Test if an object with a given hash exists within the storr
   params:
