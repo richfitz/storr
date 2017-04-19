@@ -368,15 +368,14 @@ R6_driver_DBI <- R6::R6Class(
   ))
 
 dbi_supports_binary <- function(con) {
-  supports_binary <- FALSE
   ## Very little binary support exists; requires newfangled DBI and
   ## new RSQLite.  None of the other connection types supports binary
-  ## serialisation.
-  if (utils::packageVersion("DBI") >= package_version("0.4.1")) {
-    if (inherits(con, "SQLiteConnection") &&
-        utils::packageVersion("RSQLite") > package_version("1.0.0")) {
-      supports_binary <- TRUE
-    }
+  ## serialisation, though hopefully it will be supported in new
+  ## versions of RPostgres.  Minimum versions that support binary are
+  ## enforced via the DESCRIPTION.
+  supports_binary <- FALSE
+  if (inherits(con, "SQLiteConnection")) {
+    supports_binary <- TRUE
   }
   supports_binary
 }
@@ -464,7 +463,7 @@ driver_dbi_sql_compat <- function(con, tbl_data, tbl_keys) {
     ## "INSERT OR REPLACE INTO" pattern (via INSERT INTO ... ON
     ## CONFLICT REPLACE" and I'm just going to require a recent
     ## version for simplicity.
-    v <- numeric_version(DBI::dbGetQuery(con, "show server_version")[[1]])
+    v <- pg_server_version(con)
     if (v < numeric_version("0.9.5")) {
       stop(sprintf(
         "Version %s of postgresql server is not supported (need >= 0.9.5)", v))
@@ -567,4 +566,8 @@ driver_dbi_dialect <- function(con) {
 group_placeholders <- function(placeholder, n, times) {
   p <- matrix(sprintf(placeholder, seq_len(n * times)), n)
   paste(sprintf("(%s)", apply(p, 2, paste, collapse = ", ")), collapse = ", ")
+}
+
+pg_server_version <- function(con) {
+  numeric_version(DBI::dbGetQuery(con, "show server_version")[[1L]])
 }

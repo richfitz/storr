@@ -47,21 +47,11 @@ test_that("storr", {
 })
 
 test_that("binary support detection", {
+  ## These can be run without any package support:
+  expect_false(dbi_supports_binary(NULL))
+  expect_true(dbi_supports_binary(structure(TRUE, class = "SQLiteConnection")))
+
   skip_if_not_installed("RSQLite")
-
-  ## Fake package version generating function:
-  pv <- function(v) {
-    force(v)
-    function(pkg, lib.loc = NULL) {
-      if (pkg %in% names(v)) {
-        ret <- v[[pkg]]
-      } else {
-        ret <- packageDescription(pkg, lib.loc = lib.loc, fields = "Version")
-      }
-      numeric_version(ret)
-    }
-  }
-
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 
   ## These are pretty easy:
@@ -80,14 +70,6 @@ test_that("binary support detection", {
     expect_false(dbi_use_binary(con, "data", NULL))
     expect_false(dbi_use_binary(con, "data", FALSE))
   })
-
-  ## Then test version things:
-  with_mock("utils::packageVersion" = pv(c(DBI = "0.0.1")),
-            expect_false(dbi_supports_binary(con)))
-  with_mock("utils::packageVersion" = pv(c(RSQLite = "0.0.1")),
-            expect_false(dbi_supports_binary(con)))
-  with_mock("utils::packageVersion" = pv(c(RSQLite = "1.0.1", DBI = "0.4.1")),
-            expect_true(dbi_supports_binary(con)))
 })
 
 test_that("non-binary storage", {
@@ -114,10 +96,11 @@ test_that("unknown dialects", {
 
 test_that("old postgres", {
   con <- structure(list(), class = "PqConnection")
-  with_mock("DBI::dbGetQuery" = function(con, .) list(numeric_version("0.9.4")),
-            expect_error(driver_dbi_sql_compat(con, "a", "b"),
-                         "Version 0.9.4 of postgresql server is not supported"))
-  with_mock("DBI::dbGetQuery" = function(con, .) list(numeric_version("0.9.5")),
-            expect_is(driver_dbi_sql_compat(con, "a", "b"),
-                      "list"))
+  with_mock(
+    "storr:::pg_server_version" = function(con) numeric_version("0.9.4"),
+    expect_error(driver_dbi_sql_compat(con, "a", "b"),
+                 "Version 0.9.4 of postgresql server is not supported"))
+  with_mock(
+    "storr:::pg_server_version" = function(con) numeric_version("0.9.5"),
+    expect_is(driver_dbi_sql_compat(con, "a", "b"), "list"))
 })
