@@ -53,13 +53,13 @@ test_that("write_serialized_rds recovers on error", {
   }
 
   testthat::with_mock(
-    `base::writeBin` = partial_failure,
+    `storr::try_write_serialized_rds` = partial_failure,
     expect_error(write_serialized_rds(value, filename, FALSE),
                  "Error writing to disk"))
   expect_false(file.exists(filename))
 
   testthat::with_mock(
-    `base::writeBin` = total_failure,
+    `storr::try_write_serialized_rds` = total_failure,
     expect_error(write_serialized_rds(value, filename, FALSE),
                  "Error writing to disk"))
   expect_false(file.exists(filename))

@@ -58,8 +58,9 @@ test_that("unserialize safe", {
 })
 
 test_that("make_serialize_object", {
-  with_mock("base::getRversion" = function() numeric_version("3.1.2"),
-            expect_error(make_serialize_object(FALSE, TRUE)))
+  with_mock("storr::r_version" = function() numeric_version("3.1.2"),
+            expect_error(make_serialize_object(FALSE, TRUE),
+                         "upgrade R"))
   expect_error(make_serialize_object(TRUE, TRUE),
                "Can't combine drop_r_version and string serialization")
 })

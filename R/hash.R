@@ -17,7 +17,7 @@ make_serialize_object <- function(drop_r_version, string, xdr = TRUE) {
     ## because it is safer with respect to precision loss in doubles.
     ## It's the only thing I know of that depends on R between 3.1 and
     ## 3.2 and affects only the dbi driver at present.
-    if (getRversion() < numeric_version("3.2.0")) {
+    if (r_version() < numeric_version("3.2.0")) {
       stop("Please upgrade R to at least 3.2.0")
     }
     function(object) rawToChar(serialize(object, NULL, NA, xdr))
@@ -74,16 +74,13 @@ serialize_object_drop_r_version <- function(object, xdr = TRUE) {
 ## vs ~10s for this one).
 ##
 ## We need to make sure that we only keep the file if the write has
-## been successful, otherwise the container will claim existence
-## for an object which cannot be retrieved later on, causing havoc
+## been successful, otherwise the container will claim existence for
+## an object which cannot be retrieved later on, causing havoc
 ## upstream.
 write_serialized_rds <- function(value, filename, compress, long = 2^31 - 2) {
   withCallingHandlers(
     try_write_serialized_rds(value, filename, compress, long),
-    error = function(e) {
-      unlink(filename)
-    }
-  )
+    error = function(e) unlink(filename))
 }
 
 ## The split here helps keep the order really consistent; we will

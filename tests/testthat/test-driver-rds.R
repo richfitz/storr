@@ -196,8 +196,8 @@ test_that("mangledness padding backward compatibility", {
 })
 
 test_that("consistent write on failure", {
-  write_junk_and_fail <- function(value, con, ...) {
-    writeLines("this is junk", con)
+  fail_write_serialized_rds <- function(value, filename, ...) {
+    writeLines("this is junk", filename)
     stop("Error writing to disk")
   }
 
@@ -205,7 +205,7 @@ test_that("consistent write on failure", {
   on.exit(st$destroy())
 
   testthat::with_mock(
-    `base::writeBin` = write_junk_and_fail,
+    `storr:::try_write_serialized_rds` = fail_write_serialized_rds,
     expect_error(st$set("foo", "bar"), "Error writing to disk"))
   expect_equal(st$list(), character(0))
   expect_equal(st$list_hashes(), character(0))
