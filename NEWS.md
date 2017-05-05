@@ -1,4 +1,4 @@
-## storr 1.1.0 (2017-??-??)
+## storr 1.1.0 (2017-05-05)
 
 * Support for using relational databases via DBI (SQLite, Postgres) #23 - MySQL and Microsoft SQL Server support is not implemented yet
 * Support for selecting hash algorithm at the driver level, so rather than being limited to md5, more robust algorithms can be used.  This is implemented for all storr drivers, and for the rds driver will safely work on storr databases from before this version
