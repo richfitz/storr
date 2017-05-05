@@ -41,6 +41,7 @@ test_that("str_drop_start", {
 })
 
 test_that("write_serialized_rds recovers on error", {
+  skip_if_not_installed("mockr")
   value <- serialize(1:100, NULL)
   filename <- tempfile()
 
@@ -52,14 +53,14 @@ test_that("write_serialized_rds recovers on error", {
     stop("Error writing to disk")
   }
 
-  testthat::with_mock(
-    `storr::try_write_serialized_rds` = partial_failure,
+  mockr::with_mock(
+    try_write_serialized_rds = partial_failure,
     expect_error(write_serialized_rds(value, filename, FALSE),
                  "Error writing to disk"))
   expect_false(file.exists(filename))
 
-  testthat::with_mock(
-    `storr::try_write_serialized_rds` = total_failure,
+  mockr::with_mock(
+    try_write_serialized_rds = total_failure,
     expect_error(write_serialized_rds(value, filename, FALSE),
                  "Error writing to disk"))
   expect_false(file.exists(filename))
@@ -69,6 +70,7 @@ test_that("write_serialized_rds recovers on error", {
 })
 
 test_that("write_lines recovers on error", {
+  skip_if_not_installed("mockr")
   value <- "hello"
   filename <- tempfile()
 
@@ -80,14 +82,14 @@ test_that("write_lines recovers on error", {
     stop("Error writing to disk")
   }
 
-  testthat::with_mock(
-    `storr::try_write_lines` = partial_failure,
+  mockr::with_mock(
+    try_write_lines = partial_failure,
     expect_error(write_lines(value, filename),
                  "Error writing to disk"))
   expect_false(file.exists(filename))
 
-  testthat::with_mock(
-    `storr::try_write_lines` = total_failure,
+  mockr::with_mock(
+    try_write_lines = total_failure,
     expect_error(write_lines(value, filename),
                  "Error writing to disk"))
   expect_false(file.exists(filename))

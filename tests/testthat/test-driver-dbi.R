@@ -61,6 +61,7 @@ test_that("storr", {
 })
 
 test_that("binary support detection", {
+  skip_if_not_installed("mockr")
   ## These can be run without any package support:
   expect_false(dbi_supports_binary(NULL))
   expect_true(dbi_supports_binary(structure(TRUE, class = "SQLiteConnection")))
@@ -69,7 +70,7 @@ test_that("binary support detection", {
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 
   ## These are pretty easy:
-  with_mock("storr::dbi_supports_binary" = function(...) TRUE, {
+  mockr::with_mock(dbi_supports_binary = function(...) TRUE, {
     expect_true(dbi_use_binary(con, "data", NULL))
     expect_true(dbi_use_binary(con, "data", TRUE))
     expect_false(dbi_use_binary(con, "data", FALSE))
@@ -78,7 +79,7 @@ test_that("binary support detection", {
   ## Behaviour when the driver does not support binary:
   ##
   ## TODO: this does not get picked up by covr!?
-  with_mock("storr::dbi_supports_binary" = function(...) FALSE, {
+  mockr::with_mock(dbi_supports_binary = function(...) FALSE, {
     expect_error(dbi_use_binary(con, "data", TRUE),
                  "Binary storage requested but storage driver does")
     expect_false(dbi_use_binary(con, "data", NULL))
@@ -109,12 +110,13 @@ test_that("unknown dialects", {
 })
 
 test_that("old postgres", {
+  skip_if_not_installed("mockr")
   con <- structure(list(), class = "PqConnection")
-  with_mock(
-    "storr:::pg_server_version" = function(con) numeric_version("0.9.4"),
+  mockr::with_mock(
+    pg_server_version = function(con) numeric_version("0.9.4"),
     expect_error(driver_dbi_sql_compat(con, "a", "b"),
                  "Version 0.9.4 of postgresql server is not supported"))
-  with_mock(
-    "storr:::pg_server_version" = function(con) numeric_version("0.9.5"),
+  mockr::with_mock(
+    pg_server_version = function(con) numeric_version("0.9.5"),
     expect_is(driver_dbi_sql_compat(con, "a", "b"), "list"))
 })

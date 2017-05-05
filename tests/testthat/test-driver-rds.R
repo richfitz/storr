@@ -195,23 +195,6 @@ test_that("mangledness padding backward compatibility", {
   st$destroy()
 })
 
-test_that("consistent write on failure", {
-  fail_write_serialized_rds <- function(value, filename, ...) {
-    writeLines("this is junk", filename)
-    stop("Error writing to disk")
-  }
-
-  st <- storr_rds(tempfile())
-  on.exit(st$destroy())
-
-  testthat::with_mock(
-    `storr:::try_write_serialized_rds` = fail_write_serialized_rds,
-    expect_error(st$set("foo", "bar"), "Error writing to disk"))
-  expect_equal(st$list(), character(0))
-  expect_equal(st$list_hashes(), character(0))
-  expect_equal(dir(file.path(st$driver$path, "data")), character(0))
-})
-
 ## This is a test for issue 42; check that hard links do not create
 ## inconsistent storrs.
 test_that("copy -lr and consistency", {

@@ -20,7 +20,7 @@ Imports:
 Suggests:
     DBI (>= 0.6),
     RSQLite (>= 1.1-2),
-    knitr,
+    mockr,
     rbenchmark,
     testthat (>= 1.0.0)
 VignetteBuilder: knitr

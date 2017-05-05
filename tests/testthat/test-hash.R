@@ -58,7 +58,8 @@ test_that("unserialize safe", {
 })
 
 test_that("make_serialize_object", {
-  with_mock("storr::r_version" = function() numeric_version("3.1.2"),
+  skip_if_not_installed("mockr")
+  mockr::with_mock(r_version = function() numeric_version("3.1.2"),
             expect_error(make_serialize_object(FALSE, TRUE),
                          "upgrade R"))
   expect_error(make_serialize_object(TRUE, TRUE),
