@@ -33,7 +33,7 @@ install.packages("storr")
 or install the development version with
 
 ```
-remotes::install_github("richfitz/storr@develop")
+remotes::install_github("richfitz/storr@develop", upgrade = FALSE)
 ```
 
 # Documentation
