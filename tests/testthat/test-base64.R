@@ -14,8 +14,7 @@ test_that("base64", {
     cmp <- encode64
   }
 
-  err1 <- character(0)
-  err2 <- character(0)
+  err1 <- err2 <- character(0)
 
   for (len in 1:20) {
     for (r in 1:20) {
@@ -45,18 +44,33 @@ test_that("padding", {
     pos <- as.raw(32:126)
     rawToChar(sample(pos, n, replace = TRUE))
   }
+
+  err1 <- err2 <- err3 <- err4 <- character(0)
+
   for (len in 1:20) {
     for (r in 1:20) {
       s <- rand_str_len(len)
       t1 <- encode64(s, pad = TRUE)
       t2 <- encode64(s, pad = FALSE)
-      expect_identical(decode64(t1), s)
-      expect_identical(decode64(t2), s)
+      if (!identical(decode64(t1), s)) {
+        err1 <- c(err1, s)
+      }
+      if (!identical(decode64(t2), s)) {
+        err2 <- c(err2, s)
+      }
 
       n_pad <- 2 - (len - 1) %% 3
-      expect_equal(substr(t1, nchar(t1) - n_pad + 1, nchar(t1) + 1),
-                   paste(rep("=", n_pad), collapse = ""))
-      expect_equal(nchar(t1), nchar(t2) + n_pad)
+      if (substr(t1, nchar(t1) - n_pad + 1, nchar(t1) + 1) !=
+          paste(rep("=", n_pad), collapse = "")) {
+        err3 <- c(err3, s)
+      }
+      if (nchar(t1) != nchar(t2) + n_pad) {
+        err4 <- c(err4, s)
+      }
     }
   }
+  expect_identical(length(err1), 0L)
+  expect_identical(length(err2), 0L)
+  expect_identical(length(err3), 0L)
+  expect_identical(length(err4), 0L)
 })
