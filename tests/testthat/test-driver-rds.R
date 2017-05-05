@@ -211,3 +211,26 @@ test_that("consistent write on failure", {
   expect_equal(st$list_hashes(), character(0))
   expect_equal(dir(file.path(st$driver$path, "data")), character(0))
 })
+
+## This is a test for issue 42; check that hard links do not create
+## inconsistent storrs.
+test_that("copy -lr and consistency", {
+  skip_on_os(c("windows", "mac", "solaris"))
+
+  path1 <- tempfile()
+  path2 <- tempfile()
+  st1 <- storr_rds(path1)
+  h1 <- st1$set("foo", "val1")
+
+  ok <- system2("cp", c("-lr", path1, path2))
+
+  st2 <- storr_rds(path2)
+  expect_equal(st2$get("foo"), "val1")
+
+  h2 <- st1$set("foo", "val2")
+  expect_equal(st1$get("foo"), "val2")
+  expect_equal(st2$get("foo"), "val1")
+
+  expect_equal(st2$list_hashes(), h1)
+  expect_equal(sort(st1$list_hashes()), sort(c(h1, h2)))
+})

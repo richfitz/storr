@@ -28,21 +28,6 @@ make_serialize_object <- function(drop_r_version, string, xdr = TRUE) {
   }
 }
 
-## serialize_object <- function(object, xdr = TRUE, drop_r_version = FALSE) {
-##   if (drop_r_version) {
-##     serialize_object_drop_r_version(object, xdr)
-##   } else {
-##     serialize(object, NULL, xdr = xdr)
-##   }
-## }
-
-## serialize_str <- function(x) {
-##   rawToChar(serialize(x, NULL, TRUE))
-## }
-## unserialize_str <- function(x) {
-##   unserialize(charToRaw(x))
-## }
-
 unserialize_safe <- function(x) {
   if (is.character(x)) {
     unserialize(charToRaw(x))
@@ -97,4 +82,20 @@ try_write_serialized_rds <- function(value, filename, compress,
     message("Repacking large object")
     saveRDS(unserialize(value), con)
   }
+}
+
+## Same pattern for write_lines.  The difference is that this will
+## delete the key on a failed write (otherwise there's a copy
+## involved)
+write_lines <- function(text, filename, ...) {
+  withCallingHandlers(
+    try_write_lines(text, filename, ...),
+    error = function(e) unlink(filename))
+}
+
+try_write_lines <- function(text, filename, ...) {
+  if (file.exists(filename)) {
+    file.remove(filename)
+  }
+  writeLines(text, filename, ...)
 }

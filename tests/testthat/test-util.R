@@ -65,5 +65,33 @@ test_that("write_serialized_rds recovers on error", {
   expect_false(file.exists(filename))
 
   expect_silent(write_serialized_rds(value, filename, FALSE))
-  expect_identical(readRDS(filename), 1:100)
+  expect_identical(readRDS(filename), unserialize(value))
+})
+
+test_that("write_lines recovers on error", {
+  value <- "hello"
+  filename <- tempfile()
+
+  partial_failure <- function(object, con, ...) {
+    writeLines("corrupt", con)
+    stop("Error writing to disk")
+  }
+  total_failure <- function(object, con, ...) {
+    stop("Error writing to disk")
+  }
+
+  testthat::with_mock(
+    `storr::try_write_lines` = partial_failure,
+    expect_error(write_lines(value, filename),
+                 "Error writing to disk"))
+  expect_false(file.exists(filename))
+
+  testthat::with_mock(
+    `storr::try_write_lines` = total_failure,
+    expect_error(write_lines(value, filename),
+                 "Error writing to disk"))
+  expect_false(file.exists(filename))
+
+  expect_silent(write_lines(value, filename))
+  expect_identical(readLines(filename), value)
 })

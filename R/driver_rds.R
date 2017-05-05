@@ -168,7 +168,7 @@ R6_driver_rds <- R6::R6Class(
     },
     set_hash = function(key, namespace, hash) {
       dir_create(self$name_key("", namespace))
-      writeLines(hash, self$name_key(key, namespace))
+      write_lines(hash, self$name_key(key, namespace))
     },
     get_object = function(hash) {
       readRDS(self$name_hash(hash))
