@@ -18,8 +18,8 @@ Imports:
     R6 (>= 2.1.0),
     digest
 Suggests:
-    DBI (>= 0.5-1),
-    RSQLite (>= 1.1),
+    DBI (>= 0.6),
+    RSQLite (>= 1.1-2),
     knitr,
     rbenchmark,
     testthat (>= 1.0.0)

@@ -8,14 +8,28 @@ test_that("binary detection", {
   ## of sufficient version.
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
   db <- driver_dbi(con, "data", "keys")
+  ## Hmm, something terrible has happened here though it passes on
+  ## travis and my mac
   expect_true(db$binary)
+
+  expect_true(dbi_use_binary(con, "data", NULL))
+  expect_true(dbi_use_binary(con, "data", TRUE))
+  expect_error(dbi_use_binary(con, "data", FALSE), "storage conflicts")
+
   expect_true(driver_dbi(con, "data", "keys")$binary)
+  expect_true(driver_dbi(con, "data", "keys", TRUE)$binary)
   expect_error(driver_dbi(con, "data", "keys", FALSE),
                "storage conflicts")
 
   db_s <- driver_dbi(con, "data_s", "key_s", FALSE)
+
+  expect_false(dbi_use_binary(con, "data_s", NULL))
+  expect_false(dbi_use_binary(con, "data_s", FALSE))
+  expect_error(dbi_use_binary(con, "data_s", TRUE), "storage conflicts")
+
   expect_false(db_s$binary)
   expect_false(driver_dbi(con, "data_s", "keys_s")$binary)
+  expect_false(driver_dbi(con, "data_s", "keys_s", FALSE)$binary)
   expect_error(driver_dbi(con, "data_s", "keys_s", TRUE),
                "storage conflicts")
 })
