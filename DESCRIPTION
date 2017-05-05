@@ -4,8 +4,7 @@ Version: 1.0.3
 Description: Creates and manages simple key-value stores.  These can
     use a variety of approaches for storing the data.  This package
     implements the base methods and support for file system and
-    in-memory stores.  A vignette shows how additional drivers can be
-    created, and stubs exist for supporting 'Redis' databases.
+    in-memory stores.
 Depends:
     R (>= 3.1.0)
 License: MIT + file LICENSE
