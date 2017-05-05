@@ -1,6 +1,12 @@
 ##' Object cache driver using the "DBI" package interface for storage.
 ##' This means that storr can work for any supported "DBI" driver
-##' (e.g., SQLite, MySQL, Postgres, etc).  Because the DBI package
+##' (though practically this works only for SQLite and Postgres until
+##' some MySQL dialect translation is done).  To connect, you must
+##' provide the \emph{driver} object (e.g., \code{RSQLite::SQLite()},
+##' \code{RPostgreSQL::PostgreSQL()}, \code{RPostgres::Postgres()} as
+##' the first argument,
+##'
+##' Because the DBI package
 ##' specifies a uniform interface for the using DBI compliant
 ##' databases, you need only to provide a connection object.  storr
 ##' does not do anything to help create the connection object itself.
@@ -20,11 +26,15 @@
 ##' database.
 ##'
 ##' @title DBI storr driver
-##' @param con A DBI connection object (see example)
 ##'
 ##' @param tbl_data Name for the table that maps hashes to values
 ##'
 ##' @param tbl_keys Name for the table that maps keys to hashes
+##'
+##' @param con Either A DBI connection or a DBI driver (see example)
+##'
+##' @param args Arguments to pass, along with the driver, to
+##'   \code{DBI::dbConnect} if \code{con} is a driver.
 ##'
 ##' @param binary Optional logical indicating if the values should be
 ##'   stored in binary.  If possible, this is both (potentially
@@ -46,11 +56,7 @@
 ##' @export
 ##' @examples
 ##' if (requireNamespace("RSQLite", quietly = TRUE)) {
-##'   # Create an in-memory SQLite database and connection:
-##'   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-##'
-##'   # From this create a storr:
-##'   st <- storr_dbi(con, "tblData", "tblKeys")
+##'   st <- storr::storr_dbi("tblData", "tblKeys", RSQLite::SQLite(), ":memory")
 ##'
 ##'   # Set some data:
 ##'   st$set("foo", runif(10))
@@ -60,7 +66,7 @@
 ##'   st$get("foo")
 ##'
 ##'   # These are the data tables; treat these as read only
-##'   DBI::dbListTables(con)
+##'   DBI::dbListTables(st$driver$con)
 ##'
 ##'   # With recent RSQLite you'll get binary storage here:
 ##'   st$driver$binary
@@ -68,30 +74,41 @@
 ##'   # The entire storr part of the database can be removed using
 ##'   # "destroy"; this will also close the connection to the database
 ##'   st$destroy()
+##'
+##'   # If you have a connection you want to reuse (which will the the
+##'   # case if you are using an in-memory SQLite database for
+##'   # multiple things within an application) it may be useful to
+##'   # pass the connection object instead of the driver:
+##'   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory")
+##'   st <- storr::storr_dbi("tblData", "tblKeys", con)
+##'   st$set("foo", runif(10))
+##'
+##'   # You can then connect a different storr to the same underlying
+##'   # storage
+##'   st2 <- storr::storr_dbi("tblData", "tblKeys", con)
+##'   st2$get("foo")
 ##' }
-storr_dbi <- function(con, tbl_data, tbl_keys, binary = NULL,
+storr_dbi <- function(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
                       hash_algorithm = NULL,
                       default_namespace = "objects") {
-  storr(driver_dbi(con, tbl_data, tbl_keys, binary, hash_algorithm),
+  storr(driver_dbi(tbl_data, tbl_keys, con, args, binary, hash_algorithm),
         default_namespace)
 }
 
 ##' @rdname storr_dbi
 ##' @export
-driver_dbi <- function(con, tbl_data, tbl_keys, binary = NULL,
+driver_dbi <- function(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
                        hash_algorithm = NULL) {
-  R6_driver_DBI$new(con, tbl_data, tbl_keys, binary, hash_algorithm)
+  R6_driver_DBI$new(tbl_data, tbl_keys, con, args, binary, hash_algorithm)
 }
 
 R6_driver_DBI <- R6::R6Class(
   "driver_DBI",
 
-  ## It's not really clear here where we should store the
-  ## configuration; it could be an additional table (which seems
-  ## silly).  Alternatively we could stuff a value in with a special
-  ## data key.  I'm thinking that
   public = list(
     con = NULL,
+    con_connect = NULL,
+    con_type = NULL,
     tbl_data = NULL,
     tbl_keys = NULL,
     traits = NULL,
@@ -99,20 +116,28 @@ R6_driver_DBI <- R6::R6Class(
     hash_algorithm = NULL,
     sql = NULL,
 
-    initialize = function(con, tbl_data, tbl_keys, binary = NULL,
+    initialize = function(tbl_data, tbl_keys, con, args, binary = NULL,
                           hash_algorithm = NULL) {
       loadNamespace("DBI")
 
-      self$con <- con
+      if (inherits(con, driver_classes())) {
+        self$con_connect <- dbi_connection_factory(NULL, args)
+        self$con <- con
+      } else {
+        self$con_connect <- dbi_connection_factory(con, args)
+        self$con <- self$con_connect()
+      }
+      self$con_type <- class(self$con)
+
       self$tbl_data <- tbl_data
       self$tbl_keys <- tbl_keys
 
       ## There's some logic in here:
-      self$binary <- dbi_use_binary(con, tbl_data, binary)
+      self$binary <- dbi_use_binary(self$con, tbl_data, binary)
 
       ## TODO: Is it possible to support throw_missing?
       self$traits <- list(accept = if (self$binary) "raw" else "string")
-      self$sql <- driver_dbi_sql_compat(con, tbl_data, tbl_keys)
+      self$sql <- driver_dbi_sql_compat(self$con, tbl_data, tbl_keys)
 
       ## Initialise the tables.
       if (!DBI::dbExistsTable(self$con, tbl_data)) {
@@ -173,7 +198,7 @@ R6_driver_DBI <- R6::R6Class(
     type = function() {
       ## TODO: now that we have a dialect detection thing it might be
       ## good to list that here.
-      paste0("DBI/", paste(class(self$con), collapse = "/"))
+      paste0("DBI/", paste(self$con_type, collapse = "/"))
     },
 
     ## Total destruction of the driver; delete all data stored in both
@@ -364,6 +389,15 @@ R6_driver_DBI <- R6::R6Class(
                      self$tbl_keys, namespace)
       res <- DBI::dbGetQuery(self$con, sql)
       if (nrow(res) > 0L) res[[1L]] else character(0)
+    },
+
+    disconnect = function() {
+      DBI::dbDisconnect(self$con)
+      self$con <- NULL
+    },
+
+    reconnect = function() {
+      self$con <- self$con_connect()
     }
   ))
 
@@ -563,6 +597,11 @@ driver_dbi_dialect <- function(con) {
   }
 }
 
+driver_classes <- function() {
+  c("SQLiteConnection",
+    "PqConnection", "PostgreSQLConnection")
+}
+
 group_placeholders <- function(placeholder, n, times) {
   p <- matrix(sprintf(placeholder, seq_len(n * times)), n)
   paste(sprintf("(%s)", apply(p, 2, paste, collapse = ", ")), collapse = ", ")
@@ -570,4 +609,20 @@ group_placeholders <- function(placeholder, n, times) {
 
 pg_server_version <- function(con) {
   numeric_version(DBI::dbGetQuery(con, "show server_version")[[1L]])
+}
+
+dbi_connection_factory <- function(drv, args) {
+  if (is.null(drv)) {
+    if (!is.null(args)) {
+      stop("Cannot specify arguments when passing a connection object")
+    }
+    function() {
+      stop("Cannot reconnect to this database")
+    }
+  } else {
+    args <- c(list(drv), args)
+    function() {
+      do.call(DBI::dbConnect, args)
+    }
+  }
 }

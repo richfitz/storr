@@ -4,40 +4,61 @@ context("DBI")
 test_that("binary detection", {
   skip_if_not_installed("RSQLite")
 
-  ## TODO: for CRAN safety this needs to be skipped if SQLite is not
-  ## of sufficient version.
-  con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  db <- driver_dbi(con, "data", "keys")
-  ## Hmm, something terrible has happened here though it passes on
-  ## travis and my mac
-  expect_true(db$binary)
+  dr <- driver_dbi("data", "keys", RSQLite::SQLite(), ":memory:")
+  expect_true(dr$binary)
 
-  expect_true(dbi_use_binary(con, "data", NULL))
-  expect_true(dbi_use_binary(con, "data", TRUE))
-  expect_error(dbi_use_binary(con, "data", FALSE), "storage conflicts")
-
-  expect_true(driver_dbi(con, "data", "keys")$binary)
-  expect_true(driver_dbi(con, "data", "keys", TRUE)$binary)
-  expect_error(driver_dbi(con, "data", "keys", FALSE),
+  expect_true(dbi_use_binary(dr$con, "data", NULL))
+  expect_true(dbi_use_binary(dr$con, "data", TRUE))
+  expect_error(dbi_use_binary(dr$con, "data", FALSE),
                "storage conflicts")
 
-  db_s <- driver_dbi(con, "data_s", "key_s", FALSE)
-
-  expect_false(dbi_use_binary(con, "data_s", NULL))
-  expect_false(dbi_use_binary(con, "data_s", FALSE))
-  expect_error(dbi_use_binary(con, "data_s", TRUE), "storage conflicts")
-
-  expect_false(db_s$binary)
-  expect_false(driver_dbi(con, "data_s", "keys_s")$binary)
-  expect_false(driver_dbi(con, "data_s", "keys_s", FALSE)$binary)
-  expect_error(driver_dbi(con, "data_s", "keys_s", TRUE),
+  expect_true(driver_dbi("data", "keys", dr$con)$binary)
+  expect_true(driver_dbi("data", "keys", dr$con, binary = TRUE)$binary)
+  expect_error(driver_dbi("data", "keys", dr$con, binary = FALSE),
                "storage conflicts")
+
+  dr_s <- driver_dbi("data_s", "key_s", RSQLite::SQLite(), ":memory:", FALSE)
+  expect_false(dr_s$binary)
+
+  expect_false(dbi_use_binary(dr_s$con, "data_s", NULL))
+  expect_false(dbi_use_binary(dr_s$con, "data_s", FALSE))
+  expect_error(dbi_use_binary(dr_s$con, "data_s", TRUE), "storage conflicts")
+
+  expect_false(driver_dbi("data_s", "keys_s", dr_s$con)$binary)
+  expect_false(driver_dbi("data_s", "keys_s", dr_s$con, binary = FALSE)$binary)
+  expect_error(driver_dbi("data_s", "keys_s", dr_s$con, binary = TRUE),
+               "storage conflicts")
+})
+
+test_that("connect, reconnect", {
+  skip_if_not_installed("RSQLite")
+  path <- tempfile()
+  dr <- driver_dbi("data", "keys", RSQLite::SQLite(), path)
+  st <- storr(dr)
+
+  st$set("foo", "bar")
+  expect_equal(st$get("foo"), "bar")
+
+  dr$disconnect()
+  expect_null(dr$con)
+  expect_error(st$get("foo"))
+
+  dr$reconnect()
+  expect_equal(st$get("foo"), "bar")
+
+  dr2 <- driver_dbi("data", "keys", dr$con, NULL)
+  st2 <- storr(dr2)
+  expect_equal(st2$get("foo"), "bar")
+  expect_error(dr2$reconnect(), "Cannot reconnect to this database")
+
+  expect_error(driver_dbi("data", "keys", dr$con, ":memory:"),
+               "Cannot specify arguments when passing a connection object")
 })
 
 test_that("missing data column", {
   skip_if_not_installed("RSQLite")
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  st <- storr_dbi(con, "data", "keys")
+  st <- storr_dbi("data", "keys", con)
 
   tbl_data <- "data"
   data_type <- "string"
@@ -47,7 +68,7 @@ test_that("missing data column", {
   DBI::dbGetQuery(con, sprintf("DROP TABLE %s", tbl_data))
   DBI::dbGetQuery(con, paste(sql, collapse = " "))
 
-  expect_error(storr_dbi(con, "data", "keys"),
+  expect_error(storr_dbi("data", "keys", con),
                "Did not find 'value' column", fixed = TRUE)
 })
 
@@ -55,7 +76,7 @@ test_that("storr", {
   skip_if_not_installed("RSQLite")
 
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  st <- storr_dbi(con, "data", "keys")
+  st <- storr_dbi("data", "keys", con)
   expect_is(st, "storr")
   expect_equal(st$driver$type(), "DBI/SQLiteConnection")
 })
@@ -91,7 +112,7 @@ test_that("non-binary storage", {
   skip_if_not_installed("RSQLite")
 
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  st <- storr_dbi(con, "data", "keys", binary = FALSE)
+  st <- storr_dbi("data", "keys", con, binary = FALSE)
   x <- runif(10)
   h <- st$hash_object(x)
 

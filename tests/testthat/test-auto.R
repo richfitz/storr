@@ -14,7 +14,7 @@ test_that("dbi (sqlite)", {
       DBI::dbConnect(RSQLite::SQLite(), ":memory:")
     }
     storr::test_driver(function(dr = NULL, ...)
-      driver_dbi(dr$con %||% new_sqlite(), "data", "keys", ...))
+      driver_dbi("data", "keys", dr$con %||% new_sqlite(), ...))
   }
 })
 
@@ -27,7 +27,7 @@ pg_tester <- function(ctor) {
                  tbl_data = sprintf("storr_%s_data", prefix),
                  tbl_keys = sprintf("storr_%s_keys", prefix))
     }
-    driver_dbi(dr$con, dr$tbl_data, dr$tbl_keys, ...)
+    driver_dbi(dr$tbl_data, dr$tbl_keys, dr$con, ...)
   }
 }
 

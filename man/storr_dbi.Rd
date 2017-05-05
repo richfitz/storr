@@ -5,17 +5,21 @@
 \alias{storr_dbi}
 \title{DBI storr driver}
 \usage{
-storr_dbi(con, tbl_data, tbl_keys, binary = NULL, hash_algorithm = NULL,
-  default_namespace = "objects")
+storr_dbi(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
+  hash_algorithm = NULL, default_namespace = "objects")
 
-driver_dbi(con, tbl_data, tbl_keys, binary = NULL, hash_algorithm = NULL)
+driver_dbi(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
+  hash_algorithm = NULL)
 }
 \arguments{
-\item{con}{A DBI connection object (see example)}
-
 \item{tbl_data}{Name for the table that maps hashes to values}
 
 \item{tbl_keys}{Name for the table that maps keys to hashes}
+
+\item{con}{Either A DBI connection or a DBI driver (see example)}
+
+\item{args}{Arguments to pass, along with the driver, to
+\code{DBI::dbConnect} if \code{con} is a driver.}
 
 \item{binary}{Optional logical indicating if the values should be
 stored in binary.  If possible, this is both (potentially
@@ -37,12 +41,18 @@ values are "md5", "sha1", and others supported by
 \description{
 Object cache driver using the "DBI" package interface for storage.
 This means that storr can work for any supported "DBI" driver
-(e.g., SQLite, MySQL, Postgres, etc).  Because the DBI package
+(though practically this works only for SQLite and Postgres until
+some MySQL dialect translation is done).  To connect, you must
+provide the \emph{driver} object (e.g., \code{RSQLite::SQLite()},
+\code{RPostgreSQL::PostgreSQL()}, \code{RPostgres::Postgres()} as
+the first argument,
+}
+\details{
+Because the DBI package
 specifies a uniform interface for the using DBI compliant
 databases, you need only to provide a connection object.  storr
 does not do anything to help create the connection object itself.
-}
-\details{
+
 The DBI storr driver works by using two tables; one mapping keys
 to hashes, and one mapping hashes to values.  Two table names need
 to be provided here; they must be different and they should be
@@ -59,11 +69,7 @@ database.
 }
 \examples{
 if (requireNamespace("RSQLite", quietly = TRUE)) {
-  # Create an in-memory SQLite database and connection:
-  con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-
-  # From this create a storr:
-  st <- storr_dbi(con, "tblData", "tblKeys")
+  st <- storr::storr_dbi("tblData", "tblKeys", RSQLite::SQLite(), ":memory")
 
   # Set some data:
   st$set("foo", runif(10))
@@ -73,7 +79,7 @@ if (requireNamespace("RSQLite", quietly = TRUE)) {
   st$get("foo")
 
   # These are the data tables; treat these as read only
-  DBI::dbListTables(con)
+  DBI::dbListTables(st$driver$con)
 
   # With recent RSQLite you'll get binary storage here:
   st$driver$binary
@@ -81,6 +87,19 @@ if (requireNamespace("RSQLite", quietly = TRUE)) {
   # The entire storr part of the database can be removed using
   # "destroy"; this will also close the connection to the database
   st$destroy()
+
+  # If you have a connection you want to reuse (which will the the
+  # case if you are using an in-memory SQLite database for
+  # multiple things within an application) it may be useful to
+  # pass the connection object instead of the driver:
+  con <- DBI::dbConnect(RSQLite::SQLite(), ":memory")
+  st <- storr::storr_dbi("tblData", "tblKeys", con)
+  st$set("foo", runif(10))
+
+  # You can then connect a different storr to the same underlying
+  # storage
+  st2 <- storr::storr_dbi("tblData", "tblKeys", con)
+  st2$get("foo")
 }
 }
 
