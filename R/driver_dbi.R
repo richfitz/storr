@@ -56,7 +56,8 @@
 ##' @export
 ##' @examples
 ##' if (requireNamespace("RSQLite", quietly = TRUE)) {
-##'   st <- storr::storr_dbi("tblData", "tblKeys", RSQLite::SQLite(), ":memory")
+##'   st <- storr::storr_dbi("tblData", "tblKeys", RSQLite::SQLite(),
+##'                          ":memory:")
 ##'
 ##'   # Set some data:
 ##'   st$set("foo", runif(10))
@@ -79,7 +80,7 @@
 ##'   # case if you are using an in-memory SQLite database for
 ##'   # multiple things within an application) it may be useful to
 ##'   # pass the connection object instead of the driver:
-##'   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory")
+##'   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 ##'   st <- storr::storr_dbi("tblData", "tblKeys", con)
 ##'   st$set("foo", runif(10))
 ##'
