@@ -3,7 +3,7 @@
 [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![Build Status](https://travis-ci.org/richfitz/storr.png?branch=master)](https://travis-ci.org/richfitz/storr)
 [![codecov.io](https://codecov.io/github/richfitz/storr/coverage.svg?branch=master)](https://codecov.io/github/richfitz/storr?branch=master)
-[![](http://www.r-pkg.org/badges/version/storr)](http://cran.r-project.org/package=storr)
+[![](http://www.r-pkg.org/badges/version/storr)](https://cran.r-project.org/package=storr)
 
 Simple object cacher for R.  `storr` acts as a very simple key-value store (supporting `get`/`set`/`del` for arbitrary R objects as data).  The actual storage can be transient or persistent, local or distributed without changing the interface.  To allow for distributed access, data is returned by *content* rather than simply by key (with a key/content lookup step) so that if another process changes the data, `storr` will retrieve the current version.
 
@@ -13,10 +13,10 @@ Simple object cacher for R.  `storr` acts as a very simple key-value store (supp
 * Pluggable storage backends - currently
   - environment (memory)
   - rds (disk)
-  - [DBI](http://cran.r-project.org/package=DBI) though which you can use:
-    * [SQLite](https://sqlite.org) (via [RSQLite](http://cran.r-project.org/package=RSQLite))
-    * [Postgres](https://postgres.org) (via
-[RPostgresSQL](http://cran.r-project.org/package=RPostgres) or [RPostgres](https://github.com/rstats-db/RPostgres))
+  - [DBI](https://cran.r-project.org/package=DBI) though which you can use:
+    * [SQLite](https://sqlite.org) (via [RSQLite](https://cran.r-project.org/package=RSQLite))
+    * [Postgres](https://postgresql.org) (via
+[RPostgresSQL](https://cran.r-project.org/package=RPostgreSQL) or [RPostgres](https://github.com/rstats-db/RPostgres))
   - Redis (via [redux](https://github.com/richfitz/redux))
   - [rlite](https://github.com/seppo0010/rlite) (via [rrlite](https://github.com/ropensci/rrlite))
 
