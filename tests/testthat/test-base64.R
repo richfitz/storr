@@ -74,3 +74,10 @@ test_that("padding", {
   expect_identical(length(err3), 0L)
   expect_identical(length(err4), 0L)
 })
+
+test_that("vector encode", {
+  v <- c("x", "xx", "xxx")
+  cmp <- vcapply(v, encode64, pad = TRUE, USE.NAMES = FALSE)
+  expect_equal(encode64(v, pad = TRUE), cmp)
+  expect_equal(encode64(v, pad = FALSE), sub("=+$", "", cmp))
+}

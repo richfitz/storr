@@ -19,7 +19,7 @@
 ##' encode64("unlikely/to be @ valid filename")
 encode64 <- function(x, char62 = "-", char63 = "_", pad = TRUE) {
   if (length(x) != 1L) {
-    return(vcapply(x, encode64, char62, char63, USE.NAMES = FALSE))
+    return(vcapply(x, encode64, char62, char63, pad, USE.NAMES = FALSE))
   }
   tr <- c(LETTERS, letters, 0:9, char62, char63)
   x <- as.integer(charToRaw(x))

@@ -217,3 +217,14 @@ test_that("copy -lr and consistency", {
   expect_equal(st2$list_hashes(), h1)
   expect_equal(sort(st1$list_hashes()), sort(c(h1, h2)))
 })
+
+## Prevent a regression
+test_that("vectorised exists", {
+  st <- storr_rds(tempfile(), mangle_key = TRUE)
+  on.exit(st$destroy())
+
+  expect_equal(st$exists(c("x", "xx")), c(FALSE, FALSE))
+  st$set("x", 1)
+  st$set("xx", 2)
+  expect_equal(st$exists(c("x", "xx")), c(TRUE, TRUE))
+})
