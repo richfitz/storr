@@ -10,3 +10,4 @@
 ^autodoc\.R$
 ^man-roxygen$
 ^\.lintr$
+Rprof\.out
