@@ -235,7 +235,8 @@ test_that("change directories and access same storr", {
   expect_equal(x$list(), "a")
   subdir <- "subdir"
   dir.create(subdir)
-  setwd(subdir)
+  owd <- setwd(subdir)
+  on.exit(setwd(owd))
   expect_equal(x$list(), "a")
   setwd("..")
   unlink(subdir, recursive = TRUE)
