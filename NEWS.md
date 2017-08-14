@@ -1,3 +1,7 @@
+## storr 1.1.1 (2017-08-14)
+
+* Use the full path so `storr`s still work when the the working directory changes.
+
 ## storr 1.1.0 (2017-05-05)
 
 * Support for using relational databases via DBI (SQLite, Postgres) #23 - MySQL and Microsoft SQL Server support is not implemented yet

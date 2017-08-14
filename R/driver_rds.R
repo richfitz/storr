@@ -113,7 +113,7 @@ R6_driver_rds <- R6::R6Class(
       dir_create(file.path(path, "data"))
       dir_create(file.path(path, "keys"))
       dir_create(file.path(path, "config"))
-      self$path <- path
+      self$path <- normalizePath(path, mustWork = TRUE)
 
       ## This is a bit of complicated dancing around to mantain
       ## backward compatibility while allowing better defaults in

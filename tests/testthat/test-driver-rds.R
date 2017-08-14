@@ -228,3 +228,17 @@ test_that("vectorised exists", {
   st$set("xx", 2)
   expect_equal(st$exists(c("x", "xx")), c(TRUE, TRUE))
 })
+
+test_that("change directories and access same storr", {
+  x <- storr_rds("my_storr")
+  x$set("a", 1)
+  expect_equal(x$list(), "a")
+  subdir <- "subdir"
+  dir.create(subdir)
+  owd <- setwd(subdir)
+  on.exit(setwd(owd))
+  expect_equal(x$list(), "a")
+  setwd("..")
+  unlink(subdir, recursive = TRUE)
+  x$destroy()
+})
