@@ -1,6 +1,6 @@
-## storr 1.1.1 (2017-08-14)
+## storr 1.1.1 (2017-??-??)
 
-* Use the full path so `storr`s still work when the the working directory changes.
+* Use the full path so `storr`s still work when the the working directory changes (#50, #51, @wlandau)
 
 ## storr 1.1.0 (2017-05-05)
 
