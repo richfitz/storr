@@ -53,7 +53,7 @@ test_that("dbi (postgres via RPostgreSQL)", {
 
 ## These are not required on CRAN testing, but only for my own
 ## edification.
-if ("redux" %in% .packages(TRUE)) {
+if (can_use_redis()) {
   con <- redux::hiredis()
   storr::test_driver(function(dr = NULL, ...)
     driver_redis_api(dr$prefix %||% rand_str(), con, ...))
