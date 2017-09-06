@@ -1,6 +1,8 @@
-## storr 1.1.1 (2017-??-??)
+## storr 1.1.1 (2017-09-??)
 
 * Use the full path so `storr`s still work when the the working directory changes (#50, #51, @wlandau)
+* Avoid DBI disconnection warnings when running tests
+* Avoid running Redis tests in inappropriate settings (#52, #53, thanks @wlandau)
 
 ## storr 1.1.0 (2017-05-05)
 
