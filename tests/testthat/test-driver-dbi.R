@@ -5,6 +5,7 @@ test_that("binary detection", {
   skip_if_not_installed("RSQLite")
 
   dr <- driver_dbi("data", "keys", RSQLite::SQLite(), ":memory:")
+  on.exit(dr$destroy())
   expect_true(dr$binary)
 
   expect_true(dbi_use_binary(dr$con, "data", NULL))
@@ -18,6 +19,7 @@ test_that("binary detection", {
                "storage conflicts")
 
   dr_s <- driver_dbi("data_s", "key_s", RSQLite::SQLite(), ":memory:", FALSE)
+  on.exit(dr_s$destroy(), add = TRUE)
   expect_false(dr_s$binary)
 
   expect_false(dbi_use_binary(dr_s$con, "data_s", NULL))
@@ -34,6 +36,7 @@ test_that("connect, reconnect", {
   skip_if_not_installed("RSQLite")
   path <- tempfile()
   dr <- driver_dbi("data", "keys", RSQLite::SQLite(), path)
+  on.exit(dr$destroy())
   st <- storr(dr)
 
   st$set("foo", "bar")
@@ -58,6 +61,7 @@ test_that("connect, reconnect", {
 test_that("missing data column", {
   skip_if_not_installed("RSQLite")
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  on.exit(DBI::dbDisconnect(con))
   st <- storr_dbi("data", "keys", con)
 
   tbl_data <- "data"
@@ -76,6 +80,8 @@ test_that("storr", {
   skip_if_not_installed("RSQLite")
 
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  on.exit(DBI::dbDisconnect(con))
+
   st <- storr_dbi("data", "keys", con)
   expect_is(st, "storr")
   expect_equal(st$driver$type(), "DBI/SQLiteConnection")
@@ -89,6 +95,7 @@ test_that("binary support detection", {
 
   skip_if_not_installed("RSQLite")
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  on.exit(DBI::dbDisconnect(con))
 
   ## These are pretty easy:
   mockr::with_mock(dbi_supports_binary = function(...) TRUE, {
@@ -112,6 +119,8 @@ test_that("non-binary storage", {
   skip_if_not_installed("RSQLite")
 
   con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  on.exit(DBI::dbDisconnect(con))
+
   st <- storr_dbi("data", "keys", con, binary = FALSE)
   x <- runif(10)
   h <- st$hash_object(x)
