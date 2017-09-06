@@ -2,6 +2,8 @@ language: r
 cache: packages
 sudo: false
 
+env: ISOLATED_REDIS=true
+
 # NOTE: there is quite a bit of extra installation required here; this
 # is to ensure that all tests can be run on travis while keeping the
 # package able to go on CRAN; once redux is on CRAN it would move from
@@ -10,7 +12,6 @@ r_packages:
   - covr
   - RPostgreSQL
 r_github_packages:
-  - richfitz/redux@merge_with_api
   - richfitz/rrlite@remove_redis_api
   - rstats-db/RPostgres
 
