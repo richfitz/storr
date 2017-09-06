@@ -65,8 +65,8 @@ test_that("missing data column", {
   sql <- c(sprintf("CREATE TABLE %s", tbl_data),
            "(hash STRING PRIMARY KEY NOT NULL,",
            sprintf("data %s NOT NULL)", data_type))
-  DBI::dbGetQuery(con, sprintf("DROP TABLE %s", tbl_data))
-  DBI::dbGetQuery(con, paste(sql, collapse = " "))
+  DBI::dbExecute(con, sprintf("DROP TABLE %s", tbl_data))
+  DBI::dbExecute(con, paste(sql, collapse = " "))
 
   expect_error(storr_dbi("data", "keys", con),
                "Did not find 'value' column", fixed = TRUE)
