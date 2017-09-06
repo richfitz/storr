@@ -68,7 +68,13 @@ test_driver <- function(create) {
   files <- dir(system.file("spec", package = "storr"),
                pattern = "^test-", full.names = TRUE)
   env <- new.env(parent = environment(test_driver))
-  env$.driver_name <- create()$type()
+
+  ## Need to get the reported type here, but also ensure that the
+  ## driver cleans up correctly
+  dr <- create()
+  env$.driver_name <- dr$type()
+  dr$destroy()
+
   env$.driver_create <- create
   res <- lapply(files, testthat::test_file, env = env,
                 reporter = reporter, start_end_reporter = FALSE)
