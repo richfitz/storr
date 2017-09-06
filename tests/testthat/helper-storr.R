@@ -6,6 +6,14 @@ rand_str <- function(n = 16L, hex = TRUE) {
   }
 }
 
+can_use_redis <- function(){
+  redux_installed <- "redux" %in% .packages(TRUE)
+  if (!redux_installed){
+    return(FALSE)
+  }
+  redux::redis_available()
+}
+
 skip_long_test <- function() {
   if (identical(Sys.getenv("STORR_RUN_LONG_TESTS"), "true")) {
     return(invisible(TRUE))

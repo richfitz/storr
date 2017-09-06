@@ -1,4 +1,4 @@
-if ("redux" %in% .packages(TRUE)) {
+if (can_use_redis()) {
   context("redis")
   test_that("storr", {
     st <- storr_redis_api(rand_str(), redux::hiredis())
