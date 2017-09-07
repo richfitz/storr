@@ -52,21 +52,3 @@ test_that("dbi (postgres via RPostgreSQL)", {
     }
   }
 })
-
-test_that("redis_api", {
-  skip_on_cran()
-  if (!identical(Sys.getenv("ISOLATED_REDIS"), "true")) {
-    skip("No isolated Redis server to work with")
-  }
-  has_redis <- tryCatch(redux::redis_available(), error = function(e) FALSE)
-  if ("redux" %in% .packages(TRUE)) {
-    con <- redux::hiredis()
-    storr::test_driver(function(dr = NULL, ...)
-      driver_redis_api(dr$prefix %||% rand_str(), con, ...))
-  }
-  ## if ("rrlite" %in% .packages(TRUE)) {
-  ##   con <- rrlite::hirlite()
-  ##   storr::test_driver(function(dr = NULL, ...)
-  ##     driver_redis_api(dr$prefix %||% rand_str(), con, ...))
-  ## }
-})

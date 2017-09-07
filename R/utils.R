@@ -10,10 +10,6 @@ rm0 <- function(list, envir) {
   del
 }
 
-str_drop_start <- function(x, sub) {
-  substr(x, nchar(sub) + 1L, nchar(x))
-}
-
 vlapply <- function(X, FUN, ...) {
   vapply(X, FUN, logical(1), ...)
 }

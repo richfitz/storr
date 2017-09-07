@@ -31,4 +31,3 @@ This function is likely most useful for things like caching
 resources from websites, or computing long-running quantities on
 demand.
 }
-

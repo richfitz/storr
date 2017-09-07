@@ -36,10 +36,6 @@ test_that("assertions", {
   expect_error(assert_raw(1:5), "must be raw")
 })
 
-test_that("str_drop_start", {
-  expect_equal(str_drop_start("foo:bar", "xxx:"), "bar")
-})
-
 test_that("write_serialized_rds recovers on error", {
   skip_if_not_installed("mockr")
   value <- serialize(1:100, NULL)

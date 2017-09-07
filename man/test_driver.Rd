@@ -59,4 +59,3 @@ if (requireNamespace("testthat")) {
 }
 }
 }
-
