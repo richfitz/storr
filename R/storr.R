@@ -412,6 +412,18 @@ check_length <- function(key, namespace) {
   }
 }
 
+##' Utility function for driver authors
+##'
+##' This exists to join, predictably, keys and namespaces for
+##' operations like \code{mget}.  Given a vector or scalar for
+##' \code{key} and \code{namespace} we work out what the required
+##' length is and recycle \code{key} and \code{namespace} to the
+##' appropriate length.
+##' @title Recycle key and namespace
+##' @param key A vector of keys
+##' @param namespace A vector of namespace
+##' @return A list with elements \code{n}, \code{key} and \code{namespace}
+##' @export
 join_key_namespace <- function(key, namespace) {
   n <- check_length(key, namespace)
   list(n = n,
