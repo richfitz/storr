@@ -182,6 +182,13 @@ R6_storr <- R6::R6Class(
     ## NOTE: No del_hash exposed here; this is because otherwise
     ## things can get pretty messy when actual data is being deleted.
 
+    duplicate = function(key_src, key_dest, namespace = self$default_namespace,
+                         namespace_src = namespace,
+                         namespace_dest = namespace) {
+      hash_src <- self$mget_hash(key_src, namespace_src)
+      storr_mset_hash(self, key_dest, namespace_dest, hash_src)
+    },
+
     clear = function(namespace = self$default_namespace) {
       if (is.null(namespace)) {
         invisible(sum(viapply(self$list_namespaces(), self$clear)))

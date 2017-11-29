@@ -68,3 +68,13 @@ test_that("mset_by_value", {
   expect_equal(st$get(h[[1]]), x)
   expect_equal(st$get(h[[2]]), y)
 })
+
+test_that("duplicate", {
+  st <- storr_environment()
+
+  h1 <- st$set("a", runif(10))
+  expect_null(st$duplicate("a", "b"))
+
+  expect_identical(st$get("b"), st$get("a"))
+  expect_identical(st$get_hash("b"), st$get_hash("a"))
+})
