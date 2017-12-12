@@ -121,6 +121,8 @@ testthat::test_that("traits: throw_missing", {
     str <- paste(sample(letters), collapse = "")
     testthat::expect_error(dr$get_hash(str, "objects"))
     testthat::expect_error(dr$get_object(st$hash_object(str)))
+  } else {
+    dummy_test()
   }
 })
 
@@ -206,7 +208,9 @@ testthat::test_that("mget_object", {
   dr <- .driver_create()
   on.exit(dr$destroy())
 
-  if (!is.null(dr$mget_object)) {
+  if (is.null(dr$mget_object)) {
+    dummy_test()
+  } else {
     st <- storr(dr)
     h1 <- st$set("a", 1)
     h2 <- st$set("b", 2)
@@ -222,7 +226,9 @@ testthat::test_that("mget_hash", {
   dr <- .driver_create()
   on.exit(dr$destroy())
 
-  if (!is.null(dr$mget_hash)) {
+  if (is.null(dr$mget_hash)) {
+    dummy_test()
+  } else {
     st <- storr(dr)
     h1 <- st$set("a", 1)
     h2 <- st$set("b", 2)
@@ -256,7 +262,9 @@ testthat::test_that("mset_object", {
   dr <- .driver_create()
   on.exit(dr$destroy())
 
-  if (!is.null(dr$mset_object)) {
+  if (is.null(dr$mset_object)) {
+    dummy_test()
+  } else {
     st <- storr(dr)
 
     ## Lots of faff here:
@@ -290,7 +298,9 @@ testthat::test_that("mset_hash", {
   dr <- .driver_create()
   on.exit(dr$destroy())
 
-  if (!is.null(dr$mset_hash)) {
+  if (is.null(dr$mset_hash)) {
+    dummy_test()
+  } else {
     ns <- "objects"
     testthat::expect_silent(dr$mset_hash(character(0), ns, character(0)))
     testthat::expect_silent(dr$mset_hash("a", character(0), character(0)))

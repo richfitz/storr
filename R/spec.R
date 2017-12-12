@@ -94,3 +94,7 @@ test_driver <- function(create) {
     invisible(res)
   }
 }
+
+dummy_test <- function() {
+  testthat::expect_true(TRUE)
+}
