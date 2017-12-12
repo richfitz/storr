@@ -150,3 +150,33 @@ test_that("old postgres", {
     pg_server_version = function(con) numeric_version("0.9.5"),
     expect_is(driver_dbi_sql_compat(con, "a", "b"), "list"))
 })
+
+test_that("operations with quoted keys: scalar", {
+  skip_if_not_installed("RSQLite")
+  dkey <- '"x"'
+  skey <- "'x'"
+  dvalue <- '"double"'
+  svalue <- "'single'"
+
+  con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  on.exit(DBI::dbDisconnect(con))
+
+  st <- storr_dbi("data", "keys", con, binary = FALSE)
+
+  ## Set
+  st$set(dkey, dvalue)
+  st$set(skey, svalue)
+  expect_equal(sort(st$list()), sort(c(dkey, skey)))
+
+  ## Get
+  expect_equal(st$get(dkey), dvalue)
+  expect_equal(st$get(skey), svalue)
+
+  ## Exists
+  expect_true(st$exists(dkey))
+  expect_true(st$exists(skey))
+
+  ## Del
+  expect_true(st$del(dkey))
+  expect_true(st$del(skey))
+})

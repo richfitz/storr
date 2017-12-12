@@ -306,10 +306,8 @@ R6_driver_DBI <- R6::R6Class(
     exists_hash = function(key, namespace) {
       nk <- join_key_namespace(key, namespace)
       if (nk$n == 1L) {
-        sql <- sprintf(
-          "SELECT 1 FROM \"%s\" WHERE namespace = '%s' AND key = '%s'",
-          self$tbl_keys, namespace, key)
-        nrow(DBI::dbGetQuery(self$con, sql)) > 0L
+        nrow(DBI::dbGetQuery(self$con, self$sql$exists_hash,
+                             list(namespace, key))) > 0L
       } else if (nk$n == 0L) {
         logical(0)
       } else {
@@ -482,6 +480,8 @@ driver_dbi_sql_compat <- function(con, tbl_data, tbl_keys) {
                      "WHERE hash = ?"),
       set_object = j("INSERT OR REPLACE INTO", dquote(tbl_data),
                      "(hash, value) VALUES (?, ?)"),
+      exists_hash = j("SELECT 1 FROM", dquote(tbl_keys),
+                      "WHERE namespace = ? AND KEY = ?"),
       ## Vector:
       mget_hash = j("SELECT * FROM", dquote(tbl_keys),
                     "WHERE %s"),
@@ -515,6 +515,8 @@ driver_dbi_sql_compat <- function(con, tbl_data, tbl_keys) {
       set_object = j("INSERT INTO", dquote(tbl_data),
                      "(hash, value) VALUES ($1, $2)",
                      "ON CONFLICT (hash) DO NOTHING"),
+      get_hash = j("SELECT 1 FROM", dquote(tbl_keys),
+                   "WHERE namespace = $1 AND KEY = $2"),
       ## Vector:
       mget_hash = j("SELECT * FROM", dquote(tbl_keys),
                     "WHERE %s"),
