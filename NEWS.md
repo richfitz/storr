@@ -1,4 +1,8 @@
-## storr 1.1.2 (2017-09-??)
+## storr 1.1.3 (201?-??-??)
+
+* Only use version 2 serialisation, avoiding breakage when version 3 is released in 3.5.0 (#62, reported by Tomas Kalibera)
+
+## storr 1.1.2 (2017-09-08)
 
 * Use the full path so `storr`s still work when the the working directory changes (#50, #51, @wlandau)
 * Avoid DBI disconnection warnings when running tests
