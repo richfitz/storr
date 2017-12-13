@@ -13,6 +13,10 @@ test_that("serialize, dropping R version", {
 
 test_that("reverse engineering", {
   skip_on_cran()
+  ## NOTE: These tests are skipped on CRAN because they depend on
+  ## wording of error messages.  But I still want to see how this
+  ## varies across R versions so I run this on travis.
+
   ## With xdr = TRUE (the default)
   ##
   ##                           ma mi pa    ma mi pa
@@ -37,13 +41,13 @@ test_that("reverse engineering", {
   s1 <- make_serialize_object(FALSE, FALSE,  TRUE)(NULL) # xdr = TRUE
   s2 <- make_serialize_object(FALSE, FALSE, FALSE)(NULL) # xdr = FALSE
 
-  s1[6] <- as.raw(3L)
-  expect_error(unserialize(s1), "cannot read workspace version 3")
+  s1[6] <- as.raw(9L)
+  expect_error(unserialize(s1), "cannot read workspace version 9")
   s1[7:10] <- as.raw(c(0L, 6L, 5L, 4L)) # version 6.5.4
   expect_error(unserialize(s1), "6.5.4", fixed = TRUE)
 
-  s2[3] <- as.raw(3L)
-  expect_error(unserialize(s2), "cannot read workspace version 3")
+  s2[3] <- as.raw(9L)
+  expect_error(unserialize(s2), "cannot read workspace version 9")
   s2[10:7] <- as.raw(c(0L, 6L, 5L, 4L)) # version 6.5.4
   expect_error(unserialize(s2), "6.5.4", fixed = TRUE)
 })
