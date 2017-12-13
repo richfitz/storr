@@ -178,6 +178,27 @@ the action (get, set, del, list, import, export) will affect the
     }
   }
 }
+\item{\code{fill}}{
+  Set one or more keys (potentially across namespaces) to the same value, without duplication effort serialisation, or duplicating data.
+
+  \emph{Usage:}
+  \code{fill(key, value, namespace = self$default_namespace, use_cache = TRUE)}
+
+  \emph{Arguments:}
+  \itemize{
+    \item{\code{key}:   A vector of keys to get; zero to many valid keys
+    }
+
+    \item{\code{value}:   A single value to set all keys to
+    }
+
+    \item{\code{namespace}:   A vector of namespaces (either a single namespace or a vector)
+    }
+
+    \item{\code{use_cache}:   Use the internal cache to avoid reading or writing to the underlying storage if the data has already been seen (i.e., we have seen the hash of the object before).
+    }
+  }
+}
 \item{\code{clear}}{
   Clear a storr.  This function might be slow as it will iterate over each key.  Future versions of storr might allow drivers to implement a bulk clear method that will allow faster clearing.
 
@@ -228,7 +249,7 @@ the action (get, set, del, list, import, export) will affect the
 
   \emph{Arguments:}
   \itemize{
-    \item{\code{key}:   A vector of keys to get; zero to many valid keys
+    \item{\code{key}:   A vector of keys to set; zero to many valid keys
     }
 
     \item{\code{value}:   A vector of values

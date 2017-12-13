@@ -78,3 +78,12 @@ test_that("duplicate", {
   expect_identical(st$get("b"), st$get("a"))
   expect_identical(st$get_hash("b"), st$get_hash("a"))
 })
+
+test_that("fill", {
+  st <- storr_environment()
+  v <- runif(10)
+  h <- st$fill(letters, v)
+  expect_equal(h, st$hash_object(v))
+  expect_equal(st$mget(letters),
+               rep(list(v), length(letters)))
+})

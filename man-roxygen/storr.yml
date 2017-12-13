@@ -95,6 +95,17 @@ duplicate:
       The destination namespace - use this where keys are duplicated across
       namespaces.
 
+fill:
+  short: >-
+    Set one or more keys (potentially across namespaces) to the same
+    value, without duplication effort serialisation, or duplicating
+    data.
+  params:
+    key: A vector of keys to get; zero to many valid keys
+    namespace: A vector of namespaces (either a single namespace or a vector)
+    value: A single value to set all keys to
+    use_cache: *use_cache
+
 clear:
   short: >-
     Clear a storr.  This function might be slow as it will iterate
@@ -121,7 +132,7 @@ exists_object:
 mset:
   short: Set multiple elements at once
   params:
-    key: A vector of keys to get; zero to many valid keys
+    key: A vector of keys to set; zero to many valid keys
     value: A vector of values
     namespace: A vector of namespaces (either a single namespace or a vector)
     use_cache: *use_cache

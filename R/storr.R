@@ -189,6 +189,14 @@ R6_storr <- R6::R6Class(
       storr_mset_hash(self, key_dest, namespace_dest, hash_src)
     },
 
+    fill = function(key, value, namespace = self$default_namespace,
+                    use_cache = TRUE) {
+      n <- check_length(key, namespace)
+      hash <- self$set_value(value, use_cache)
+      storr_mset_hash(self, key, namespace, rep(hash, n))
+      invisible(hash)
+    },
+
     clear = function(namespace = self$default_namespace) {
       if (is.null(namespace)) {
         invisible(sum(viapply(self$list_namespaces(), self$clear)))
