@@ -22,6 +22,13 @@
 ##' slower than) string serialisation, in contrast with my experience
 ##' with other backends.
 ##'
+##' storr uses DBI's "prepared query" approach to safely interpolate
+##' keys, namespaces and values into the database - this should allow
+##' odd characters without throwing SQL syntax errors.  Table names
+##' can't be interpolated in the same way - these storr simply quotes,
+##' but validates beforehand to ensure that \code{tbl_data} and
+##' \code{tbl_keys} do not contain quotes.
+##'
 ##' Be aware that \code{$destroy()} will close the connection to the
 ##' database.
 ##'
@@ -113,6 +120,8 @@ driver_dbi <- function(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
 ##   constructing a vector of placeholders (e.g., "?, ?, ?") and
 ##   values to replace.  Even though the final interpolation is done
 ##   with "%s" this is to inject only placeholders and not user input.
+##
+## - otherwise no direct string interpolation of unsanitised user input.
 R6_driver_DBI <- R6::R6Class(
   "driver_DBI",
 
@@ -432,7 +441,7 @@ dbi_use_binary <- function(con, tbl_data, binary) {
   }
 
   if (DBI::dbExistsTable(con, tbl_data)) {
-    sql <- sprintf("SELECT * from %s LIMIT 0", tbl_data)
+    sql <- sprintf("SELECT * from %s LIMIT 0", dquote(tbl_data))
     rs <- DBI::dbSendQuery(con, sql)
     on.exit(DBI::dbClearResult(rs))
     res <- DBI::dbColumnInfo(rs)
@@ -482,6 +491,9 @@ driver_dbi_sql_compat <- function(dialect, tbl_data, tbl_keys) {
   tbl_keys <- dquote(tbl_keys)
   tbl_data <- dquote(tbl_data)
 
+  ## NOTE: Any "%s" strings here in the SQL strings will be replaced
+  ## by storr-produced strings of placeholders ('?' or '$1' etc).  The
+  ## actual values are always passed in as parameters to the query.
   if (dialect == "sqlite") {
     ret <- list(
       ## Scalar:
