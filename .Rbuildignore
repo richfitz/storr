@@ -11,3 +11,4 @@
 ^man-roxygen$
 ^\.lintr$
 Rprof\.out
+^docs$

@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 notes.md
+docs/
 inst/doc
 inst/staticdocs
 inst/web
