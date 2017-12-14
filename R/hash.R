@@ -20,11 +20,11 @@ make_serialize_object <- function(drop_r_version, string, xdr = TRUE) {
     if (r_version() < numeric_version("3.2.0")) {
       stop("Please upgrade R to at least 3.2.0")
     }
-    function(object) rawToChar(serialize(object, NULL, NA, xdr))
+    function(object) rawToChar(serialize_to_raw(object, NA, xdr))
   } else if (drop_r_version) {
     function(object) serialize_object_drop_r_version(object, xdr)
   } else {
-    function(object) serialize(object, NULL, FALSE, xdr)
+    function(object) serialize_to_raw(object, FALSE, xdr)
   }
 }
 
@@ -43,9 +43,13 @@ unserialize_safe <- function(x) {
 STORR_R_VERSION_BE <- as.raw(c(0L, 3L, 2L, 0L))
 STORR_R_VERSION_LE <- as.raw(c(0L, 2L, 3L, 0L))
 serialize_object_drop_r_version <- function(object, xdr = TRUE) {
-  dat <- serialize(object, NULL, xdr = xdr, version = 2L)
+  dat <- serialize_to_raw(object, FALSE, xdr)
   dat[7:10] <- if (xdr) STORR_R_VERSION_BE else STORR_R_VERSION_LE
   dat
+}
+
+serialize_to_raw <- function(x, ascii, xdr) {
+  serialize(x, NULL, ascii = ascii, xdr = xdr, version = 2L)
 }
 
 ## For current R (3.3.2 or thereabouts) writeBin does not work with
