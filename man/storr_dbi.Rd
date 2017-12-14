@@ -64,6 +64,13 @@ binary serialistion is not any faster (and might be slightly
 slower than) string serialisation, in contrast with my experience
 with other backends.
 
+storr uses DBI's "prepared query" approach to safely interpolate
+keys, namespaces and values into the database - this should allow
+odd characters without throwing SQL syntax errors.  Table names
+can't be interpolated in the same way - these storr simply quotes,
+but validates beforehand to ensure that \code{tbl_data} and
+\code{tbl_keys} do not contain quotes.
+
 Be aware that \code{$destroy()} will close the connection to the
 database.
 }

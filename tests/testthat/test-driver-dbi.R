@@ -144,9 +144,76 @@ test_that("old postgres", {
   con <- structure(list(), class = "PqConnection")
   mockr::with_mock(
     pg_server_version = function(con) numeric_version("0.9.4"),
-    expect_error(driver_dbi_sql_compat(con, "a", "b"),
+    expect_error(driver_dbi_dialect(con),
                  "Version 0.9.4 of postgresql server is not supported"))
   mockr::with_mock(
     pg_server_version = function(con) numeric_version("0.9.5"),
-    expect_is(driver_dbi_sql_compat(con, "a", "b"), "list"))
+    expect_equal(driver_dbi_dialect(con), "postgresql"))
+})
+
+test_that("operations with quoted keys: scalar", {
+  skip_if_not_installed("RSQLite")
+  dkey <- '"x"'
+  skey <- "'x'"
+  dvalue <- '"double"'
+  svalue <- "'single'"
+
+  con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  on.exit(DBI::dbDisconnect(con))
+
+  st <- storr_dbi("data", "keys", con, binary = FALSE)
+
+  ## Set
+  st$set(dkey, dvalue)
+  st$set(skey, svalue)
+  expect_equal(sort(st$list()), sort(c(dkey, skey)))
+
+  ## Get
+  expect_equal(st$get(dkey), dvalue)
+  expect_equal(st$get(skey), svalue)
+
+  ## Exists
+  expect_true(st$exists(dkey))
+  expect_true(st$exists(skey))
+
+  ## Del
+  expect_true(st$del(dkey))
+  expect_true(st$del(skey))
+})
+
+test_that("operations with quoted keys: vector", {
+  skip_if_not_installed("RSQLite")
+  dkey <- '"x"'
+  skey <- "'x'"
+  dvalue <- '"double"'
+  svalue <- "'single'"
+
+  con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  on.exit(DBI::dbDisconnect(con))
+
+  st <- storr_dbi("data", "keys", con, binary = FALSE)
+
+  st$mset(dkey, dvalue)
+  expect_equal(st$mget(dkey), list(dvalue))
+
+  st$mset(skey, svalue)
+  expect_equal(st$mget(skey), list(svalue))
+})
+
+test_that("dialect generation", {
+  a <- driver_dbi_sql_compat("sqlite", "foo", "bar")
+  b <- driver_dbi_sql_compat("postgresql", "foo", "bar")
+  expect_true(setequal(names(a), names(b)))
+})
+
+test_that("invalid dialect generation", {
+  expect_error(driver_dbi_sql_compat("magic", "foo", "bar"),
+               "Unsupported SQL dialect magic")
+})
+
+test_that("table names may not contain quotes", {
+  mytable <- 'foo "; bar'
+  expect_error(assert_valid_table_name(mytable),
+               "The name of table 'mytable' may not contain quotes")
+  expect_silent(assert_valid_table_name("noquotes"))
 })
