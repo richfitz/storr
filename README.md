@@ -41,5 +41,5 @@ remotes::install_github("richfitz/storr@develop", upgrade = FALSE)
 
 `storr` comes with two vignettes:
 
-* [storr](http://richfitz.github.io/storr/vignettes/storr.html) `vignette("storr")` outlines basic use and core implementation details.
-* [external](http://richfitz.github.io/storr/vignettes/external.html) `vignette("external")` shows how to use storr to cache external resources such as files, web resources, etc, using the `storr_external` object.
+* [storr](https://richfitz.github.io/storr/articles/storr.html) `vignette("storr")` outlines basic use and core implementation details.
+* [external](https://richfitz.github.io/storr/articles/external.html) `vignette("external")` shows how to use storr to cache external resources such as files, web resources, etc, using the `storr_external` object.
