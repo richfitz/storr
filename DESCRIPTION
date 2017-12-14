@@ -9,8 +9,8 @@ Depends:
     R (>= 3.1.0)
 License: MIT + file LICENSE
 LazyData: true
-Author: Rich FitzJohn
-Maintainer: Rich FitzJohn <rich.fitzjohn@gmail.com>
+Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
+    email = "rich.fitzjohn@gmail.com"))
 URL: https://github.com/richfitz/storr
 BugReports: https://github.com/richfitz/storr/issues
 Imports:
