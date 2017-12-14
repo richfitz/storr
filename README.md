@@ -17,8 +17,9 @@ Simple object cacher for R.  `storr` acts as a very simple key-value store (supp
     * [SQLite](https://sqlite.org) (via [RSQLite](https://cran.r-project.org/package=RSQLite))
     * [Postgres](https://postgresql.org) (via
 [RPostgresSQL](https://cran.r-project.org/package=RPostgreSQL) or [RPostgres](https://github.com/rstats-db/RPostgres))
-  - Redis (via [redux](https://github.com/richfitz/redux))
-  - [rlite](https://github.com/seppo0010/rlite) (via [rrlite](https://github.com/ropensci/rrlite))
+  - Redis (provided by [redux](https://github.com/richfitz/redux))
+  - [rlite](https://github.com/seppo0010/rlite) (via [rrlite](https://github.com/ropensci/rrlite), interface function in [redux](https://github.com/richfitz/redux))
+  - An on disk memory-mapped file interface is implemented in [thor](https://github.com/richfitz/thor)
 
 `storr` always goes back to the common storage (database, filesystem, whatever) for the current object to hash mapping, ensuring consistency when using multiple processes.  However, when retrieving or writing the data given a hash we can often avoid accessing the underlying storage.  This means that repeated lookups happen quickly while still being able to reflect changes elsewhere; time savings can be substantial where large objects are being stored.
 

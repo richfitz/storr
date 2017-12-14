@@ -181,6 +181,10 @@ st2$list()
 ##   [`rrlite`](https://github.com/ropensci/rrlite).  This is quite
 ##   quick, but is stalled for general release because `rrlite` does not
 ##   support windows.
+## * The in-development package
+##   [thor](https://github.com/richfitz/thor) provides an alternative
+##   on-disk storr that can handle multiple processes on a single
+##   machine.
 
 ## ## Implementation details
 
