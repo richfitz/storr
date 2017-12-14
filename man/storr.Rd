@@ -153,6 +153,52 @@ the action (get, set, del, list, import, export) will affect the
   \emph{Value}:
   A logical vector the same length as the recycled length of key/namespace, with each element being \code{TRUE} if an object was deleted, \code{FALSE} otherwise.
 }
+\item{\code{duplicate}}{
+  Duplicate the value of a set of keys into a second set of keys. Because the value stored against a key is just the hash of its content, this operation is very efficient - it does not make a copy of the data, just the pointer to the data (for more details see the storr vignette which explains the storage model in more detail).  Multiple keys (and/or namespaces) can be provided, with keys and nmespaces recycled as needed.  However, the number of source and destination keys must be the same.  The order of operation is not defined, so if the sets of keys are overlapping it is undefined behaviour.
+
+  \emph{Usage:}
+  \code{duplicate(key_src, key_dest, namespace = self$default_namespace,
+      namespace_src = namespace, namespace_dest = namespace)}
+
+  \emph{Arguments:}
+  \itemize{
+    \item{\code{key_src}:   The source key (or vector of keys)
+    }
+
+    \item{\code{key_dest}:   The destination key
+    }
+
+    \item{\code{namespace}:   The namespace to copy keys within (used only of \code{namespace_src} and \code{namespace_dest} are not provided
+    }
+
+    \item{\code{namespace_src}:   The source namespace - use this where keys are duplicated across namespaces.
+    }
+
+    \item{\code{namespace_dest}:   The destination namespace - use this where keys are duplicated across namespaces.
+    }
+  }
+}
+\item{\code{fill}}{
+  Set one or more keys (potentially across namespaces) to the same value, without duplication effort serialisation, or duplicating data.
+
+  \emph{Usage:}
+  \code{fill(key, value, namespace = self$default_namespace, use_cache = TRUE)}
+
+  \emph{Arguments:}
+  \itemize{
+    \item{\code{key}:   A vector of keys to get; zero to many valid keys
+    }
+
+    \item{\code{value}:   A single value to set all keys to
+    }
+
+    \item{\code{namespace}:   A vector of namespaces (either a single namespace or a vector)
+    }
+
+    \item{\code{use_cache}:   Use the internal cache to avoid reading or writing to the underlying storage if the data has already been seen (i.e., we have seen the hash of the object before).
+    }
+  }
+}
 \item{\code{clear}}{
   Clear a storr.  This function might be slow as it will iterate over each key.  Future versions of storr might allow drivers to implement a bulk clear method that will allow faster clearing.
 
@@ -203,7 +249,7 @@ the action (get, set, del, list, import, export) will affect the
 
   \emph{Arguments:}
   \itemize{
-    \item{\code{key}:   A vector of keys to get; zero to many valid keys
+    \item{\code{key}:   A vector of keys to set; zero to many valid keys
     }
 
     \item{\code{value}:   A vector of values

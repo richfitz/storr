@@ -2,6 +2,7 @@
 
 * Only use version 2 serialisation, avoiding breakage when version 3 is released in 3.5.0 (#62, reported by Tomas Kalibera)
 * Quote sql more safely (#60, reported by @wlandau)
+* Support for duplicating (`$duplicate`) and filling (`$fill`) keys with identical values, without duplicating or reserialising data (#56, requested by @wlandau)
 
 ## storr 1.1.2 (2017-09-08)
 
