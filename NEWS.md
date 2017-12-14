@@ -1,4 +1,8 @@
-## storr 1.1.2 (2017-09-??)
+## storr 1.1.3 (201?-??-??)
+
+* Support for duplicating (`$duplicate`) and filling (`$fill`) keys with identical values, without duplicating or reserialising data (#56, requested by @wlandau)
+
+## storr 1.1.2 (2017-09-08)
 
 * Use the full path so `storr`s still work when the the working directory changes (#50, #51, @wlandau)
 * Avoid DBI disconnection warnings when running tests
