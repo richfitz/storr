@@ -5,8 +5,7 @@ sudo: false
 r_packages:
   - covr
   - RPostgreSQL
-r_github_packages:
-  - rstats-db/RPostgres
+  - RPostgres
 
 addons:
   postgresql: "9.4"
