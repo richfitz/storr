@@ -1,4 +1,4 @@
-## storr 1.1.3 (201?-??-??)
+## storr 1.1.3 (2017-12-15)
 
 * Only use version 2 serialisation, avoiding breakage when version 3 is released in 3.5.0 (#62, reported by Tomas Kalibera)
 * Quote sql more safely (#60, reported by @wlandau)
