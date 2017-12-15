@@ -12,3 +12,4 @@
 ^\.lintr$
 Rprof\.out
 ^docs$
+^revdep$

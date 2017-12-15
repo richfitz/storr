@@ -9,3 +9,4 @@ inst/web
 vignettes/.build.timestamp
 storr_*.tar.gz
 storr.Rcheck
+revdep
