@@ -87,3 +87,74 @@ test_that("fill", {
   expect_equal(st$mget(letters),
                rep(list(v), length(letters)))
 })
+
+test_that("index - empty", {
+  st <- storr_environment()
+  expect_identical(st$index_export(),
+                   data.frame(namespace = character(0),
+                              key = character(0),
+                              hash = character(0),
+                              stringsAsFactors = FALSE))
+  expect_silent(st$index_import(st$index_export()))
+  expect_equal(st$list_hashes(), character(0))
+})
+
+test_that("index one namespace", {
+  st <- storr_environment()
+  st$mset(letters, LETTERS)
+
+  d <- st$index_export()
+  cmp <- data.frame(
+    namespace = "objects",
+    key = sort(letters),
+    hash = vcapply(toupper(sort(letters)), st$hash_object, USE.NAMES = FALSE),
+    stringsAsFactors = FALSE)
+  expect_equal(d, cmp)
+
+  st$del(letters)
+  expect_equal(nrow(st$index_export()), 0L)
+
+  st$index_import(d)
+  expect_identical(st$index_export(), d)
+})
+
+test_that("index multiple namespaces", {
+  k1 <- letters[1:10]
+  k2 <- letters[7:13]
+  v1 <- runif(length(k1))
+  v2 <- runif(length(k2))
+
+  st <- storr_environment()
+  st$mset(k1, v1, "n1")
+  st$mset(k2, v2, "n2")
+
+  d <- st$index_export()
+  expect_equal(d$namespace, rep(c("n1", "n2"), c(length(k1), length(k2))))
+  expect_equal(d$key, c(k1, k2))
+  expect_equal(d$hash,
+               vcapply(c(v1, v2), st$hash_object, USE.NAMES = FALSE))
+
+  d1 <- st$index_export("n1")
+  d2 <- st$index_export("n2")
+  expect_equal(d1, d[seq_along(k1), ])
+  expect_equal(d2, d[d$namespace == "n2", ],
+               check.attributes = FALSE)
+})
+
+test_that("invalid import", {
+  st <- storr_environment()
+  d <- data.frame(namespace = "objects",
+                  key = "foo",
+                  hash = st$hash_object(1),
+                  stringsAsFactors = FALSE)
+
+  expect_error(
+    st$index_import(mtcars),
+    "Missing required columns for index: 'namespace', 'key', 'hash'",
+    fixed = TRUE)
+  expect_error(st$index_import(d),
+               "Missing 1 / 1 hashes - can't import")
+  d$key <- factor(d$key)
+  expect_error(st$index_import(d),
+               "Column not character: 'key'")
+})

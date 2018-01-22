@@ -367,6 +367,13 @@ R6_storr <- R6::R6Class(
       self$import(storr_rds(path, mangle_key = TRUE), names, namespace)
     },
 
+    index_export = function(namespace = NULL) {
+      storr_index_export(self, namespace)
+    },
+    index_import = function(index) {
+      storr_index_import(self, index)
+    },
+
     ## Utility function that will come in useful in a few places:
     hash_object = function(object) {
       self$hash_raw(self$serialize_object(object))
@@ -444,4 +451,43 @@ join_key_namespace <- function(key, namespace) {
   list(n = n,
        key = rep_len(key, n),
        namespace = rep_len(namespace, n))
+}
+
+storr_index_export <- function(st, namespace = NULL) {
+  namespace <- namespace %||% st$list_namespaces()
+  keys <- lapply(namespace, st$list)
+  len <- lengths(keys)
+  if (any(len > 0L)) {
+    key <- unlist(keys, use.names = FALSE)
+  } else {
+    key <- character(0)
+  }
+
+  ret <- data.frame(namespace = rep(namespace, len),
+                    key = key,
+                    stringsAsFactors = FALSE)
+  ret$hash <- st$mget_hash(ret$key, ret$namespace)
+  ret
+}
+
+storr_index_import <- function(st, index) {
+  cols <- c("namespace", "key", "hash")
+  msg <- setdiff(cols, names(index))
+  if (length(msg) > 0L) {
+    stop("Missing required columns for index: ",
+         paste(squote(msg), collapse = ", "),
+         call. = FALSE)
+  }
+  ok <- vlapply(index[cols], is.character)
+  if (!all(ok)) {
+    stop("Column not character: ", paste(squote(cols[!ok]), collapse = ", "),
+         call. = FALSE)
+  }
+  msg <- setdiff(index$hash, st$list_hashes())
+  if (length(msg) > 0L) {
+    stop(sprintf("Missing %d / %d hashes - can't import",
+                 length(msg), nrow(index)),
+         call. = FALSE)
+  }
+  storr_mset_hash(st, index$key, index$namespace, index$hash)
 }
