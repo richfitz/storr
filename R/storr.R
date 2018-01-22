@@ -376,9 +376,9 @@ R6_storr <- R6::R6Class(
 storr_mset_hash <- function(obj, key, namespace, hash) {
   if (is.null(obj$driver$mset_hash)) {
     n <- length(hash)
+    key <- rep_len(key, n)
+    namespace <- rep_len(namespace, n)
     for (i in seq_len(n)) {
-      key <- rep_len(key, n)
-      namespace <- rep_len(namespace, n)
       obj$driver$set_hash(key[[i]], namespace[[i]], hash[[i]])
     }
   } else {
