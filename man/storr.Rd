@@ -484,6 +484,30 @@ the action (get, set, del, list, import, export) will affect the
     }
   }
 }
+\item{\code{index_export}}{
+  Generate a data.frame with an index of objects present in a storr. This can be saved (for an rds storr) in lieu of the keys/ directory and re-imported with \code{index_import}.  It will provide a more version control friendly export of the data in a storr.
+
+  \emph{Usage:}
+  \code{index_export(namespace = NULL)}
+
+  \emph{Arguments:}
+  \itemize{
+    \item{\code{namespace}:   Optional character vector of namespaces to export.  The default is to export all namespaces.
+    }
+  }
+}
+\item{\code{index_import}}{
+  Import an index.
+
+  \emph{Usage:}
+  \code{index_import(index)}
+
+  \emph{Arguments:}
+  \itemize{
+    \item{\code{index}:   Must be a data.frame with columns 'namespace', 'key' and 'hash' (in any order).  It is an error if not all hashes are present in the storr.
+    }
+  }
+}
 }
 }
 
