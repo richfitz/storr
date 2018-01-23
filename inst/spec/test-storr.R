@@ -171,6 +171,7 @@ test_that("reconnect", {
 
   testthat::expect_equal(st2$list_namespaces(), st$list_namespaces())
   testthat::expect_equal(st2$list("a"), st$list("a"))
+  testthat::expect_equal(st2$get("a1", "a"), st$get("a1", "a"))
 })
 
 testthat::test_that("hash_algorithm", {
