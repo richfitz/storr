@@ -98,8 +98,6 @@ write_lines <- function(text, filename, ...) {
 }
 
 try_write_lines <- function(text, filename, ...) {
-  if (file.exists(filename)) {
-    file.remove(filename)
-  }
+  unlink(filename)
   writeLines(text, filename, ...)
 }
