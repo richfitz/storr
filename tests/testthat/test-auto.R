@@ -39,3 +39,11 @@ test_that("dbi (postgres via RPostgres)", {
     }
   }
 })
+
+test_that("multistorr (env + rds)", {
+  .driver_create <-
+    storr::test_driver(function(dr = NULL, ...)
+      driver_multistorr(
+        driver_environment(dr$keys$envir),
+        driver_rds(dr$data$path %||% tempfile("storr_"), ...)))
+})
