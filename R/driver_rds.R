@@ -205,6 +205,20 @@ R6_driver_rds <- R6::R6Class(
       if (self$mangle_key) decode64(ret, TRUE) else ret
     },
 
+    check_objects = function(full, hash_length, progress) {
+      check_rds_objects(file.path(self$path, "data"),
+                        full, hash_length, progress)
+    },
+
+    check_keys = function(full, hash_length, progress) {
+      ns <- self$list_namespaces()
+      ret <- lapply(file.path(self$path, "keys", ns), check_rds_keys,
+                    full, hash_length)
+      names(ret) <- ns
+      n <- lengths(ret)
+      ret[n > 0]
+    },
+
     name_hash = function(hash) {
       if (length(hash) > 0L) {
         file.path(self$path, "data", paste0(hash, ".rds"))
@@ -265,4 +279,56 @@ write_if_missing <- function(value, path) {
   if (!file.exists(path)) {
     writeLines(value, path)
   }
+}
+
+
+check_rds_keys <- function(path, full, hash_length) {
+  files <- dir(path, all.files = TRUE, no.. = TRUE, full.names = TRUE)
+  if (full) {
+    re <- sprintf("^[[:xdigit:]]{%d}$", hash_length)
+    f <- function(x) {
+      d <- readLines(x)
+      length(d) == 1L && grepl(re, d)
+    }
+    err <- !vlapply(files, f, USE.NAMES = FALSE)
+  } else {
+    len <- file_size(files)
+    err <- len != hash_length + 1L
+  }
+  basename(files[err])
+}
+
+
+check_rds_objects <- function(path, full, hash_length, progress) {
+  re <- sprintf("^[[:xdigit:]]{%d}\\.rds$", hash_length)
+  files <- dir(path, re, all.files = TRUE, no.. = TRUE, full.names = TRUE)
+
+  if (full) {
+    errs <- 0L
+    note_error <- function(e) {
+      errs <<- errs + 1L
+      TRUE
+    }
+    check <- function(x) {
+      tryCatch({
+        suppressWarnings(readRDS(x))
+        FALSE
+      }, error = note_error)
+    }
+    if (progress) {
+      tick <- progress::progress_bar$new(
+        format = "[:spin] [:bar] :percent (:errs corrupt)",
+        total = length(files))$tick
+    } else {
+      tick <- function(...) NULL
+    }
+    err <- logical(length(files))
+    for (i in seq_along(files)) {
+      err[i] <- check(files[[i]])
+      tick(tokens = list(errs = errs))
+    }
+  } else {
+    err <- file_size(files) == 0L
+  }
+  basename(files[err])
 }

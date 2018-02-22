@@ -129,3 +129,9 @@ is_storr <- function(x) {
 r_version <- function() {
   getRversion()
 }
+
+
+## Not in R until 3.2.x
+file_size <- function(...) {
+  file.info(..., extra_cols = FALSE)$size
+}
