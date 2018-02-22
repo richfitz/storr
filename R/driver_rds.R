@@ -315,7 +315,7 @@ check_rds_objects <- function(path, full, hash_length, progress) {
         FALSE
       }, error = note_error)
     }
-    if (progress) {
+    if (progress && requireNamespace("progress", quietly = TRUE)) {
       tick <- progress::progress_bar$new(
         format = "[:spin] [:bar] :percent (:errs corrupt)",
         total = length(files))$tick
