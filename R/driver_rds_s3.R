@@ -80,8 +80,8 @@
 ##' st$destroy()
 ##' st2$destroy()
 storr_rds_s3 <- function(bucket, path, compress = NULL, mangle_key = NULL,
-                      mangle_key_pad = NULL, hash_algorithm = NULL,
-                      default_namespace = "objects") {
+                         mangle_key_pad = NULL, hash_algorithm = NULL,
+                         default_namespace = "objects") {
   storr(driver_rds_s3(bucket, path, compress, mangle_key, mangle_key_pad, hash_algorithm),
         default_namespace)
 }
@@ -89,7 +89,7 @@ storr_rds_s3 <- function(bucket, path, compress = NULL, mangle_key = NULL,
 ##' @export
 ##' @rdname storr_rds
 driver_rds_s3 <- function(bucket, path, compress = NULL, mangle_key = NULL,
-                       mangle_key_pad = NULL, hash_algorithm = NULL) {
+                          mangle_key_pad = NULL, hash_algorithm = NULL) {
   R6_driver_rds_s3$new(bucket, path, compress, mangle_key, mangle_key_pad, hash_algorithm)
 }
 
@@ -105,10 +105,10 @@ R6_driver_rds_s3 <- R6::R6Class(
     mangle_key_pad = NULL,
     hash_algorithm = NULL,
     traits = list(accept = "raw"),
-    
+
     initialize = function(bucket, path, compress, mangle_key, mangle_key_pad,
                           hash_algorithm) {
-      
+
       is_new <- !s3_object_exists(bucket = bucket, path = file.path(path, "config"))
       aws.s3::put_folder(folder = path, bucket = bucket)
       aws.s3::put_folder(folder = file.path(path, "data"), bucket = bucket)
@@ -116,7 +116,7 @@ R6_driver_rds_s3 <- R6::R6Class(
       aws.s3::put_folder(folder = file.path(path, "config"), bucket = bucket)
       self$bucket <- bucket
       self$path <- path
-      
+
       ## This is a bit of complicated dancing around to mantain
       ## backward compatibility while allowing better defaults in
       ## future versions.  I'm writing out a version number here that
@@ -130,49 +130,48 @@ R6_driver_rds_s3 <- R6::R6Class(
       }
       ## Then write out the version number:
       s3_write_if_missing(as.character(packageVersion("storr")),
-                          bucket = bucket, 
+                          bucket = bucket,
                           path = driver_rds_s3_config_file(path, "version"))
-      
+
       if (!is.null(mangle_key)) {
         assert_scalar_logical(mangle_key)
       }
       self$mangle_key <- driver_rds_s3_config(bucket, path, "mangle_key", mangle_key,
-                                           FALSE, TRUE)
-      
+                                              FALSE, TRUE)
+
       if (!is.null(mangle_key_pad)) {
         assert_scalar_logical(mangle_key_pad)
       }
       self$mangle_key_pad <-
         driver_rds_s3_config(bucket, path, "mangle_key_pad", mangle_key_pad,
-                          FALSE, TRUE)
-      
+                             FALSE, TRUE)
+
       if (!is.null(compress)) {
         assert_scalar_logical(compress)
       }
       self$compress <- driver_rds_s3_config(bucket, path, "compress", compress,
-                                         TRUE, FALSE)
-      
+                                            TRUE, FALSE)
+
       if (!is.null(hash_algorithm)) {
         assert_scalar_character(hash_algorithm)
       }
       self$hash_algorithm <- driver_rds_s3_config(bucket, path, "hash_algorithm",
-                                               hash_algorithm, "md5", TRUE)
+                                                  hash_algorithm, "md5", TRUE)
     },
-    
+
     type = function() {
       "rds_s3"
     },
     destroy = function() {
-      aws.s3::delete_object(object = self$path, bucket = self$bucket)
-      warning("not fully implemented")
+      s3_delete_recursive(bucket = self$bucket, path = self$path)
     },
-    
+
     get_hash = function(key, namespace) {
       s3_readLines(path = self$name_key(key, namespace), bucket = self$bucket)
     },
     set_hash = function(key, namespace, hash) {
       dir_create(self$name_key("", namespace))
-      s3_writeLines(text = hash, path = self$name_key(key, namespace), bucket = self$bucket) #*** should be making use of (or making an equivalent version of) the write_lines function within the storr package here (deletes file if the write fails)
+      s3_writeLines(text = hash, path = self$name_key(key, namespace), bucket = self$bucket) #*** should be making use of (or making an equivalent version of) the write_lines function within the storr package here (I think it deletes file if the write fails)
     },
     get_object = function(hash) {
       aws.s3::s3readRDS(object = self$name_hash(hash), bucket = self$bucket)
@@ -183,23 +182,29 @@ R6_driver_rds_s3 <- R6::R6Class(
       assert_raw(value)
       aws.s3::s3write_using(x = value, FUN = function(v, p) write_serialized_rds(v, p, self$compress), object = self$name_hash(hash), bucket = self$bucket)
     },
-    
+
     exists_hash = function(key, namespace) {
       s3_object_exists(self$name_key(key, namespace), bucket = self$bucket)
     },
     exists_object = function(hash) {
       s3_object_exists(self$name_hash(hash), bucket = self$bucket)
     },
-    
+
     del_hash = function(key, namespace) {
-      #file_remove(self$name_key(key, namespace))
-      warning("not implemented")
+      #s3_delete_file(bucket = self$bucket, path = self$name_key(key, namespace))
+      ## above deletes just one file (s3 key).
+      ## However it will throw an error if the file we are trying to delete looks like a directory.
+      ## S3 has no actual notion of directory, we just fake it using "/". As a result, it's possible to get into a muddle.
+      ## to play it save, line below can be uncommented to force it to delete just the path given, but throw a warning, if it does look like a directory
+      ## can also change to if_dir = "del_recursive" to delete the whole directory with a warning. May never actually show up as an issue, this is just a note.
+      s3_delete_file(bucket = self$bucket, path = self$name_key(key, namespace), if_dir = "del_only_key") # this will throw a warning if your file to be deleted looks like a directory on S3. It will then delete the directory. If this occurs alot for some reason, may want to change behaviour of this delete.
+
     },
     del_object = function(hash) {
-      #file_remove(self$name_hash(hash))
-      warning("not implemented")
+      # see above note which also applies here
+      s3_delete_file(bucket = self$bucket, path = self$name_hash(key, namespace), if_dir = "del_only_key")
     },
-    
+
     list_hashes = function() {
       sub("\\.rds$", "", s3_list_dir(bucket = self$bucket, path = file.path(self$path, "data")))
     },
@@ -210,7 +215,7 @@ R6_driver_rds_s3 <- R6::R6Class(
       ret <- s3_list_dir(bucket = self$bucket, path = file.path(self$path, "keys", namespace))
       if (self$mangle_key) decode64(ret, TRUE) else ret
     },
-    
+
     name_hash = function(hash) {
       if (length(hash) > 0L) {
         file.path(self$path, "data", paste0(hash, ".rds"))
@@ -237,7 +242,7 @@ R6_driver_rds_s3 <- R6::R6Class(
 ##   from the existing storr's mangledness.
 driver_rds_s3_config <- function(bucket, path, name, value, default, must_agree) {
   path_opt <- driver_rds_s3_config_file(path, name)
-  
+
   load_value <- function() {
     if (s3_object_exists(bucket, path_opt)) {
       value <- s3_readLines(path_opt, bucket)
@@ -247,7 +252,7 @@ driver_rds_s3_config <- function(bucket, path, name, value, default, must_agree)
     }
     value
   }
-  
+
   if (is.null(value)) {
     value <- load_value()
   } else if (must_agree && s3_object_exists(bucket = bucket, path = path_opt)) {
@@ -259,7 +264,7 @@ driver_rds_s3_config <- function(bucket, path, name, value, default, must_agree)
   if (!s3_object_exists(bucket = bucket, path = path_opt)) {
     s3_writeLines(text = as.character(value), path = path_opt, bucket = bucket)
   }
-  
+
   value
 }
 
@@ -296,10 +301,35 @@ s3_object_exists <- function(bucket, path){
 }
 
 s3_list_dir <- function(bucket, path){
-  if(substr(path, nchar(path), nchar(path)) != "/") path = paste0(path, "/")
   files_table <- aws.s3::get_bucket_df(bucket = bucket, prefix = path, max = Inf)
   keys <- files_table[files_table$Size > 0,]$Key
   files <- gsub(pattern = path, replacement = "", x = keys)
   split_names <- strsplit(files, "/")
   unique(unlist(lapply(split_names, function(x) x[1]))) # first element of each split name is the file or directory within path, take unique of these, so that directories only appear once
+}
+
+s3_delete_recursive <- function(bucket, path, force=FALSE){
+  files <- aws.s3::get_bucket_df(bucket = bucket, prefix = path, max = Inf)[["Key"]]
+  invisible(lapply(files, function(x) aws.s3::delete_object(x, bucket)))
+}
+
+s3_delete_file <- function(bucket, path, if_dir = c("stop", "del_only_key", "del_recursive")){
+  files <- aws.s3::get_bucket_df(bucket = bucket, prefix = path, max = Inf)[["Key"]]
+  if(length(files) > 1){
+    if_dir == match.arg(if_dir) # only need this if we get inside this loop
+    if(if_dir == "stop"){
+      stop("You are trying to delete 1 file, but it looks like it is setup like a directory")
+    }
+    if(if_dir == "del_only_key"){
+      warning("You are trying to delete 1 file, but it looks like it is setup like a directory. Deleted specific path you requested")
+      invisible(aws.s3::delete_object(object = path, bucket = bucket))
+    }
+    if(if_dir == "del_recursive"){
+      warning("You are trying to delete 1 file, but it looks like it is setup like a directory. Deleting recursively everyting below the path you specified")
+      s3_delete_recursive(bucket, path)
+    }
+  }
+  else{
+    invisible(aws.s3::delete_object(object = path, bucket = bucket))
+  }
 }
