@@ -12,7 +12,7 @@ Simple object cacher for R.  `storr` acts as a very simple key-value store (supp
 * Fetch from an external source (e.g. website) if a key is not found locally
 * Pluggable storage backends - currently
   - environment (memory)
-  - rds (disk)
+  - rds (disk, AWS S3)
   - [DBI](https://cran.r-project.org/package=DBI) though which you can use:
     * [SQLite](https://sqlite.org) (via [RSQLite](https://cran.r-project.org/package=RSQLite))
     * [Postgres](https://postgresql.org) (via
@@ -43,3 +43,15 @@ remotes::install_github("richfitz/storr@develop", upgrade = FALSE)
 
 * [storr](https://richfitz.github.io/storr/articles/storr.html) `vignette("storr")` outlines basic use and core implementation details.
 * [external](https://richfitz.github.io/storr/articles/external.html) `vignette("external")` shows how to use storr to cache external resources such as files, web resources, etc, using the `storr_external` object.
+
+## RDS on AWS S3
+
+*This section should be moved elsewhere if the real storr package decides to merge this work*
+
+To use an S3 bucket behind an rds store, you must have an AWS access key id and matching secret access key. These may be generated from the [AWS console](https://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html). The are a number of ways to make these access keys accessible, detailed in the [aws.s3 package](https://github.com/cloudyr/aws.s3) documentation. We recommend placing the credentials in `~/aws/credentials` in the following format:
+
+```
+[default]
+aws_access_key_id = your_id
+aws_secret_access_key = your_secret_key
+```
