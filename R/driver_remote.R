@@ -78,12 +78,12 @@ R6_driver_remote <- R6::R6Class(
     },
 
     get_object = function(hash) {
-      filename_local <- self$rds$name_hash(hash)
       if (!self$rds$exists_object(hash)) {
-        filename_remote <- self$name_hash(hash)
-        self$ops$download_file(filename_remote, filename_local)
+        filename_hash <- self$name_hash(hash)
+        dest_dir <- dirname(self$rds$name_hash(hash))
+        self$ops$download_file(filename_hash, dest_dir)
       }
-      readRDS(filename_local)
+      self$rds$get_object(hash)
     },
 
     set_object = function(hash, value) {
