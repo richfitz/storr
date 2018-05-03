@@ -100,6 +100,7 @@ R6_driver_rds <- R6::R6Class(
     ## TODO: things like hash_algorithm: do they belong in traits?
     ## This needs sorting before anyone writes their own driver!
     path = NULL,
+    path_scratch = NULL,
     compress = NULL,
     mangle_key = NULL,
     mangle_key_pad = NULL,
@@ -114,6 +115,9 @@ R6_driver_rds <- R6::R6Class(
       dir_create(file.path(path, "keys"))
       dir_create(file.path(path, "config"))
       self$path <- normalizePath(path, mustWork = TRUE)
+
+      self$path_scratch <- file.path(self$path, "scratch")
+      dir_create(self$path_scratch)
 
       ## This is a bit of complicated dancing around to mantain
       ## backward compatibility while allowing better defaults in
@@ -168,7 +172,8 @@ R6_driver_rds <- R6::R6Class(
     },
     set_hash = function(key, namespace, hash) {
       dir_create(self$name_key("", namespace))
-      write_lines(hash, self$name_key(key, namespace))
+      write_lines(hash, self$name_key(key, namespace),
+                  scratch_dir = self$path_scratch)
     },
     get_object = function(hash) {
       readRDS(self$name_hash(hash))
@@ -177,7 +182,8 @@ R6_driver_rds <- R6::R6Class(
       ## NOTE: this takes advantage of having the serialized value
       ## already and avoids seralising twice.
       assert_raw(value)
-      write_serialized_rds(value, self$name_hash(hash), self$compress)
+      write_serialized_rds(value, self$name_hash(hash), self$compress,
+                           self$path_scratch)
     },
 
     exists_hash = function(key, namespace) {
@@ -206,17 +212,11 @@ R6_driver_rds <- R6::R6Class(
     },
 
     check_objects = function(full, hash_length, progress) {
-      check_rds_objects(file.path(self$path, "data"),
-                        full, hash_length, progress)
+      check_rds_objects(self, full, hash_length, progress)
     },
 
-    check_keys = function(full, hash_length, progress) {
-      ns <- self$list_namespaces()
-      ret <- lapply(file.path(self$path, "keys", ns), check_rds_keys,
-                    full, hash_length)
-      names(ret) <- ns
-      n <- lengths(ret)
-      ret[n > 0]
+    check_keys = function(full, hash_length, progress, invalid_hashes) {
+      check_rds_keys(self, full, hash_length, progress, invalid_hashes)
     },
 
     name_hash = function(hash) {
@@ -282,26 +282,49 @@ write_if_missing <- function(value, path) {
 }
 
 
-check_rds_keys <- function(path, full, hash_length) {
-  files <- dir(path, all.files = TRUE, no.. = TRUE, full.names = TRUE)
+## There's more to do here:
+##
+## * flag and do something about
+
+check_rds_keys <- function(dr, full, hash_length, progress, invalid_hashes) {
+  ns <- dr$list_namespaces()
+  ret <- lapply(ns, check_rds_keys1, dr, full, hash_length, invalid_hashes)
+
+  collect <- function(k) {
+    dat <- lapply(ret, "[[", k)
+    cbind(namespace = rep(ns, lengths(dat)), key = unlist(dat, FALSE, FALSE))
+  }
+
+  list(corrupt = collect("corrupt"), dangling = collect("dangling"))
+}
+
+check_rds_keys1 <- function(ns, dr, full, hash_length, invalid_hashes) {
+  keys <- dr$list_keys(ns)
+  files <- dr$name_key(keys, ns)
+
   if (full) {
+    hashes <- setdiff(dr$list_hashes(), invalid_hashes)
+    d <- lapply(files, readLines)
+
     re <- sprintf("^[[:xdigit:]]{%d}$", hash_length)
-    f <- function(x) {
-      d <- readLines(x)
-      length(d) == 1L && grepl(re, d)
-    }
-    err <- !vlapply(files, f, USE.NAMES = FALSE)
+    corrupt <- !vlapply(d, function(x) length(x) == 1L && grepl(re, x))
+
+    dangling <- !corrupt
+    dangling[dangling] <- !vlapply(d[dangling], `%in%`, hashes)
   } else {
     len <- file_size(files)
-    err <- len != hash_length + 1L
+    corrupt <- len != hash_length + 1L
+    dangling <- logical()
   }
-  basename(files[err])
+
+  list(corrupt = keys[corrupt],
+       dangling = keys[dangling])
 }
 
 
-check_rds_objects <- function(path, full, hash_length, progress) {
-  re <- sprintf("^[[:xdigit:]]{%d}\\.rds$", hash_length)
-  files <- dir(path, re, all.files = TRUE, no.. = TRUE, full.names = TRUE)
+check_rds_objects <- function(dr, full, hash_length, progress) {
+  h <- dr$list_hashes()
+  files <- dr$name_hash(h)
 
   if (full) {
     errs <- 0L
@@ -315,10 +338,11 @@ check_rds_objects <- function(path, full, hash_length, progress) {
         FALSE
       }, error = note_error)
     }
-    if (progress && requireNamespace("progress", quietly = TRUE)) {
+    n <- length(files)
+    if (progress && n > 0 && requireNamespace("progress", quietly = TRUE)) {
       tick <- progress::progress_bar$new(
         format = "[:spin] [:bar] :percent (:errs corrupt)",
-        total = length(files))$tick
+        total = n)$tick
     } else {
       tick <- function(...) NULL
     }
@@ -330,5 +354,6 @@ check_rds_objects <- function(path, full, hash_length, progress) {
   } else {
     err <- file_size(files) == 0L
   }
-  basename(files[err])
+
+  h[err]
 }

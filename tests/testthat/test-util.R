@@ -11,7 +11,7 @@ test_that("write_serialized_rds", {
   expect_identical(readRDS(p1), x)
 
   p2 <- tempfile()
-  write_serialized_rds(sx, p2, FALSE, length(sx) / 2)
+  write_serialized_rds(sx, p2, FALSE, long = length(sx) / 2)
   on.exit(file.remove(p2), add = TRUE)
   expect_identical(readBin(p2, raw(), length(sx) * 2), sx)
   expect_identical(readRDS(p2), x)

@@ -66,9 +66,10 @@ serialize_to_raw <- function(x, ascii, xdr) {
 ## been successful, otherwise the container will claim existence for
 ## an object which cannot be retrieved later on, causing havoc
 ## upstream.
-write_serialized_rds <- function(value, filename, compress, long = 2^31 - 2) {
+write_serialized_rds <- function(value, filename, compress,
+                                 scratch_dir = NULL, long = 2^31 - 2) {
   withCallingHandlers(
-    try_write_serialized_rds(value, filename, compress, long),
+    try_write_serialized_rds(value, filename, compress, scratch_dir, long),
     error = function(e) unlink(filename))
 }
 
@@ -76,9 +77,17 @@ write_serialized_rds <- function(value, filename, compress, long = 2^31 - 2) {
 ## close the connection on exit from try_write_serialized_rds and
 ## delete the file *after* that.
 try_write_serialized_rds <- function(value, filename, compress,
-                                     long = 2^31 - 2) {
-  con <- (if (compress) gzfile else file)(filename, "wb")
-  on.exit(close(con))
+                                     scratch_dir = NULL, long = 2^31 - 2) {
+  if (is.null(scratch_dir)) {
+    scratch_dir <- tempfile()
+    dir.create(scratch_dir)
+    on.exit(unlink(scratch_dir, recursive = TRUE))
+  }
+  tmp <- file.path(scratch_dir, basename(filename))
+
+  con <- (if (compress) gzfile else file)(tmp, "wb")
+  needs_close <- TRUE
+  on.exit(if (needs_close) close(con), add = TRUE)
   len <- length(value)
   if (len < long) {
     writeBin(value, con)
@@ -86,18 +95,33 @@ try_write_serialized_rds <- function(value, filename, compress,
     message("Repacking large object")
     saveRDS(unserialize(value), con)
   }
+  close(con)
+  needs_close <- FALSE
+  file.rename(tmp, filename)
 }
 
 ## Same pattern for write_lines.  The difference is that this will
 ## delete the key on a failed write (otherwise there's a copy
 ## involved)
-write_lines <- function(text, filename, ...) {
+write_lines <- function(text, filename, ..., scratch_dir = NULL) {
+  if (is.null(scratch_dir)) {
+    scratch_dir <- tempfile()
+    dir.create(scratch_dir)
+    on.exit(unlink(scratch_dir, recursive = TRUE))
+  }
   withCallingHandlers(
-    try_write_lines(text, filename, ...),
+    try_write_lines(text, filename, ..., scratch_dir = scratch_dir),
     error = function(e) unlink(filename))
 }
 
-try_write_lines <- function(text, filename, ...) {
+
+## This implements write-then-move for writeLines, which gives us
+## atomic writes and rewrites.  If 'scratch' is on the same filesystem
+## as dirname(filename), then the os's rename is atomic
+try_write_lines <- function(text, filename, ..., scratch_dir) {
+  tmp <- file.path(scratch_dir, basename(filename))
+  writeLines(text, tmp, ...)
+  ## Not 100% necessary and strictly makes this nonatomic
   unlink(filename)
-  writeLines(text, filename, ...)
+  file.rename(tmp, filename)
 }

@@ -374,7 +374,22 @@ R6_storr <- R6::R6Class(
       storr_index_import(self, index)
     },
     check = function(full = TRUE, quiet = FALSE, progress = !quiet) {
-      storr_check(self, full,quiet, progress)
+      storr_check(self, full, quiet, progress)
+    },
+
+    repair = function(storr_check_results = NULL, quiet = FALSE, ...,
+                      force = FALSE) {
+      if (is.null(storr_check_results)) {
+        storr_check_results <- self$check(..., quiet = quiet)
+        if (!storr_check_results$healthy && !force &&
+            !prompt_ask_yes_no("Delete corrupted data? (no going back!)")) {
+          ## I think that the best thing to do here is to provide a
+          ## link to docs
+          stop("please rerun manually")
+        }
+      }
+      assert_is(storr_check_results, "storr_check")
+      storr_repair(self, storr_check_results, quiet)
     },
 
     ## Utility function that will come in useful in a few places:
@@ -397,36 +412,81 @@ storr_mset_hash <- function(obj, key, namespace, hash) {
 }
 
 storr_check <- function(obj, full, quiet, progress) {
-  hash_length <- nchar(obj$hash_object(NULL))
+  obj$flush_cache()
 
-  if (!quiet) {
-    message("Checking keys")
+  driver <- obj$driver
+  if (is.null(driver$check_objects) || is.null(driver$check_keys)) {
+    stop(sprintf("This storr (with driver type '%s') does not support checking",
+                 st$driver$type()))
   }
-  res_keys <- obj$driver$check_keys(full, hash_length, progress)
-  if (!quiet) {
-    n <- lengths(res_keys)
-    m <- sum(n)
-    if (m > 0L) {
-      message(sprintf("...found %d corrupt keys in %d namespaces",
-                      m, length(n[n > 0])))
-    } else {
-      message("...OK")
-    }
-  }
+
+  hash_length <- nchar(obj$hash_object(NULL))
+  healthy <- TRUE
 
   if (!quiet) {
     message("Checking objects")
   }
-  res_objects <- obj$driver$check_objects(full, hash_length, progress)
+  objects <- obj$driver$check_objects(full, hash_length, progress)
+  healthy <- length(objects) == 0L
   if (!quiet) {
-    if (length(res_objects) > 0L) {
-      message(sprintf("...found %d corrupt objects", length(res_objects)))
+    if (length(objects) > 0L) {
+      message(sprintf("...found %d corrupt objects", length(objects)))
     } else {
       message("...OK")
     }
   }
 
-  list(objects = res_objects, keys = res_keys)
+  if (!quiet) {
+    message("Checking keys")
+  }
+
+  keys <- obj$driver$check_keys(full, hash_length, progress, objects)
+  n <- viapply(keys, nrow)
+  healthy <- healthy && all(n == 0L)
+
+  if (!quiet) {
+    if (any(n > 0L)) {
+      for (i in seq_along(n)[n > 0]) {
+        message(sprintf("...found %d %s keys in %d namespaces",
+                        n[[i]], names(keys)[[i]],
+                        length(unique(keys[[i]][, "namespace"]))))
+      }
+    } else {
+      message("...OK")
+    }
+  }
+
+  ret <- list(healthy = healthy, objects = objects, keys = keys)
+  class(ret) <- "storr_check"
+  ret
+}
+
+
+storr_repair <- function(obj, storr_check_results, quiet) {
+  if (storr_check_results$healthy) {
+    return(FALSE)
+  }
+
+  h <- storr_check_results$objects
+  k <- c(storr_check_results$keys$corrupt[, "key"],
+         storr_check_results$keys$dangling[, "key"])
+  ns <- c(storr_check_results$keys$corrupt[, "namespace"],
+          storr_check_results$keys$dangling[, "namespace"])
+
+  if (length(h) > 0L) {
+    if (!quiet) {
+      message(sprintf("Deleting %d corrupt objects", length(h)))
+    }
+    st$driver$del_object(h)
+  }
+  if (length(k) > 0L) {
+    if (!quiet) {
+      message(sprintf("Deleting %d corrupt/dangling keys", length(k)))
+    }
+    st$driver$del_hash(k, ns)
+  }
+
+  length(h) > 0 || length(k) > 0
 }
 
 ##' @export

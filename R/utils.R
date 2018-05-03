@@ -135,3 +135,8 @@ r_version <- function() {
 file_size <- function(...) {
   file.info(..., extra_cols = FALSE)$size
 }
+
+
+prompt_ask_yes_no <- function(reason) {
+  menu(c("no", "yes"), FALSE, title = reason) == 2 # nocov
+}

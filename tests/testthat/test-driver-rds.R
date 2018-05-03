@@ -8,7 +8,7 @@ test_that("creation", {
   on.exit(dr$destroy())
 
   expect_true(file.exists(path))
-  expect_identical(sort(dir(path)), c("config", "data", "keys"))
+  expect_identical(sort(dir(path)), c("config", "data", "keys", "scratch"))
   expect_identical(dir(file.path(path, "data")), character(0))
   expect_false(dr$mangle_key)
 })
@@ -241,4 +241,33 @@ test_that("change directories and access same storr", {
   setwd("..")
   unlink(subdir, recursive = TRUE)
   x$destroy()
+})
+
+test_that("check empty storr", {
+  st <- storr_rds(tempfile())
+  expect_true(st$check()$healthy)
+  expect_silent(st$check(quiet = TRUE))
+})
+
+test_that("recover corrupt storr", {
+  st <- storr_rds(tempfile())
+
+  ## First start with a storr with some data in it:
+  for (i in 1:10) {
+    st$mset(paste0(letters[[i]], seq_len(i)),
+            lapply(seq_len(i), function(.) runif(20)),
+            namespace = LETTERS[[i]])
+  }
+
+  ## expect_true(st$check()$healthy)
+
+  ## Then let's truncate some data!
+  set.seed(1)
+  i <- sample.int(55, 5)
+  r <- st$list_hashes()[i]
+  for (p in st$driver$name_hash(r)) {
+    writeBin(raw(), p)
+  }
+
+  st$check()
 })
