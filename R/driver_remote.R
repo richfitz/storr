@@ -124,7 +124,7 @@ R6_driver_remote <- R6::R6Class(
 
     list_keys = function(namespace) {
       path <- file.path("keys", namespace)
-      if (!self$ops$exists(path, "directory")) {
+      if (!self$ops$exists_dir(path)) {
         return(character(0))
       }
       ret <- self$ops$list_dir(path)
@@ -156,7 +156,7 @@ R6_driver_remote <- R6::R6Class(
 storr_remote_config_get <- function(ops) {
   ## NOTE: this is a storr/rds internal
   path_config <- "config"
-  if (ops$exists(path_config, "directory")) {
+  if (ops$exists_dir(path_config)) {
     keys <- ops$list_dir(path_config)
     ret <- lapply(file.path(path_config, keys), ops$read_string)
     names(ret) <- keys

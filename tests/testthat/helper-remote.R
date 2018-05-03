@@ -31,8 +31,13 @@ R6_fake_file_ops <- R6::R6Class(
       list.files(file.path(self$root, path))
     },
 
-    exists = function(path, type = c("any", "file", "directory")) {
+    exists = function(path) {
       file.exists(file.path(self$root, path))
+    },
+
+    exists_dir = function(path) {
+      path_remote <- file.path(self$root, path)
+      file.exists(path_remote) && file.info(path_remote)$isdir
     },
 
     delete_file = function(path) {
@@ -67,6 +72,8 @@ R6_fake_file_ops <- R6::R6Class(
       }
     },
 
+    ## NOTE: these two _bytes functions are not *needed* but are
+    ## present because I built this off the ssh driver
     write_bytes = function(bytes, dest_file) {
       tmp <- tempfile()
       dir.create(tmp)
