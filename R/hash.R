@@ -8,7 +8,8 @@ make_hash_serialized_object <- function(hash_algorithm, skip_version) {
   }
 }
 
-make_serialize_object <- function(drop_r_version, string, xdr = TRUE) {
+make_serialize_object <- function(drop_r_version, string, xdr = TRUE,
+                                  r_version = get_r_version()) {
   if (string) {
     if (drop_r_version) {
       stop("Can't combine drop_r_version and string serialization")
@@ -17,7 +18,7 @@ make_serialize_object <- function(drop_r_version, string, xdr = TRUE) {
     ## because it is safer with respect to precision loss in doubles.
     ## It's the only thing I know of that depends on R between 3.1 and
     ## 3.2 and affects only the dbi driver at present.
-    if (r_version() < numeric_version("3.2.0")) {
+    if (r_version < numeric_version("3.2.0")) {
       stop("Please upgrade R to at least 3.2.0")
     }
     function(object) rawToChar(serialize_to_raw(object, NA, xdr))

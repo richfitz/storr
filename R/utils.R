@@ -132,7 +132,7 @@ is_storr <- function(x) {
   inherits(x, "storr")
 }
 
-r_version <- function() {
+get_r_version <- function() {
   getRversion()
 }
 
