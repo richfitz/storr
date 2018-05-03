@@ -56,7 +56,7 @@ R6_driver_remote <- R6::R6Class(
       self$ops$create_dir("keys")
 
       self$rds <- driver_rds(path_local, ...)
-      self$traits <- self$rds$traits
+      self$traits <- storr_traits(self$rds$traits)
       self$hash_algorithm <- self$rds$hash_algorithm
     },
 
