@@ -72,7 +72,7 @@ head(st$get_value(h))
 ## database using its hash:
 st$exists_object(h)
 
-## though now that there are no keys pointing at the data is is
+## though now that there are no keys pointing at the data it is
 ## subject to garbage collection:
 del <- st$gc()
 del
@@ -82,7 +82,7 @@ st$list_hashes()
 ## ## Namespaces
 
 ## At some point having everything stored in a great big bucket may
-## become too instrucured.  To help with this storr implements a very
+## become too unstructured.  To help with this storr implements a very
 ## simple "namespace" system that may help provide some structure.  It
 ## is a single layer of hierarchy above keys; so every key belongs to
 ## a namespace.  The default namespace is "objects" but this can be
@@ -109,7 +109,7 @@ st$get("a", "other_things")
 
 ## If you have many values to get or set, for some databases it will
 ## be much more efficient to get and set them in bulk; this is
-## particularly the case with high-latency database (e.g., anything
+## particularly the case with high-latency databases (e.g., anything
 ## over a network connection, especially an internet connection).  To
 ## help with this, storr implements `mget` and `mset` methods that
 ## allow multiple values to retrieved or set.
@@ -138,7 +138,7 @@ st$mget(c("a", "b", "x"), c("objects", "objects", "ns1"))
 
 ## ## Import / export
 
-## Objects can be imported in and exported out of a `storr`;
+## Objects can be imported in and exported out of a `storr`:
 
 ## Import from a list, environment or another `storr`
 st$import(list(a = 1, b = 2))
@@ -211,7 +211,7 @@ dir(file.path(path, "data"))
 ## Every time data passes across a `get` or `set` method, `storr`
 ## stores the data in an environment within the `storr` object.
 ## Because we store the content against its hash, it's always in sync
-## with what is saved to disk.  That means that the look up process
+## with what is saved to disk.  That means that the lookup process
 ## goes like this:
 ##
 ## 1. Ask for a key, get returned the hash of the content
