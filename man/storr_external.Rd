@@ -2,7 +2,7 @@
 % Please edit documentation in R/driver_external.R
 \name{storr_external}
 \alias{storr_external}
-\title{Storr that kooks for external resources}
+\title{Storr that looks for external resources}
 \usage{
 storr_external(storage_driver, fetch_hook, default_namespace = "objects")
 }

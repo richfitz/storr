@@ -8,7 +8,7 @@
 ##' This function is likely most useful for things like caching
 ##' resources from websites, or computing long-running quantities on
 ##' demand.
-##' @title Storr that kooks for external resources
+##' @title Storr that looks for external resources
 ##' @param storage_driver Another \code{storr} driver to handle the
 ##'   actual storage.
 ##' @param fetch_hook A function to run to fetch data when a key is
