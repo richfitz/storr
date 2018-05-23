@@ -379,17 +379,7 @@ R6_storr <- R6::R6Class(
 
     repair = function(storr_check_results = NULL, quiet = FALSE, ...,
                       force = FALSE) {
-      if (is.null(storr_check_results)) {
-        storr_check_results <- self$check(..., quiet = quiet)
-        if (!storr_check_results$healthy && !force &&
-            !prompt_ask_yes_no("Delete corrupted data? (no going back!)")) {
-          ## I think that the best thing to do here is to provide a
-          ## link to docs
-          stop("please rerun manually")
-        }
-      }
-      assert_is(storr_check_results, "storr_check")
-      storr_repair(self, storr_check_results, quiet)
+      storr_repair(self, storr_check_results, quiet, ..., force = force)
     },
 
     ## Utility function that will come in useful in a few places:
@@ -417,7 +407,7 @@ storr_check <- function(obj, full, quiet, progress) {
   driver <- obj$driver
   if (is.null(driver$check_objects) || is.null(driver$check_keys)) {
     stop(sprintf("This storr (with driver type '%s') does not support checking",
-                 st$driver$type()))
+                 obj$driver$type()))
   }
 
   hash_length <- nchar(obj$hash_object(NULL))
@@ -427,10 +417,11 @@ storr_check <- function(obj, full, quiet, progress) {
     message("Checking objects")
   }
   objects <- obj$driver$check_objects(full, hash_length, progress)
-  healthy <- length(objects) == 0L
+  n <- length(objects$corrupt)
+  healthy <- n == 0L
   if (!quiet) {
-    if (length(objects) > 0L) {
-      message(sprintf("...found %d corrupt objects", length(objects)))
+    if (n > 0L) {
+      message(sprintf("...found %d corrupt objects", n))
     } else {
       message("...OK")
     }
@@ -440,7 +431,7 @@ storr_check <- function(obj, full, quiet, progress) {
     message("Checking keys")
   }
 
-  keys <- obj$driver$check_keys(full, hash_length, progress, objects)
+  keys <- obj$driver$check_keys(full, hash_length, progress, objects$corrupt)
   n <- viapply(keys, nrow)
   healthy <- healthy && all(n == 0L)
 
@@ -462,12 +453,25 @@ storr_check <- function(obj, full, quiet, progress) {
 }
 
 
-storr_repair <- function(obj, storr_check_results, quiet) {
+storr_repair <- function(obj, storr_check_results, quiet, ..., force) {
+  if (is.null(storr_check_results)) {
+    storr_check_results <- obj$check(..., quiet = quiet)
+    if (!storr_check_results$healthy &&
+        !force &&
+        !prompt_ask_yes_no("Delete corrupted data? (no going back!)")) {
+      ## I think that the best thing to do here is to provide a
+      ## link to docs
+      stop("please rerun manually")
+    }
+  }
+  assert_is(storr_check_results, "storr_check")
+
+  ## Move the logic from above into here.
   if (storr_check_results$healthy) {
     return(FALSE)
   }
 
-  h <- storr_check_results$objects
+  h <- storr_check_results$objects$corrupt
   k <- c(storr_check_results$keys$corrupt[, "key"],
          storr_check_results$keys$dangling[, "key"])
   ns <- c(storr_check_results$keys$corrupt[, "namespace"],
@@ -477,13 +481,13 @@ storr_repair <- function(obj, storr_check_results, quiet) {
     if (!quiet) {
       message(sprintf("Deleting %d corrupt objects", length(h)))
     }
-    st$driver$del_object(h)
+    obj$driver$del_object(h)
   }
   if (length(k) > 0L) {
     if (!quiet) {
       message(sprintf("Deleting %d corrupt/dangling keys", length(k)))
     }
-    st$driver$del_hash(k, ns)
+    obj$driver$del_hash(k, ns)
   }
 
   length(h) > 0 || length(k) > 0

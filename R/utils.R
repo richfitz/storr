@@ -31,6 +31,12 @@ assert_length <- function(x, n, name = deparse(substitute(x))) {
                  name, n, length(x)), call. = FALSE)
   }
 }
+assert_is <- function(x, what, name = deparse(substitute(x))) {
+  if (!inherits(x, what)) {
+    stop(sprintf("'%s' must be a %s", name,
+                 paste(what, collapse = " / ")), call. = FALSE)
+  }
+}
 
 assert_function <- function(x, name = deparse(substitute(x))) {
   if (!is.function(x)) {

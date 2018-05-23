@@ -355,5 +355,5 @@ check_rds_objects <- function(dr, full, hash_length, progress) {
     err <- file_size(files) == 0L
   }
 
-  h[err]
+  list(corrupt = h[err])
 }

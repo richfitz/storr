@@ -259,7 +259,9 @@ test_that("recover corrupt storr", {
             namespace = LETTERS[[i]])
   }
 
-  ## expect_true(st$check()$healthy)
+
+  res <- st$check()
+  expect_true(res$healthy)
 
   ## Then let's truncate some data!
   set.seed(1)
@@ -269,5 +271,17 @@ test_that("recover corrupt storr", {
     writeBin(raw(), p)
   }
 
-  st$check()
+  res <- st$check()
+  expect_is(res, "storr_check")
+  expect_false(res$healthy)
+
+  expect_equal(length(res$objects$corrupt), 5L)
+  expect_equal(nrow(res$keys$corrupt), 0L)
+  expect_equal(nrow(res$keys$dangling), 5L)
+
+  st$repair(force = TRUE)
+  res <- st$check()
+  expect_true(res$healthy)
+  expect_false(st$repair(res, force = TRUE))
+  expect_silent(st$repair(res, force = TRUE))
 })
