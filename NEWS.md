@@ -1,7 +1,8 @@
-## storr 1.2.0
+## storr 1.2.0 (2018-05-xx)
 
 * New index function (#22, requested by @wlandau)
 * Support for creating storrs with different storage for keys and data (`driver_multistorr` and `storr_multistorr`, #67)
+* New repair methods (`$check` and `$repair`) for detecting some problems with storr repositories.  This is a work in progress and is currently only supported for the rds driver.
 
 ## storr 1.1.3 (2017-12-15)
 
