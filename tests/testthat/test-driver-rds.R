@@ -249,7 +249,7 @@ test_that("check empty storr", {
   expect_silent(st$check(quiet = TRUE))
 })
 
-test_that("recover corrupt storr", {
+test_that("recover corrupt storr: corrupted rds", {
   st <- storr_rds(tempfile())
 
   ## First start with a storr with some data in it:
@@ -262,6 +262,47 @@ test_that("recover corrupt storr", {
 
   res <- st$check()
   expect_true(res$healthy)
+
+  ## Then let's truncate some data!
+  set.seed(1)
+  i <- sample.int(55, 5)
+  r <- st$list_hashes()[i]
+  for (p in st$driver$name_hash(r)) {
+    writeBin(raw(), p)
+  }
+
+  res <- st$check()
+  expect_is(res, "storr_check")
+  expect_false(res$healthy)
+
+  expect_equal(length(res$objects$corrupt), 5L)
+  expect_equal(nrow(res$keys$corrupt), 0L)
+  expect_equal(nrow(res$keys$dangling), 5L)
+
+  res2 <- st$check(full = FALSE)
+  expect_false(res2$healthy)
+  expect_equal(res2$objects, res$objects)
+  expect_equal(nrow(res2$keys$corrupt), 0L)
+  expect_equal(nrow(res2$keys$dangling), 0L)
+
+  st$repair(force = TRUE)
+  res <- st$check()
+  expect_true(res$healthy)
+  expect_false(st$repair(res, force = TRUE))
+  expect_silent(st$repair(res, force = TRUE))
+  expect_equal(st$check(full = FALSE), res)
+})
+
+
+test_that("recover corrupt storr: corrupted keys", {
+  st <- storr_rds(tempfile())
+
+  ## First start with a storr with some data in it:
+  for (i in 1:10) {
+    st$mset(paste0(letters[[i]], seq_len(i)),
+            lapply(seq_len(i), function(.) runif(20)),
+            namespace = LETTERS[[i]])
+  }
 
   ## Then let's truncate some data!
   set.seed(1)
