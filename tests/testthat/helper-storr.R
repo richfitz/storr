@@ -23,3 +23,9 @@ copy_to_tmp <- function(src) {
 has_postgres <- function(ctor) {
   !is.null(tryCatch(DBI::dbConnect(ctor()), error = function(e) NULL))
 }
+
+skip_if_interactive <- function() {
+  if (interactive()) {
+    testthat::skip("Running interactively")
+  }
+}

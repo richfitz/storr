@@ -456,12 +456,14 @@ storr_check <- function(obj, full, quiet, progress) {
 storr_repair <- function(obj, storr_check_results, quiet, ..., force) {
   if (is.null(storr_check_results)) {
     storr_check_results <- obj$check(..., quiet = quiet)
-    if (!storr_check_results$healthy &&
-        !force &&
-        !prompt_ask_yes_no("Delete corrupted data? (no going back!)")) {
-      ## I think that the best thing to do here is to provide a
-      ## link to docs
-      stop("please rerun manually")
+    if (storr_check_results$healthy) {
+      return(FALSE)
+    }
+
+    msg <- "Delete corrupted data? (no going back!)"
+    continue <- force || (interactive() && prompt_ask_yes_no(msg))
+    if (!continue) {
+      stop("Please rerun with force = TRUE, or provide check_results")
     }
   }
   assert_is(storr_check_results, "storr_check")
