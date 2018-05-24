@@ -1,3 +1,7 @@
+## storr 1.2.0
+
+* New index function (#22, requested by @wlandau)
+
 ## storr 1.1.3 (2017-12-15)
 
 * Only use version 2 serialisation, avoiding breakage when version 3 is released in 3.5.0 (#62, reported by Tomas Kalibera)
