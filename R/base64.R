@@ -45,12 +45,24 @@ encode64 <- function(x, char62 = "-", char63 = "_", pad = TRUE) {
   paste0(z, collapse = "")
 }
 
+##' @param error Throw an error if the decoding fails.  If
+##'   \code{FALSE} then \code{NA_character_} values are returned for
+##'   failures.
+##'
 ##' @export
 ##' @rdname encode64
-decode64 <- function(x, char62 = "-", char63 = "_") {
+decode64 <- function(x, char62 = "-", char63 = "_", error = TRUE) {
   if (length(x) != 1L) {
-    return(vcapply(x, decode64, char62, char63, USE.NAMES = FALSE))
+    return(vcapply(x, decode64, char62, char63, error, USE.NAMES = FALSE))
   }
+  if (!grepl("^[A-Za-z0-9_-]*=*$", x)) {
+    if (error) {
+      stop(sprintf("Input '%s' is not base64 (url) encoded", x))
+    } else {
+      return(NA_character_)
+    }
+  }
+
   ## TODO: check that the string is correctly encoded before doing
   ## anything.
   tr <- c(LETTERS, letters, 0:9, char62, char63)

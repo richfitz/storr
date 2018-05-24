@@ -56,3 +56,13 @@ test_that("vector encode", {
   expect_equal(encode64(v, pad = TRUE), cmp)
   expect_equal(encode64(v, pad = FALSE), sub("=+$", "", cmp))
 })
+
+
+test_that("invalid strings", {
+  str <- "TWFyY2g= (conflicted copy)"
+  expect_error(decode64(str), "is not base64")
+  expect_identical(decode64(str, error = FALSE), NA_character_)
+
+  v <- c(encode64("a"), "TWFyY2g= (conflicted copy)")
+  expect_identical(decode64(v, error = FALSE), c("a", NA_character_))
+})

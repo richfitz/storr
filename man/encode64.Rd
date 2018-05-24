@@ -7,7 +7,7 @@
 \usage{
 encode64(x, char62 = "-", char63 = "_", pad = TRUE)
 
-decode64(x, char62 = "-", char63 = "_")
+decode64(x, char62 = "-", char63 = "_", error = TRUE)
 }
 \arguments{
 \item{x}{A string or vector of strings to encode/decode}
@@ -18,6 +18,10 @@ decode64(x, char62 = "-", char63 = "_")
 
 \item{pad}{Logical, indicating if strings should be padded with
 \code{=} characters (as RFC 4648 requires)}
+
+\item{error}{Throw an error if the decoding fails.  If
+\code{FALSE} then \code{NA_character_} values are returned for
+failures.}
 }
 \description{
 Base64 encoding.  By default uses the RFC 4648 dialect (file/url
