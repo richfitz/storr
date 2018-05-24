@@ -317,3 +317,26 @@ test_that("don't run automatically", {
 test_that("automatic is ok if storr is healthy", {
   expect_false(storr_rds(tempfile())$repair(force = FALSE))
 })
+
+
+test_that("corrupted mangled keys", {
+  st <- storr_rds(tempfile(), mangle_key = TRUE, mangle_key_pad = TRUE)
+  st$mset(month.name,
+          lapply(seq_along(month.name), function(.) runif(20)))
+  keys <- st$driver$name_key(month.name, "objects")
+  file.copy(keys[[3]],
+            paste(keys[[3]], "(conflicted copy)"))
+  with_options(list("storr.corrupt.notice.period" = NA),
+               expect_silent(st$list()))
+  expect_message(st$list(),
+                 "1 corrupted files have been found in your storr archive:")
+  expect_silent(st$list())
+  with_options(list("storr.corrupt.notice.period" = 0L),
+               expect_message(st$list(), "namespace: 'objects'"))
+
+  expect_message(st$driver$purge_corrupt_keys("objects"),
+                 "Removed 1 of 1 corrupt file")
+  with_options(list("storr.corrupt.notice.period" = 0L),
+               expect_silent(st$list()))
+  expect_silent(st$driver$purge_corrupt_keys("objects"))
+})

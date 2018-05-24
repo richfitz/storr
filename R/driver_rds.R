@@ -21,6 +21,34 @@
 ##' is set.  Using \code{mangle_key = NULL} uses whatever mangledness
 ##' exists (or no mangledness if creating a new storr).
 ##'
+##' @section Corrupt keys:
+##'
+##' Some file synchronisation utilities like dropbox can create file
+##' that confuse an rds storr (e.g.,
+##' \code{"myobject (Someone's conflicted copy)"}.  If
+##' \code{mangle_key} is \code{FALSE} these cannot be detected but at
+##' the same time are not a real problem for storr.  However, if
+##' \code{mangle_key} is \code{TRUE} and keys are base64 encoded then
+##' these conflicted copies can break parts of storr.
+##'
+##' If you see a warning asking you to deal with these files, please
+##' delete the offending files; the path will be printed along with
+##' the files that are causing the problem.
+##'
+##' Alternatively, you can try (assuming a storr object \code{st})
+##' running
+##'
+##' \preformatted{
+##' st$driver$purge_corrupt_keys()
+##' }
+##'
+##' which will delete corrupted keys with no confirmation.  The
+##' messages that are printed to screen will be printed by default at
+##' most once per minute per namespace.  You can control this by
+##' setting the R option \code{storr.corrupt.notice.period} - setting
+##' this to \code{NA} suppresses the notice and otherwise it is
+##' interpreted as the number of seconds.
+##'
 ##' @title rds object cache driver
 ##' @param path Path for the store.  \code{tempdir()} is a good choice
 ##'   for ephemeral storage, The \code{rappdirs} package (on CRAN)
@@ -207,8 +235,18 @@ R6_driver_rds <- R6::R6Class(
       dir(file.path(self$path, "keys"))
     },
     list_keys = function(namespace) {
-      ret <- dir(file.path(self$path, "keys", namespace))
-      if (self$mangle_key) decode64(ret, TRUE) else ret
+      path <- file.path(self$path, "keys", namespace)
+      files <- dir(path)
+      if (self$mangle_key) {
+        ret <- decode64(files, error = FALSE)
+        if (anyNA(ret)) {
+          message_corrupted_rds_keys(namespace, path, files[is.na(ret)])
+          ret <- ret[!is.na(ret)]
+        }
+      } else {
+        ret <- files
+      }
+      ret
     },
 
     check_objects = function(full, hash_length, progress) {
@@ -217,6 +255,19 @@ R6_driver_rds <- R6::R6Class(
 
     check_keys = function(full, hash_length, progress, invalid_hashes) {
       check_rds_keys(self, full, hash_length, progress, invalid_hashes)
+    },
+
+    purge_corrupt_keys = function(namespace) {
+      if (self$mangle_key) {
+        path <- file.path(self$path, "keys", namespace)
+        files <- dir(path)
+        i <- is.na(decode64(files, error = FALSE))
+        if (any(i)) {
+          res <- file.remove(file.path(path, files[i]))
+          message(sprintf("Removed %d of %d corrupt %s",
+                          sum(res), sum(i), ngettext(sum(i), "file", "files")))
+        }
+      }
     },
 
     name_hash = function(hash) {
@@ -356,4 +407,34 @@ check_rds_objects <- function(dr, full, hash_length, progress) {
   }
 
   list(corrupt = h[err])
+}
+
+
+corrupt_notices <- new.env(parent = emptyenv())
+
+
+message_corrupted_rds_keys <- function(namespace, path, files) {
+  period <- getOption("storr.corrupt.notice.period", 60)
+  if (is.na(period)) {
+    return()
+  }
+  last <- corrupt_notices[[path]]
+  now <- Sys.time()
+  if (!is.null(last)) {
+    if (as.numeric(now - last, "secs") < period) {
+      return()
+    }
+  }
+
+  "%d corrupted files have been found in your storr archive:
+
+namespace: '%s'
+path: '%s'
+files:
+%s
+
+See 'Corrupt keys' within ?storr_rds for how to proceed" -> fmt
+  files <- sprintf("  - '%s'", files)
+  message(sprintf(fmt, length(files), namespace, path, files))
+  corrupt_notices[[path]] <- now
 }

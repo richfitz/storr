@@ -64,6 +64,36 @@ mangling.  So once an rds storr has been created its "mangledness"
 is set.  Using \code{mangle_key = NULL} uses whatever mangledness
 exists (or no mangledness if creating a new storr).
 }
+\section{Corrupt keys}{
+
+
+Some file synchronisation utilities like dropbox can create file
+that confuse an rds storr (e.g.,
+\code{"myobject (Someone's conflicted copy)"}.  If
+\code{mangle_key} is \code{FALSE} these cannot be detected but at
+the same time are not a real problem for storr.  However, if
+\code{mangle_key} is \code{TRUE} and keys are base64 encoded then
+these conflicted copies can break parts of storr.
+
+If you see a warning asking you to deal with these files, please
+delete the offending files; the path will be printed along with
+the files that are causing the problem.
+
+Alternatively, you can try (assuming a storr object \code{st})
+running
+
+\preformatted{
+st$driver$purge_corrupt_keys()
+}
+
+which will delete corrupted keys with no confirmation.  The
+messages that are printed to screen will be printed by default at
+most once per minute per namespace.  You can control this by
+setting the R option \code{storr.corrupt.notice.period} - setting
+this to \code{NA} suppresses the notice and otherwise it is
+interpreted as the number of seconds.
+}
+
 \examples{
 
 # Create an rds storr in R's temporary directory:

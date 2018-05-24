@@ -29,3 +29,10 @@ skip_if_interactive <- function() {
     testthat::skip("Running interactively")
   }
 }
+
+
+with_options <- function(opts, code) {
+  oo <- options(opts)
+  on.exit(options(oo))
+  force(code)
+}
