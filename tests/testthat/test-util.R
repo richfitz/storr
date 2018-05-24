@@ -34,6 +34,8 @@ test_that("assertions", {
   expect_error(assert_logical(1:5), "must be logical")
   expect_error(assert_character(1:5), "must be character")
   expect_error(assert_raw(1:5), "must be raw")
+
+  expect_error(assert_is(TRUE, "foo"), "'TRUE' must be a foo")
 })
 
 test_that("write_serialized_rds recovers on error", {
