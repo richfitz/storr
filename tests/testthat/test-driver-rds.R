@@ -312,3 +312,8 @@ test_that("don't run automatically", {
   expect_error(st$repair(force = FALSE),
                "Please rerun with force")
 })
+
+
+test_that("automatic is ok if storr is healthy", {
+  expect_false(storr_rds(tempfile())$repair(force = FALSE))
+})

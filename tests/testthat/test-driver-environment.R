@@ -23,3 +23,12 @@ test_that("missing namespace error", {
   expect_error(storr_environment()$list(xxxx),
                "'xxxx' not found")
 })
+
+
+test_that("no checking", {
+  st <- storr_environment()
+  expect_error(
+    st$check(),
+    "This storr (with driver type 'environment') does not support checking",
+    fixed = TRUE)
+})
