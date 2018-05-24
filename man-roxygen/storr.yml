@@ -281,4 +281,4 @@ archive_import:
     names: As for \code{$import}
     namespace: >-
       Namespace to import objects into.  If \code{NULL}, then imports
-      al namespaces from the source storr.
+      all namespaces from the source storr.

@@ -433,7 +433,7 @@
 ##'     \item{\code{names}:   As for \code{$import}
 ##'     }
 ##'
-##'     \item{\code{namespace}:   Namespace to import objects into.  If \code{NULL}, then imports al namespaces from the source storr.
+##'     \item{\code{namespace}:   Namespace to import objects into.  If \code{NULL}, then imports all namespaces from the source storr.
 ##'     }
 ##'   }
 ##' }
