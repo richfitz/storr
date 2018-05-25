@@ -1,6 +1,7 @@
 ## storr 1.2.0
 
 * New index function (#22, requested by @wlandau)
+* Support for creating storrs with different storage for keys and data (`driver_multistorr` and `storr_multistorr`, #67)
 
 ## storr 1.1.3 (2017-12-15)
 
