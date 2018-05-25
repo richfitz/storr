@@ -9,6 +9,11 @@
 ##' data in the same storr as the keys (say, up to 1kb) based on some
 ##' tunable parameter.
 ##'
+##' You can attach another storr to either the data or the key storage
+##' (see the example), but it will not be able to see keys or data
+##' (respectively).  If you garbage collect the data half, all the
+##' data will be lost!
+##'
 ##' @title Storr with multiple storage drivers
 ##' @param keys Driver for the keys
 ##' @param data Driver for the data

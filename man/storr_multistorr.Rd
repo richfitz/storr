@@ -26,6 +26,11 @@ This is an experimental feature and somewhat subject to change.
 In particular, the driver may develop the ability to store small
 data in the same storr as the keys (say, up to 1kb) based on some
 tunable parameter.
+
+You can attach another storr to either the data or the key storage
+(see the example), but it will not be able to see keys or data
+(respectively).  If you garbage collect the data half, all the
+data will be lost!
 }
 \examples{
 # Create a storr that is stores keys in an environment and data in
