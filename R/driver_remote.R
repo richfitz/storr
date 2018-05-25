@@ -2,12 +2,17 @@
 ##' location.  This is the abstract interface (which does not do
 ##' anything useful) but which can be used with file operation driver
 ##' to store files elsewhere.  This is not intended for end-user use
-##' so there is \code{storr_remote} function.
+##' so there is no \code{storr_remote} function.  Instead this
+##' function is designed to support external packages that implement
+##' the details.  For a worked example, see the package tests
+##' (\code{helper-remote.R}).  In the current implementation these
+##' build off of the \code{\link{driver_rds}} driver by copying files
+##' to some remote location.
 ##'
 ##' @title Remote storr
 ##'
-##' @param ops A file operations object.  See (the as yet nonexistant)
-##'   documentation for what is required to implement one.
+##' @param ops A file operations object.  See tests for now to see
+##'   what is required to implement one.
 ##'
 ##' @param ... Arguments to pass through to \code{\link{driver_rds}},
 ##'   including \code{compress}, \code{mangle_key},
@@ -19,6 +24,7 @@
 ##'   reused over sessions.  Only storr \emph{values} (i.e., objects)
 ##'   are cached - the key-to-value mapping is always fetched from the
 ##'   remote storage.
+##'
 ##' @export
 ##' @author Rich FitzJohn
 driver_remote <- function(ops, ..., path_local = NULL) {

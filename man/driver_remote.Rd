@@ -7,8 +7,8 @@
 driver_remote(ops, ..., path_local = NULL)
 }
 \arguments{
-\item{ops}{A file operations object.  See (the as yet nonexistant)
-documentation for what is required to implement one.}
+\item{ops}{A file operations object.  See tests for now to see
+what is required to implement one.}
 
 \item{...}{Arguments to pass through to \code{\link{driver_rds}},
 including \code{compress}, \code{mangle_key},
@@ -25,7 +25,13 @@ remote storage.}
 Create a storr that keeps rds-serialised objects on a remote
 location.  This is the abstract interface (which does not do
 anything useful) but which can be used with file operation driver
-to store files elsewhere.
+to store files elsewhere.  This is not intended for end-user use
+so there is no \code{storr_remote} function.  Instead this
+function is designed to support external packages that implement
+the details.  For a worked example, see the package tests
+(\code{helper-remote.R}).  In the current implementation these
+build off of the \code{\link{driver_rds}} driver by copying files
+to some remote location.
 }
 \author{
 Rich FitzJohn
