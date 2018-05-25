@@ -41,5 +41,8 @@ pkgdown:
 website: pkgdown
 	./update_web.sh
 
+tests/testthat/base64_reference.csv: scripts/build_base64_reference.R
+	$<
+
 # No real targets!
 .PHONY: all test document install vignettes
