@@ -15,8 +15,7 @@ Simple object cacher for R.  `storr` acts as a very simple key-value store (supp
   - rds (disk)
   - [DBI](https://cran.r-project.org/package=DBI) though which you can use:
     * [SQLite](https://sqlite.org) (via [RSQLite](https://cran.r-project.org/package=RSQLite))
-    * [Postgres](https://postgresql.org) (via
-[RPostgresSQL](https://cran.r-project.org/package=RPostgreSQL) or [RPostgres](https://github.com/rstats-db/RPostgres))
+    * [Postgres](https://postgresql.org) (via [RPostgres](https://github.com/rstats-db/RPostgres))
   - Redis (provided by [redux](https://github.com/richfitz/redux))
   - [rlite](https://github.com/seppo0010/rlite) (via [rrlite](https://github.com/ropensci/rrlite), interface function in [redux](https://github.com/richfitz/redux))
   - An on disk memory-mapped file interface is implemented in [thor](https://github.com/richfitz/thor)

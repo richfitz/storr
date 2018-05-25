@@ -4,8 +4,6 @@ sudo: false
 
 r_packages:
   - covr
-  - RPostgreSQL
-  - RPostgres
 
 addons:
   postgresql: "9.4"

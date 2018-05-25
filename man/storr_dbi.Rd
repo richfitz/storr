@@ -44,14 +44,13 @@ This means that storr can work for any supported "DBI" driver
 (though practically this works only for SQLite and Postgres until
 some MySQL dialect translation is done).  To connect, you must
 provide the \emph{driver} object (e.g., \code{RSQLite::SQLite()},
-\code{RPostgreSQL::PostgreSQL()}, \code{RPostgres::Postgres()} as
-the first argument,
+or \code{RPostgres::Postgres()} as the first argument.
 }
 \details{
-Because the DBI package
-specifies a uniform interface for the using DBI compliant
-databases, you need only to provide a connection object.  storr
-does not do anything to help create the connection object itself.
+Because the DBI package specifies a uniform interface for the
+using DBI compliant databases, you need only to provide a
+connection object.  storr does not do anything to help create the
+connection object itself.
 
 The DBI storr driver works by using two tables; one mapping keys
 to hashes, and one mapping hashes to values.  Two table names need
