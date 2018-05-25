@@ -75,6 +75,18 @@ assert_raw <- function(x, name = deparse(substitute(x))) {
   }
 }
 
+assert_probably_storr_driver <- function(x, name = deparse(substitute(x))) {
+  expected <- c("type", "get_hash", "set_hash", "get_object",
+                "set_object", "exists_hash", "exists_object",
+                "del_hash", "del_object", "list_hashes",
+                "list_keys", "list_namespaces", "type", "destroy")
+  ok <- vlapply(expected, function(m) m %in% names(x) && is.function(x[[m]]))
+  if (!all(ok)) {
+    stop(sprintf("'%s' does not look like a storr driver", name))
+  }
+  invisible(x)
+}
+
 match_value <- function(x, choices, name = deparse(substitute(x))) {
   assert_scalar_character(x, name)
   i <- match(x, choices)

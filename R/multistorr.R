@@ -1,10 +1,45 @@
+##' Create a special storr that uses separate storage drivers for the
+##' keys (which tend to be numerous and small in size) and the data
+##' (which tends to be somewhat less numerous and much larger in
+##' size).  This might be useful to use storage models with different
+##' characteristics (in memory/on disk, etc).
+##'
+##' This is an experimental feature and somewhat subject to change.
+##' In particular, the driver may develop the ability to store small
+##' data in the same storr as the keys (say, up to 1kb) based on some
+##' tunable parameter.
+##'
+##' @title Storr with multiple storage drivers
+##' @param keys Driver for the keys
+##' @param data Driver for the data
+##' @param default_namespace Default namespace (see
+##'   \code{\link{storr}}).
+##' @export
+##' @examples
+##' # Create a storr that is stores keys in an environment and data in
+##' # an rds
+##' path <- tempfile()
+##' st <- storr::storr_multistorr(driver_environment(),
+##'                               driver_rds(path))
+##' st$set("a", runif(10))
+##' st$get("a")
+##'
+##' # The data can be also seen by connecting to the rds store
+##' rds <- storr::storr_rds(path)
+##' rds$list() # empty
+##' rds$list_hashes() # here's the data
+##' rds$get_value(rds$list_hashes())
+##'
+##' st$destroy()
 storr_multistorr <- function(keys, data, default_namespace = "objects") {
   storr::storr(driver_multistorr(keys, data), default_namespace)
 }
 
+
 driver_multistorr <- function(keys, data) {
   R6_driver_multistorr$new(keys, data)
 }
+
 
 R6_driver_multistorr <- R6::R6Class(
   "driver_multistorr",
@@ -30,8 +65,8 @@ R6_driver_multistorr <- R6::R6Class(
 
     ## real methods
     initialize = function(keys, data) {
-      self$keys <- keys
-      self$data <- data
+      self$keys <- assert_probably_storr_driver(keys)
+      self$data <- assert_probably_storr_driver(data)
 
       self$traits <- storr_traits(self$data$traits)
       self$traits$throw_missing <- self$traits$throw_missing &&
@@ -51,10 +86,12 @@ R6_driver_multistorr <- R6::R6Class(
       self$del_object <- self$data$del_object
       self$list_hashes <- self$data$list_hashes
     },
+
     type = function() {
       sprintf("multistorr (keys: %s, data: %s)",
               self$keys$type(), self$data$type())
     },
+
     destroy = function() {
       self$keys$destroy()
       self$data$destroy()
