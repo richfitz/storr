@@ -79,14 +79,6 @@
 ## interfaces that support first class key/value (`hstore`) which
 ## would be prefereable to this.
 
-## The appropriate interface here is currently in flux with breaking
-## changes altering the interface in DBI/RSQLite so there are _two_
-## ways of doing this; one for versions of RSQLite up to 1.0.0, and
-## another for larger versions.  To make this package work on CRAN,
-## both versions are presented here, but hopefully the approach is
-## still clear enough.
-old_sqlite <- packageVersion("RSQLite") <= package_version("1.0.0")
-
 ## Start with a SQLite connection (similar things can be done with
 ## other DBI drivers but at present this uses one SQLite-only function
 ## below):
@@ -109,15 +101,8 @@ value <- mtcars
 name <- "mtcars"
 sql <- sprintf("INSERT into %s (name, value) values (:name, :value)", table)
 
-if (old_sqlite) {
-  dat <- data.frame(name=name,
-                    value=I(list(serialize(value, NULL))),
-                    stringsAsFactors=FALSE)
-  RSQLite::dbGetPreparedQuery(con, sql, bind.data=dat)
-} else {
-  dat <- list(name=name, value=list(serialize(value, NULL)))
-  DBI::dbExecute(con, sql, dat)
-}
+dat <- list(name=name, value=list(serialize(value, NULL)))
+DBI::dbExecute(con, sql, dat)
 
 ## The pattern here is to use `dbExecute` to create and execute the
 ## query, injecting the raw byte sequence of the serialized object
@@ -281,15 +266,8 @@ R6_driver_sqlite <- R6::R6Class(
     set_object=function(hash, value) {
       sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
                    "(hash, value) VALUES (:hash, :value)")
-      if (old_sqlite) {
-        dat <- data.frame(hash=hash,
-                          value=I(list(serialize(value, NULL))),
-                          stringsAsFactors=FALSE)
-        RSQLite::dbGetPreparedQuery(self$con, sql, bind.data=dat)
-      } else {
-        dat <- list(hash=hash, value=list(serialize(value, NULL)))
-        DBI::dbExecute(self$con, sql, dat)
-      }
+      dat <- list(hash=hash, value=list(serialize(value, NULL)))
+      DBI::dbExecute(self$con, sql, dat)
     },
 
     ## Check if a key/namespace pair exists.
