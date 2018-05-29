@@ -148,12 +148,13 @@ identical(x, value)
 ##   the R object stored against it.  Deserialization will likely be
 ##   needed here (e.g., `unserialize(dat)`)
 
-## * `exists_hash(key, namespace)` (returns logical): Given strings
-##   for `key` and `namespace` return `TRUE` if there is a hash stored
-##   against the key/namespace pair, `FALSE` otherwise.
-## * `exists_object(hash)` (returns logical): Given a string for
-##   `hash`, return `TRUE` if there is an object stored against the
-##   hash.
+## * `exists_hash(key, namespace)` (returns logical): Given vectors of
+##   strings for `key` and `namespace` return a vector with `TRUE` if
+##   there is a hash stored against the key/namespace pair, `FALSE`
+##   otherwise.
+## * `exists_object(hash)` (returns logical): Given a vector of
+##   strings for `hash`, return a vector with `TRUE` if there is an
+##   object stored against the hash.
 
 ## * `del_hash(key, namespace)` (returns logical): Given strings for
 ##   `key` and `namespace`, delete this key if it exists.  Return
@@ -201,6 +202,13 @@ R6_driver_sqlite <- R6::R6Class(
     con = NULL,
     tbl_data = NULL,
     tbl_keys = NULL,
+
+    ## There is support for selecting different hash algorithms,
+    ## However, this requires that the driver stores the used alorithm
+    ## and errors if the algorithm changes, which is fiddly to set up.
+    ## So this tells storr that this driver does not support setting
+    ## the hash algorithm.
+    traits = list(hash_algorithm = FALSE),
 
     ## On initialisation we'll create the two tables but only if they
     ## do not exist.  We can enforce the constraint that hash must be
@@ -273,42 +281,81 @@ R6_driver_sqlite <- R6::R6Class(
       DBI::dbExecute(self$con, sql, dat)
     },
 
-    ## Check if a key/namespace pair exists.
+    ## Check if a key/namespace pair exists.  This is somewhat more
+    ## complicated than the other methods because storr assumes that
+    ## this can be done for vector arguments key and namespace.  storr
+    ## provides a helper function 'join_key_namespace' for predictably
+    ## recycling keys and namespaces and then we consider
+    ## possibilities of 0, 1 or more items to lookup.  The "more" case
+    ## can be done more efficiently with a single SQL statement, but
+    ## instead here we recurse.
     exists_hash = function(key, namespace) {
-      sql <- sprintf('SELECT 1 FROM %s WHERE namespace = "%s" AND key = "%s"',
-                     self$tbl_keys, namespace, key)
-      nrow(DBI::dbGetQuery(self$con, sql)) > 0L
+      nk <- storr::join_key_namespace(key, namespace)
+      if (nk$n == 0L) {
+        logical(0)
+      } else if (nk$n == 1L) {
+        sql <- sprintf('SELECT 1 FROM %s WHERE namespace = "%s" AND key = "%s"',
+                       self$tbl_keys, namespace, key)
+        nrow(DBI::dbGetQuery(self$con, sql)) > 0L
+      } else {
+        vapply(seq_len(nk$n), function(i)
+          self$exists_hash(nk$key[[i]], nk$namespace[[i]]),
+          logical(1), USE.NAMES = FALSE)
+      }
     },
 
-    ## Check if a hash exists
+    ## Check if a hash exists.  As for 'exists_hash' this must deal
+    ## with vectorised input but it's a little simpler.
     exists_object = function(hash) {
-      sql <- sprintf('SELECT 1 FROM %s WHERE hash = "%s"',
-                     self$tbl_data, hash)
-      nrow(DBI::dbGetQuery(self$con, sql)) > 0L
+      if (length(hash) == 0L) {
+        logical(0)
+      } else if (length(hash) == 1L) {
+        sql <- sprintf('SELECT 1 FROM %s WHERE hash = "%s"',
+                       self$tbl_data, hash)
+        nrow(DBI::dbGetQuery(self$con, sql)) > 0L
+      } else {
+        vapply(hash, self$exists_object, logical(1), USE.NAMES = FALSE)
+      }
     },
 
     ## Delete a key.  Because of the requirement to return TRUE/FALSE on
     ## successful/unsuccessful key deletion this includes an exists_hash()
-    ## step first.
+    ## step first.  As with 'exists_hash' this needs to be vectorised.
     del_hash = function(key, namespace) {
-      if (self$exists_hash(key, namespace)) {
-        sql <- sprintf('DELETE FROM %s WHERE namespace = "%s" AND key = "%s"',
-                       self$tbl_keys, namespace, key)
-        DBI::dbExecute(self$con, sql)
-        TRUE
+      nk <- storr::join_key_namespace(key, namespace)
+      if (nk$n == 0L) {
+        logical(0)
+      } else if (nk$n == 1L) {
+        if (self$exists_hash(key, namespace)) {
+          sql <- sprintf('DELETE FROM %s WHERE namespace = "%s" AND key = "%s"',
+                         self$tbl_keys, namespace, key)
+          DBI::dbExecute(self$con, sql)
+          TRUE
+        } else {
+          FALSE
+        }
       } else {
-        FALSE
+        vapply(seq_len(nk$n), function(i)
+          self$del_hash(nk$key[[i]], nk$namespace[[i]]),
+          logical(1), USE.NAMES = FALSE)
       }
     },
 
     ## Delete a hash
     del_object = function(hash) {
-      if (self$exists_object(hash)) {
-        sql <- sprintf('DELETE FROM %s WHERE hash = "%s"', self$tbl_data, hash)
-        DBI::dbExecute(self$con, sql)
-        TRUE
+      if (length(hash) == 0L) {
+        logical(0)
+      } else if (length(hash) == 1L) {
+        if (self$exists_object(hash)) {
+          sql <- sprintf(
+            'DELETE FROM %s WHERE hash = "%s"', self$tbl_data, hash)
+          DBI::dbExecute(self$con, sql)
+          TRUE
+        } else {
+          FALSE
+        }
       } else {
-        FALSE
+        vapply(hash, self$del_object, logical(1), USE.NAMES = FALSE)
       }
     },
 
@@ -435,9 +482,7 @@ st_sql$get_value(st_sql$list_hashes())
 st_sql$gc()
 st_sql$list_hashes()
 
-
 st_sql$destroy()
-st_rds$destroy()
 
 ## This is not really SQL's strong suit.  But if key/value storage is
 ## a small part of an application that already uses SQLite for storage
