@@ -89,7 +89,7 @@ table <- "mydata"
 sql <- c(sprintf("CREATE TABLE IF NOT EXISTS %s", table),
          "(name string PRIMARY KEY,",
          "value blob)")
-DBI::dbExecute(con, paste(sql, collapse=" "))
+DBI::dbExecute(con, paste(sql, collapse = " "))
 
 ## Then take an object, serialize it, and stuff it into the blob, then
 ## insert that into the table.  This is the part that varies between
@@ -101,7 +101,7 @@ value <- mtcars
 name <- "mtcars"
 sql <- sprintf("INSERT into %s (name, value) values (:name, :value)", table)
 
-dat <- list(name=name, value=list(serialize(value, NULL)))
+dat <- list(name = name, value = list(serialize(value, NULL)))
 DBI::dbExecute(con, sql, dat)
 
 ## The pattern here is to use `dbExecute` to create and execute the
@@ -187,7 +187,8 @@ identical(x, value)
 ## The SQL queries are a bit ugly but hopefully straightforward enough
 ## to follow.
 
-driver_sqlite <- function(path, tbl_data="storr_data", tbl_keys="storr_keys") {
+driver_sqlite <- function(path, tbl_data = "storr_data",
+                          tbl_keys = "storr_keys") {
   R6_driver_sqlite$new(path, tbl_data, tbl_keys)
 }
 
@@ -195,17 +196,17 @@ driver_sqlite <- function(path, tbl_data="storr_data", tbl_keys="storr_keys") {
 ## little commentry throughout.
 R6_driver_sqlite <- R6::R6Class(
   "driver_sqlite",
-  public=list(
+  public = list(
     ## Public data members
-    con=NULL,
-    tbl_data=NULL,
-    tbl_keys=NULL,
+    con = NULL,
+    tbl_data = NULL,
+    tbl_keys = NULL,
 
     ## On initialisation we'll create the two tables but only if they
     ## do not exist.  We can enforce the constraint that hash must be
     ## unique within tbl_data and key/namespace pairs must be unique
     ## within tbl_keys.
-    initialize=function(con, tbl_data, tbl_keys) {
+    initialize = function(con, tbl_data, tbl_keys) {
       self$con <- con
       self$tbl_data <- tbl_data
       self$tbl_keys <- tbl_keys
@@ -213,49 +214,51 @@ R6_driver_sqlite <- R6::R6Class(
       sql <- c(sprintf("CREATE TABLE if NOT EXISTS %s", tbl_data),
                "(hash string PRIMARY KEY NOT NULL,",
                "value blob NOT NULL)")
-      DBI::dbExecute(self$con, paste(sql, collapse=" "))
+      DBI::dbExecute(self$con, paste(sql, collapse = " "))
 
       sql <- c(sprintf("CREATE TABLE IF NOT EXISTS %s", tbl_keys),
                "(namespace string NOT NULL,",
                "key string NOT NULL,",
                "hash string NOT NULL,",
                "PRIMARY KEY (namespace, key))")
-      DBI::dbExecute(self$con, paste(sql, collapse=" "))
+      DBI::dbExecute(self$con, paste(sql, collapse = " "))
     },
 
     ## This is purely for identification later.
-    type=function() {
+    type = function() {
       "DBI/sqlite"
     },
 
     ## Total destruction of the driver; delete all data stored in both
     ## tables, then delete our database connection to render the
     ## driver useless.
-    destroy=function() {
+    destroy = function() {
       DBI::dbRemoveTable(self$con, self$tbl_data)
       DBI::dbRemoveTable(self$con, self$tbl_keys)
       self$con <- NULL
     },
 
     ## Return the hash value given a key/namespace pair
-    get_hash=function(key, namespace) {
-      sql <- sprintf('SELECT hash FROM "%s" WHERE namespace="%s" AND key="%s"',
-                     self$tbl_keys, namespace, key)
+    get_hash = function(key, namespace) {
+      sql <- sprintf(
+        'SELECT hash FROM "%s" WHERE namespace = "%s" AND key = "%s"',
+        self$tbl_keys, namespace, key)
       DBI::dbGetQuery(self$con, sql)[[1]]
     },
+
     ## Set the key/namespace pair to a hash
-    set_hash=function(key, namespace, hash) {
+    set_hash = function(key, namespace, hash) {
       sql <- c(sprintf("INSERT OR REPLACE INTO %s", self$tbl_keys),
                sprintf('(namespace, key, hash) VALUES ("%s", "%s", "%s")',
                        namespace, key, hash))
-      DBI::dbExecute(self$con, paste(sql, collapse=" "))
+      DBI::dbExecute(self$con, paste(sql, collapse = " "))
     },
 
     ## Return a (deserialized) R object, given a hash
-    get_object=function(hash) {
+    get_object = function(hash) {
       sql <- c(sprintf("SELECT value FROM %s", self$tbl_data),
                sprintf('WHERE hash = "%s"', hash))
-      value <- DBI::dbGetQuery(self$con, paste(sql, collapse=" "))[[1]]
+      value <- DBI::dbGetQuery(self$con, paste(sql, collapse = " "))[[1]]
       unserialize(value[[1]])
     },
 
@@ -263,21 +266,22 @@ R6_driver_sqlite <- R6::R6Class(
     ## considerably simpler (but probably slower and less accurate) if we
     ## serialized to string with:
     ##   rawToChar(serialize(value, NULL, TRUE))
-    set_object=function(hash, value) {
+    set_object = function(hash, value) {
       sql <- paste(sprintf("INSERT OR REPLACE INTO %s", self$tbl_data),
                    "(hash, value) VALUES (:hash, :value)")
-      dat <- list(hash=hash, value=list(serialize(value, NULL)))
+      dat <- list(hash = hash, value = list(serialize(value, NULL)))
       DBI::dbExecute(self$con, sql, dat)
     },
 
     ## Check if a key/namespace pair exists.
-    exists_hash=function(key, namespace) {
+    exists_hash = function(key, namespace) {
       sql <- sprintf('SELECT 1 FROM %s WHERE namespace = "%s" AND key = "%s"',
                      self$tbl_keys, namespace, key)
       nrow(DBI::dbGetQuery(self$con, sql)) > 0L
     },
+
     ## Check if a hash exists
-    exists_object=function(hash) {
+    exists_object = function(hash) {
       sql <- sprintf('SELECT 1 FROM %s WHERE hash = "%s"',
                      self$tbl_data, hash)
       nrow(DBI::dbGetQuery(self$con, sql)) > 0L
@@ -286,7 +290,7 @@ R6_driver_sqlite <- R6::R6Class(
     ## Delete a key.  Because of the requirement to return TRUE/FALSE on
     ## successful/unsuccessful key deletion this includes an exists_hash()
     ## step first.
-    del_hash=function(key, namespace) {
+    del_hash = function(key, namespace) {
       if (self$exists_hash(key, namespace)) {
         sql <- sprintf('DELETE FROM %s WHERE namespace = "%s" AND key = "%s"',
                        self$tbl_keys, namespace, key)
@@ -296,8 +300,9 @@ R6_driver_sqlite <- R6::R6Class(
         FALSE
       }
     },
+
     ## Delete a hash
-    del_object=function(hash) {
+    del_object = function(hash) {
       if (self$exists_object(hash)) {
         sql <- sprintf('DELETE FROM %s WHERE hash = "%s"', self$tbl_data, hash)
         DBI::dbExecute(self$con, sql)
@@ -309,16 +314,18 @@ R6_driver_sqlite <- R6::R6Class(
 
     ## List hashes, namespaces and keys.  Because the SQLite driver seems to
     ## return numeric(0) if the result set is empty, we need as.character here.
-    list_hashes=function() {
+    list_hashes = function() {
       sql <- sprintf("SELECT hash FROM %s", self$tbl_data)
       as.character(DBI::dbGetQuery(self$con, sql)[[1]])
     },
-    list_namespaces=function() {
+
+    list_namespaces = function() {
       sql <- sprintf("SELECT DISTINCT namespace FROM %s", self$tbl_keys)
       as.character(DBI::dbGetQuery(self$con, sql)[[1]])
     },
-    list_keys=function(namespace) {
-      sql <- sprintf('SELECT key FROM %s WHERE namespace="%s"',
+
+    list_keys = function(namespace) {
+      sql <- sprintf('SELECT key FROM %s WHERE namespace = "%s"',
                      self$tbl_keys, namespace)
       as.character(DBI::dbGetQuery(self$con, sql)[[1]])
     }
@@ -398,8 +405,8 @@ storr::test_driver(create_sqlite)
 
 ## Now that the driver works, we can write the wrapper function:
 storr_sqlite <- function(con,
-                         tbl_data="storr_data", tbl_keys="storr_keys",
-                         default_namespace="objects") {
+                         tbl_data = "storr_data", tbl_keys = "storr_keys",
+                         default_namespace = "objects") {
   storr::storr(driver_sqlite(con, tbl_data, tbl_keys),
                default_namespace)
 }
