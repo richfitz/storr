@@ -191,6 +191,7 @@ R6_driver_rds <- R6::R6Class(
     type = function() {
       "rds"
     },
+
     destroy = function() {
       unlink(self$path, recursive = TRUE)
     },
@@ -198,6 +199,7 @@ R6_driver_rds <- R6::R6Class(
     get_hash = function(key, namespace) {
       readLines(self$name_key(key, namespace))
     },
+
     set_hash = function(key, namespace, hash) {
       dir_create(self$name_key("", namespace))
       write_lines(hash, self$name_key(key, namespace),
@@ -206,6 +208,7 @@ R6_driver_rds <- R6::R6Class(
     get_object = function(hash) {
       readRDS(self$name_hash(hash))
     },
+
     set_object = function(hash, value) {
       ## NOTE: this takes advantage of having the serialized value
       ## already and avoids seralising twice.
@@ -217,6 +220,7 @@ R6_driver_rds <- R6::R6Class(
     exists_hash = function(key, namespace) {
       file.exists(self$name_key(key, namespace))
     },
+
     exists_object = function(hash) {
       file.exists(self$name_hash(hash))
     },
@@ -224,6 +228,7 @@ R6_driver_rds <- R6::R6Class(
     del_hash = function(key, namespace) {
       file_remove(self$name_key(key, namespace))
     },
+
     del_object = function(hash) {
       file_remove(self$name_hash(hash))
     },
@@ -231,9 +236,11 @@ R6_driver_rds <- R6::R6Class(
     list_hashes = function() {
       sub("\\.rds$", "", dir(file.path(self$path, "data")))
     },
+
     list_namespaces = function() {
       dir(file.path(self$path, "keys"))
     },
+
     list_keys = function(namespace) {
       path <- file.path(self$path, "keys", namespace)
       files <- dir(path)
@@ -277,6 +284,7 @@ R6_driver_rds <- R6::R6Class(
         character(0)
       }
     },
+
     name_key = function(key, namespace) {
       if (self$mangle_key) {
         key <- encode64(key, pad = self$mangle_key_pad)
@@ -284,6 +292,7 @@ R6_driver_rds <- R6::R6Class(
       file.path(self$path, "keys", namespace, key)
     }
   ))
+
 
 ## This attempts to check that we are connecting to a storr of
 ## appropriate mangledness.  There's a lot of logic here, but it's
@@ -322,20 +331,17 @@ driver_rds_config <- function(path, name, value, default, must_agree) {
   value
 }
 
+
 driver_rds_config_file <- function(path, key) {
   file.path(path, "config", key)
 }
+
 
 write_if_missing <- function(value, path) {
   if (!file.exists(path)) {
     writeLines(value, path)
   }
 }
-
-
-## There's more to do here:
-##
-## * flag and do something about
 
 check_rds_keys <- function(dr, full, hash_length, progress, invalid_hashes) {
   ns <- dr$list_namespaces()
@@ -348,6 +354,7 @@ check_rds_keys <- function(dr, full, hash_length, progress, invalid_hashes) {
 
   list(corrupt = collect("corrupt"), dangling = collect("dangling"))
 }
+
 
 check_rds_keys1 <- function(ns, dr, full, hash_length, invalid_hashes) {
   keys <- dr$list_keys(ns)

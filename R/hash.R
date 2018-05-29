@@ -8,6 +8,7 @@ make_hash_serialized_object <- function(hash_algorithm, skip_version) {
   }
 }
 
+
 make_serialize_object <- function(drop_r_version, string, xdr = TRUE,
                                   r_version = get_r_version()) {
   if (string) {
@@ -29,6 +30,7 @@ make_serialize_object <- function(drop_r_version, string, xdr = TRUE,
   }
 }
 
+
 unserialize_safe <- function(x) {
   if (is.character(x)) {
     unserialize(charToRaw(x))
@@ -38,6 +40,7 @@ unserialize_safe <- function(x) {
     stop("Invalid input")
   }
 }
+
 
 ## This is needed to support the case where the hash must apply to the
 ## *entire* structure, just just the relevant bytes.
@@ -49,9 +52,11 @@ serialize_object_drop_r_version <- function(object, xdr = TRUE) {
   dat
 }
 
+
 serialize_to_raw <- function(x, ascii, xdr) {
   serialize(x, NULL, ascii = ascii, xdr = xdr, version = 2L)
 }
+
 
 ## For current R (3.3.2 or thereabouts) writeBin does not work with
 ## long vectors.  We can work around this for now, but in future
@@ -73,6 +78,7 @@ write_serialized_rds <- function(value, filename, compress,
     try_write_serialized_rds(value, filename, compress, scratch_dir, long),
     error = function(e) unlink(filename))
 }
+
 
 ## The split here helps keep the order really consistent; we will
 ## close the connection on exit from try_write_serialized_rds and
@@ -100,6 +106,7 @@ try_write_serialized_rds <- function(value, filename, compress,
   needs_close <- FALSE
   file.rename(tmp, filename)
 }
+
 
 ## Same pattern for write_lines.  The difference is that this will
 ## delete the key on a failed write (otherwise there's a copy

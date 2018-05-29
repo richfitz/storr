@@ -37,7 +37,7 @@
 ##'
 ##' st$destroy()
 storr_multistorr <- function(keys, data, default_namespace = "objects") {
-  storr::storr(driver_multistorr(keys, data), default_namespace)
+  storr(driver_multistorr(keys, data), default_namespace)
 }
 
 

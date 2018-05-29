@@ -3,6 +3,7 @@
 ##   .driver_create: function()
 testthat::context(sprintf("external [%s]", .driver_name))
 
+
 testthat::test_that("simple", {
   dr <- .driver_create()
   on.exit(dr$destroy())

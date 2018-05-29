@@ -102,12 +102,14 @@ storr_dbi <- function(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
         default_namespace)
 }
 
+
 ##' @rdname storr_dbi
 ##' @export
 driver_dbi <- function(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
                        hash_algorithm = NULL) {
   R6_driver_DBI$new(tbl_data, tbl_keys, con, args, binary, hash_algorithm)
 }
+
 
 ## SQL interpolation
 ##
@@ -416,6 +418,7 @@ R6_driver_DBI <- R6::R6Class(
     }
   ))
 
+
 dbi_supports_binary <- function(con) {
   ## Very little binary support exists; requires newfangled DBI and
   ## new RSQLite.  None of the other connection types supports binary
@@ -428,6 +431,7 @@ dbi_supports_binary <- function(con) {
   }
   supports_binary
 }
+
 
 dbi_use_binary <- function(con, tbl_data, binary) {
   supports_binary <- dbi_supports_binary(con)
@@ -461,8 +465,10 @@ dbi_use_binary <- function(con, tbl_data, binary) {
   }
 }
 
+
 ## 15 'f's - no hash algo has this length
 STORR_DBI_CONFIG_HASH <- paste(rep("f", 15), collapse = "")
+
 
 ## This is going to hold prepared queries for the core bits of the
 ## SQL; these vary fairly wildly by dialect, and some care is needed
@@ -564,6 +570,7 @@ driver_dbi_sql_compat <- function(dialect, tbl_data, tbl_keys) {
   ret
 }
 
+
 driver_dbi_mkey_prepare <- function(key, namespace, placeholder) {
   nk <- join_key_namespace(key, namespace)
   if (nk$n == 0L) {
@@ -616,9 +623,11 @@ driver_dbi_mkey_prepare <- function(key, namespace, placeholder) {
        values = values)
 }
 
+
 driver_dbi_mhash_prepare <- function(hash, placeholder) {
   paste(sprintf(placeholder, seq_along(hash)), collapse = ", ")
 }
+
 
 driver_dbi_dialect <- function(con) {
   if (inherits(con, "SQLiteConnection")) {
@@ -640,19 +649,23 @@ driver_dbi_dialect <- function(con) {
   }
 }
 
+
 driver_classes <- function() {
   c("SQLiteConnection",
     "PqConnection", "PostgreSQLConnection")
 }
+
 
 group_placeholders <- function(placeholder, n, times) {
   p <- matrix(sprintf(placeholder, seq_len(n * times)), n)
   paste(sprintf("(%s)", apply(p, 2, paste, collapse = ", ")), collapse = ", ")
 }
 
+
 pg_server_version <- function(con) {
   numeric_version(DBI::dbGetQuery(con, "show server_version")[[1L]])
 }
+
 
 dbi_connection_factory <- function(drv, args) {
   if (is.null(drv)) {
@@ -669,6 +682,7 @@ dbi_connection_factory <- function(drv, args) {
     }
   }
 }
+
 
 assert_valid_table_name <- function(x, name = deparse(substitute(x))) {
   assert_scalar_character(x, name)

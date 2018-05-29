@@ -6,6 +6,7 @@ KeyError <- function(key, namespace, driver) {
             class = c("KeyError", "error", "condition"))
 }
 
+
 KeyErrorExternal <- function(key, namespace, e) {
   msg <- sprintf("key '%s' ('%s') not found, with error: %s",
                  key, namespace, e$message)
@@ -17,12 +18,14 @@ KeyErrorExternal <- function(key, namespace, e) {
             class = c("KeyErrorExternal", "KeyError", "error", "condition"))
 }
 
+
 HashError <- function(hash, driver) {
   structure(list(hash = hash,
                  message = sprintf("hash '%s' not found", hash),
                  call = NULL),
             class = c("HashError", "error", "condition"))
 }
+
 
 ConfigError <- function(name, prev, requested) {
   msg <- sprintf("Incompatible value for %s (existing: %s, requested: %s)",

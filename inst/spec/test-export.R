@@ -3,9 +3,9 @@
 ##   .driver_create: function()
 testthat::context(sprintf("export [%s]", .driver_name))
 
+
 ## TODO: not tested properly; *importing* from a cache; the inverse of
 ## this with dr being the recipient and environment being the source.
-
 testthat::test_that("export", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -35,6 +35,7 @@ testthat::test_that("export", {
   testthat::expect_equal(env$dat, iris)
 })
 
+
 ## This is pretty minimal:
 testthat::test_that("import", {
   dr <- .driver_create()
@@ -48,6 +49,7 @@ testthat::test_that("import", {
   testthat::expect_identical(cache$list(), "d")
   testthat::expect_equal(cache$get("d"), mtcars)
 })
+
 
 testthat::test_that("namespace", {
   dr <- .driver_create()
@@ -70,6 +72,7 @@ testthat::test_that("namespace", {
   testthat::expect_identical(cache2$list("ns2"), "d")
   testthat::expect_equal(cache2$get("d", "ns2"), iris)
 })
+
 
 testthat::test_that("import / export", {
   dr <- .driver_create()
@@ -115,6 +118,7 @@ testthat::test_that("import / export", {
   testthat::expect_identical(st$get("foo"), tmp$get("a"))
 })
 
+
 testthat::test_that("namespace", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -141,6 +145,7 @@ testthat::test_that("namespace", {
   testthat::expect_identical(tmp$list("ns2"), "b")
 })
 
+
 testthat::test_that("export list", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -155,6 +160,7 @@ testthat::test_that("export list", {
   y <- st$export(list(foo = 1, bar = 2))
   testthat::expect_equal(y, list(foo = vals, bar = 2), tolerance = 1e-15)
 })
+
 
 testthat::test_that("export environment", {
   dr <- .driver_create()

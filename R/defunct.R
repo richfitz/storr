@@ -17,6 +17,7 @@ driver_redis_api <- function(...) {
   .Defunct("redux::driver_redis_api")
 }
 
+
 ##' @rdname storr-defunct
 ##' @export
 storr_redis_api <- function(...) {

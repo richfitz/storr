@@ -41,6 +41,7 @@ storr_environment <- function(envir = NULL, hash_algorithm = NULL,
   storr(driver_environment(envir, hash_algorithm), default_namespace)
 }
 
+
 ##' @export
 ##' @rdname storr_environment
 driver_environment <- function(envir = NULL, hash_algorithm = NULL) {
@@ -49,6 +50,7 @@ driver_environment <- function(envir = NULL, hash_algorithm = NULL) {
   }
   R6_driver_environment$new(envir, hash_algorithm)
 }
+
 
 R6_driver_environment <- R6::R6Class(
   "driver_environment",
@@ -84,6 +86,7 @@ R6_driver_environment <- R6::R6Class(
     type = function() {
       "environment"
     },
+
     destroy = function() {
       self$envir$keys <- NULL
       self$envir$list <- NULL
@@ -94,13 +97,16 @@ R6_driver_environment <- R6::R6Class(
     get_hash = function(key, namespace) {
       self$ensure_envir(namespace)[[key]]
     },
+
     set_hash = function(key, namespace, hash) {
       e <- self$ensure_envir(namespace)
       e[[key]] <- hash
     },
+
     get_object = function(hash) {
       self$envir$data[[hash]]
     },
+
     set_object = function(hash, value) {
       self$envir$data[[hash]] <- value
     },
@@ -143,10 +149,12 @@ R6_driver_environment <- R6::R6Class(
     list_hashes = function() {
       ls(self$envir$data)
     },
+
     list_keys = function(namespace) {
       e <- self$ensure_envir(namespace)
       ls(e)
     },
+
     list_namespaces = function() {
       as.character(names(self$envir$keys))
     },

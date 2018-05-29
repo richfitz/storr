@@ -72,6 +72,7 @@ storr <- function(driver, default_namespace = "objects") {
   R6_storr$new(driver, default_namespace)
 }
 
+
 ##' @importFrom R6 R6Class
 R6_storr <- R6::R6Class(
   "storr",
@@ -143,6 +144,7 @@ R6_storr <- R6::R6Class(
       self$get_value(self$get_hash(key, namespace), use_cache)
 
     },
+
     mget = function(key, namespace = self$default_namespace, use_cache = TRUE,
                     missing = NULL) {
       self$mget_value(self$mget_hash(key, namespace), use_cache, missing)
@@ -179,6 +181,7 @@ R6_storr <- R6::R6Class(
       n <- check_length(key, namespace)
       invisible(self$driver$del_hash(key, namespace))
     },
+
     ## NOTE: No del_hash exposed here; this is because otherwise
     ## things can get pretty messy when actual data is being deleted.
 
@@ -370,9 +373,11 @@ R6_storr <- R6::R6Class(
     index_export = function(namespace = NULL) {
       storr_index_export(self, namespace)
     },
+
     index_import = function(index) {
       storr_index_import(self, index)
     },
+
     check = function(full = TRUE, quiet = FALSE, progress = !quiet) {
       storr_check(self, full, quiet, progress)
     },
@@ -388,6 +393,7 @@ R6_storr <- R6::R6Class(
     }
   ))
 
+
 storr_mset_hash <- function(obj, key, namespace, hash) {
   if (is.null(obj$driver$mset_hash)) {
     n <- length(hash)
@@ -400,6 +406,7 @@ storr_mset_hash <- function(obj, key, namespace, hash) {
     obj$driver$mset_hash(key, namespace, hash)
   }
 }
+
 
 storr_check <- function(obj, full, quiet, progress) {
   obj$flush_cache()
@@ -495,11 +502,13 @@ storr_repair <- function(obj, storr_check_results, quiet, ..., force) {
   length(h) > 0 || length(k) > 0
 }
 
+
 ##' @export
 as.list.storr <- function(x, ...) {
   x <- x$export(list(), ...)
   x
 }
+
 
 ## This one is complicated enough to come out.
 storr_gc <- function(driver, envir) {
@@ -510,6 +519,7 @@ storr_gc <- function(driver, envir) {
   ## and let us know what was removed:
   invisible(unused)
 }
+
 
 storr_used_hashes <- function(driver) {
   list_hashes <- function(ns) {
@@ -524,6 +534,7 @@ storr_used_hashes <- function(driver) {
                 use.names = FALSE))
 }
 
+
 check_length <- function(key, namespace) {
   n_key <- length(key)
   n_namespace <- length(namespace)
@@ -535,6 +546,7 @@ check_length <- function(key, namespace) {
     stop("Incompatible lengths for key and namespace")
   }
 }
+
 
 ##' Utility function for driver authors
 ##'
@@ -555,6 +567,7 @@ join_key_namespace <- function(key, namespace) {
        namespace = rep_len(namespace, n))
 }
 
+
 storr_index_export <- function(st, namespace = NULL) {
   namespace <- namespace %||% st$list_namespaces()
   keys <- lapply(namespace, st$list)
@@ -571,6 +584,7 @@ storr_index_export <- function(st, namespace = NULL) {
   ret$hash <- st$mget_hash(ret$key, ret$namespace)
   ret
 }
+
 
 storr_index_import <- function(st, index) {
   cols <- c("namespace", "key", "hash")

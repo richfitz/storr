@@ -5,6 +5,7 @@ storr_traits_default <- function() {
        hash_algorithm = TRUE)
 }
 
+
 storr_traits <- function(given) {
   default <- storr_traits_default()
   extra <- setdiff(names(given), names(default))

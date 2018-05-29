@@ -4,6 +4,7 @@
 ##   .driver_create: function()
 testthat::context(sprintf("drivers [%s]", .driver_name))
 
+
 testthat::test_that("basic (empty)", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -25,6 +26,7 @@ testthat::test_that("basic (empty)", {
   testthat::expect_false(dr$del_object(h))
   testthat::expect_false(dr$del_hash(h, ns))
 })
+
 
 testthat::test_that("set", {
   dr <- .driver_create()
@@ -66,6 +68,7 @@ testthat::test_that("set", {
   testthat::expect_false(dr$del_object(h))
   testthat::expect_false(dr$exists_object(h))
 })
+
 
 testthat::test_that("namespace", {
   dr <- .driver_create()
@@ -112,6 +115,7 @@ testthat::test_that("namespace", {
   testthat::expect_false(dr$exists_hash(k2, ns2))
 })
 
+
 testthat::test_that("traits: throw_missing", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -125,6 +129,7 @@ testthat::test_that("traits: throw_missing", {
     dummy_test()
   }
 })
+
 
 testthat::test_that("exists (vector input)", {
   dr <- .driver_create()
@@ -161,6 +166,7 @@ testthat::test_that("exists (vector input)", {
   testthat::expect_equal(dr$exists_object(h), c(TRUE, TRUE))
   testthat::expect_equal(dr$exists_object(character(0)), logical(0))
 })
+
 
 testthat::test_that("del (vector input)", {
   dr <- .driver_create()
@@ -204,6 +210,7 @@ testthat::test_that("del (vector input)", {
   testthat::expect_equal(dr$del_object(h), h != ha)
 })
 
+
 testthat::test_that("mget_object", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -221,6 +228,7 @@ testthat::test_that("mget_object", {
     testthat::expect_equal(dr$mget_object(c(h1, "aaaaaa")), list(1, NULL))
   }
 })
+
 
 testthat::test_that("mget_hash", {
   dr <- .driver_create()
@@ -258,6 +266,7 @@ testthat::test_that("mget_hash", {
   }
 })
 
+
 testthat::test_that("mset_object", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -293,6 +302,7 @@ testthat::test_that("mset_object", {
     testthat::expect_equal(dr$get_object(hb), b)
   }
 })
+
 
 testthat::test_that("mset_hash", {
   dr <- .driver_create()

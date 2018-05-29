@@ -45,6 +45,7 @@ encode64 <- function(x, char62 = "-", char63 = "_", pad = TRUE) {
   paste0(z, collapse = "")
 }
 
+
 ##' @param error Throw an error if the decoding fails.  If
 ##'   \code{FALSE} then \code{NA_character_} values are returned for
 ##'   failures.

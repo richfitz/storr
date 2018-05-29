@@ -70,6 +70,7 @@ storr_copy <- function(dest, src, list, namespace, skip_missing) {
   list(info = info, dest = dest)
 }
 
+
 make_do_mget <- function(src) {
   force(src)
   if (is_storr(src)) {
@@ -83,6 +84,7 @@ make_do_mget <- function(src) {
          paste(class(src), sep = "/"))
   }
 }
+
 
 make_do_mset <- function(dest) {
   if (is_storr(dest)) {
@@ -102,6 +104,7 @@ make_do_mset <- function(dest) {
          paste(class(dest), sep = "/"))
   }
 }
+
 
 ## Organise a set of source / destination names.
 export_names <- function(list) {

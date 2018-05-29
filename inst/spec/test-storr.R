@@ -3,10 +3,12 @@
 ##   .driver_create: function()
 testthat::context(sprintf("storr [%s]", .driver_name))
 
+
 ## With the refactor, the aim here is to change storr files only by
 ## *addition*; that means that we've kept a compatible framework.
 ## Deletions and modifications are to be avoided, though they might
 ## get done at a later point.
+
 
 ## I know that klmr is doing similar testing framework things with
 ## DBI; might be worth seeing what he's up to and if there's any
@@ -85,6 +87,7 @@ testthat::test_that("basic", {
                          tolerance = 1e-15)
 })
 
+
 testthat::test_that("replace value", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -100,6 +103,7 @@ testthat::test_that("replace value", {
   st$set("key", y)
   testthat::expect_equal(st$get("key", use_cache = FALSE), y)
 })
+
 
 testthat::test_that("default namespace", {
   dr <- .driver_create()
@@ -120,6 +124,7 @@ testthat::test_that("default namespace", {
   testthat::expect_identical(st$get("foo"), 1:10)
 })
 
+
 ## Little helper:
 testthat::test_that("set_by_value", {
   dr <- .driver_create()
@@ -133,6 +138,7 @@ testthat::test_that("set_by_value", {
   testthat::expect_identical(st$list(), h)
   testthat::expect_equal(st$get(h), x)
 })
+
 
 testthat::test_that("clear", {
   dr <- .driver_create()
@@ -158,6 +164,7 @@ testthat::test_that("clear", {
   testthat::expect_equal(st$clear("no_such_namespace"), 0L)
 })
 
+
 test_that("reconnect", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -173,6 +180,7 @@ test_that("reconnect", {
   testthat::expect_equal(st2$list("a"), st$list("a"))
   testthat::expect_equal(st2$get("a1", "a"), st$get("a1", "a"))
 })
+
 
 testthat::test_that("hash_algorithm", {
   hash_algos <- c("md5", "sha1")
@@ -220,6 +228,7 @@ testthat::test_that("hash_algorithm", {
   on.exit()
 })
 
+
 testthat::test_that("get_value", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -234,6 +243,7 @@ testthat::test_that("get_value", {
   testthat::expect_error(st$get_value("nosuchhash"),
                          "hash 'nosuchhash' not found")
 })
+
 
 ## Really simple test to make sure that mget works correctly.  This is
 ## primarily up to storr, rather than the driver, because we'll test
@@ -264,6 +274,7 @@ testthat::test_that("mget", {
                          c(h1, h3, h2))
 })
 
+
 testthat::test_that("mset", {
   dr <- .driver_create()
   on.exit(dr$destroy())
@@ -282,6 +293,7 @@ testthat::test_that("mset", {
   ## throw an error.  The drivers are allowed to assume this.
 })
 
+
 ## This is really a test of storr, and if the tests above pass these
 ## should all pass easily.  Putting them here means that they test
 ## both the with-mget and without-mget branches though.
@@ -294,6 +306,7 @@ testthat::test_that("avoiding caching", {
   testthat::expect_equal(ls(st$envir), character(0))
   testthat::expect_equal(st$mget(c("a", "b")), list(1, 2))
 })
+
 
 testthat::test_that("gc", {
   dr <- .driver_create()
