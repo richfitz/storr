@@ -24,6 +24,14 @@ has_postgres <- function(ctor) {
   !is.null(tryCatch(DBI::dbConnect(ctor()), error = function(e) NULL))
 }
 
+skip_if_no_postgres <- function() {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("RPostgres")
+  if (!has_postgres(RPostgres::Postgres())) {
+    testthat::skip("Can't make postgres connection")
+  }
+}
+
 skip_if_interactive <- function() {
   if (interactive()) {
     testthat::skip("Running interactively")

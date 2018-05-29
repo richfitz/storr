@@ -143,12 +143,28 @@ test_that("old postgres", {
   skip_if_not_installed("mockr")
   con <- structure(list(), class = "PqConnection")
   mockr::with_mock(
-    pg_server_version = function(con) numeric_version("0.9.4"),
+    pg_server_version = function(con) numeric_version("9.4.0"),
     expect_error(driver_dbi_dialect(con),
-                 "Version 0.9.4 of postgresql server is not supported"))
+                 "Version 9.4.0 of postgresql server is not supported"))
   mockr::with_mock(
-    pg_server_version = function(con) numeric_version("0.9.5"),
+    pg_server_version = function(con) numeric_version("9.5.0"),
     expect_equal(driver_dbi_dialect(con), "postgresql"))
+})
+
+
+test_that("postgres version", {
+  skip_if_no_postgres()
+  con <- DBI::dbConnect(RPostgres::Postgres())
+  on.exit(DBI::dbDisconnect(con))
+  v <- pg_server_version(con)
+  expect_is(v, "numeric_version")
+})
+
+test_that("parse postgres version works for known cases", {
+  expect_equal(pg_server_version_parse("90600"), numeric_version("9.6.0"))
+  expect_equal(pg_server_version_parse("90209"), numeric_version("9.2.9"))
+  expect_equal(pg_server_version_parse("100000"), numeric_version("10.0"))
+  expect_equal(pg_server_version_parse("100004"), numeric_version("10.4"))
 })
 
 test_that("operations with quoted keys: scalar", {

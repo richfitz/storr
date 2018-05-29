@@ -633,14 +633,14 @@ driver_dbi_dialect <- function(con) {
   if (inherits(con, "SQLiteConnection")) {
     "sqlite"
   } else if (inherits(con, c("PqConnection", "PostgreSQLConnection"))) {
-    ## Before 0.9.5 there was no simple way of implementing the
+    ## Before 9.5.0 there was no simple way of implementing the
     ## "INSERT OR REPLACE INTO" pattern (via INSERT INTO ... ON
     ## CONFLICT REPLACE" and I'm just going to require a recent
     ## version for simplicity.
     v <- pg_server_version(con)
-    if (v < numeric_version("0.9.5")) {
+    if (v < numeric_version("9.5.0")) {
       stop(sprintf(
-        "Version %s of postgresql server is not supported (need >= 0.9.5)", v))
+        "Version %s of postgresql server is not supported (need >= 9.5.0)", v))
     }
     "postgresql"
   } else {
@@ -663,7 +663,23 @@ group_placeholders <- function(placeholder, n, times) {
 
 
 pg_server_version <- function(con) {
-  numeric_version(DBI::dbGetQuery(con, "show server_version")[[1L]])
+  pg_server_version_parse(DBI::dbGetQuery(con, "show server_version_num")[[1L]])
+}
+
+
+pg_server_version_parse <- function(v) {
+  v <- as.integer(v)
+  major <- v %/% 10000
+  if (major >= 10) {
+    minor <- v %% 10000
+    str <- sprintf("%d.%d", major, minor)
+  } else {
+    v <- v %% 10000
+    minor <- v %/% 100
+    patch <- v %% 100
+    str <- sprintf("%d.%d.%d", major, minor, patch)
+  }
+  numeric_version(str)
 }
 
 
