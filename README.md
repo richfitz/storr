@@ -2,6 +2,7 @@
 
 [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![Build Status](https://travis-ci.org/richfitz/storr.svg?branch=master)](https://travis-ci.org/richfitz/storr)
+[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/richfitz/storr?branch=master&svg=true)](https://ci.appveyor.com/project/richfitz/storr)
 [![codecov.io](https://codecov.io/github/richfitz/storr/coverage.svg?branch=master)](https://codecov.io/github/richfitz/storr?branch=master)
 [![](http://www.r-pkg.org/badges/version/storr)](https://cran.r-project.org/package=storr)
 

@@ -15,3 +15,4 @@ Rprof\.out
 ^revdep$
 ^scripts$
 ^vignettes_src$
+^appveyor\.yml$
