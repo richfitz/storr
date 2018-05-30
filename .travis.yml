@@ -16,9 +16,3 @@ services:
 
 after_success:
   - Rscript -e 'covr::codecov()'
-
-env:
-  global:
-    - PGUSER=travis
-    - PGHOST=localhost
-    - PGPORT=5432
