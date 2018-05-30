@@ -20,14 +20,15 @@ copy_to_tmp <- function(src) {
   file.path(path, src)
 }
 
-has_postgres <- function(ctor) {
-  !is.null(tryCatch(DBI::dbConnect(ctor()), error = function(e) NULL))
+has_postgres <- function() {
+  !is.null(tryCatch(DBI::dbConnect(RPostgres::Postgres()),
+                    error = function(e) NULL))
 }
 
 skip_if_no_postgres <- function() {
   testthat::skip_on_cran()
   testthat::skip_if_not_installed("RPostgres")
-  if (!has_postgres(RPostgres::Postgres())) {
+  if (!has_postgres()) {
     testthat::skip("Can't make postgres connection")
   }
 }

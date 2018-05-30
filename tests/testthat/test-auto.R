@@ -18,24 +18,20 @@ test_that("dbi (sqlite)", {
   }
 })
 
-pg_tester <- function(ctor) {
-  force(ctor)
-  function(dr = NULL, ...) {
-    if (is.null(dr)) {
-      prefix <- paste(sample(letters, 8), collapse = "")
-      dr <- list(con = DBI::dbConnect(ctor()),
-                 tbl_data = sprintf("storr_%s_data", prefix),
-                 tbl_keys = sprintf("storr_%s_keys", prefix))
-    }
-    driver_dbi(dr$tbl_data, dr$tbl_keys, dr$con, ...)
-  }
-}
-
 test_that("dbi (postgres via RPostgres)", {
   skip_on_cran()
   if (requireNamespace("RPostgres", quietly = TRUE)) {
-    if (has_postgres(RPostgres::Postgres)) {
-      storr::test_driver(pg_tester(RPostgres::Postgres))
+    if (has_postgres()) {
+      pg_create <- function(dr = NULL, ...) {
+        if (is.null(dr)) {
+          prefix <- paste(sample(letters, 8), collapse = "")
+          dr <- list(con = DBI::dbConnect(RPostgres::Postgres()),
+                     tbl_data = sprintf("storr_%s_data", prefix),
+                     tbl_keys = sprintf("storr_%s_keys", prefix))
+        }
+        driver_dbi(dr$tbl_data, dr$tbl_keys, dr$con, ...)
+      }
+      storr::test_driver(pg_create)
     }
   }
 })
