@@ -158,3 +158,23 @@ test_that("invalid import", {
   expect_error(st$index_import(d),
                "Column not character: 'key'")
 })
+
+
+test_that("throw_missing", {
+  data <- list(a = "x", x = 1)
+  driver <- list(
+    traits = list(throw_missing = TRUE),
+    get_object = function(hash) {
+      data[[hash]] %||% stop("Not found")
+    },
+    get_hash = function(key, namespace) {
+      data[[key]] %||% stop("Not found")
+    })
+
+  st <- storr(driver)
+  expect_equal(st$get_value("x"), 1)
+  expect_error(st$get_value("y"), class = "HashError")
+
+  expect_equal(st$get_hash("a"), "x")
+  expect_error(st$get_hash("b"), class = "KeyError")
+})
