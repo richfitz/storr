@@ -79,20 +79,30 @@ test_driver <- function(create) {
   res <- lapply(files, testthat::test_file, env = env,
                 reporter = reporter, start_end_reporter = FALSE)
 
+  df <- do.call("rbind", lapply(res, as.data.frame))
+
+  test_driver_finish(df, standalone)
+}
+
+
+test_driver_finish <- function(df, standalone) {
   if (standalone) {
-    res <- do.call("rbind", lapply(res, as.data.frame))
-    ntest <- sum(res$nb)
-    nfail <- sum(res$failed)
-    nerr <- sum(res$error)
+    ntest <- sum(df$nb)
+    nfail <- sum(df$failed)
+    nerr <- sum(df$error)
     ok <- nfail == 0L && nerr == 0L
     msg <- sprintf("%s: %d %s, %d %s / %s tests total",
                    if (ok) "PASS" else "FAIL",
                    nerr, ngettext(nerr, "error", "errors"),
                    nfail, ngettext(nfail, "failure", "failures"),
                    ntest)
-    if (ok) message(msg) else stop(msg, call. = FALSE)
-    invisible(res)
+    if (ok) {
+      message(msg)
+    } else {
+      stop(msg, call. = FALSE)
+    }
   }
+  invisible(df)
 }
 
 
