@@ -371,7 +371,9 @@ check_rds_keys1 <- function(ns, dr, full, hash_length, invalid_hashes) {
     dangling[dangling] <- !vlapply(d[dangling], `%in%`, hashes)
   } else {
     len <- file_size(files)
-    corrupt <- len != hash_length + 1L
+    ## Allow for these to have been written with no newline, unix
+    ## newline or windows crlf.
+    corrupt <- len < hash_length | len > hash_length + 2L
     dangling <- logical()
   }
 
