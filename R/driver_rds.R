@@ -144,7 +144,10 @@ R6_driver_rds <- R6::R6Class(
       dir_create(file.path(path, "config"))
       self$path <- normalizePath(path, mustWork = TRUE)
 
-      self$path_scratch <- file.path(self$path, "scratch")
+      hostname <- Sys.info()[["nodename"]]
+      pid <- Sys.getpid()
+      self$path_scratch <-
+        file.path(self$path, "scratch", sprintf("%s-%d", hostname, pid))
       dir_create(self$path_scratch)
 
       ## This is a bit of complicated dancing around to mantain
