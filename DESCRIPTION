@@ -24,7 +24,8 @@ Suggests:
     mockr,
     progress,
     rbenchmark,
-    testthat (>= 1.0.0)
+    testthat (>= 1.0.0),
+    aws.s3
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
 Encoding: UTF-8
