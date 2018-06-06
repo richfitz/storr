@@ -191,6 +191,12 @@ R6_driver_rds <- R6::R6Class(
                                                hash_algorithm, "md5", TRUE)
     },
 
+    finalize = function() {
+      if (length(dir(self$path_scratch, all.files = TRUE, no.. = TRUE)) == 0L) {
+        try(suppressWarnings(file.remove(self$path_scratch)), silent = TRUE)
+      }
+    },
+
     type = function() {
       "rds"
     },

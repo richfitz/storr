@@ -340,3 +340,18 @@ test_that("corrupted mangled keys", {
                expect_silent(st$list()))
   expect_silent(st$driver$purge_corrupt_keys("objects"))
 })
+
+
+test_that("scratch dir", {
+  path <- tempfile()
+  st <- storr_rds(path)
+  on.exit(storr_rds(path)$destroy())
+  p <- st$driver$path_scratch
+  expect_true(file.info(p)$isdir)
+  st$set("a", 1:100)
+  expect_equal(dir(p), character(0))
+  rm(st)
+  gc()
+  expect_equal(dir(dirname(p)), character(0))
+  expect_false(file.exists(p))
+})
