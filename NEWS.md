@@ -1,3 +1,7 @@
+## storr 1.2.1 (2018-??-??)
+
+* Avoid a race condition in writing to rds storrs in parallel (#80, reported by @wlandau)
+
 ## storr 1.2.0 (2018-05-31)
 
 * New index function (#22, requested by @wlandau)
