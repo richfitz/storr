@@ -85,12 +85,7 @@ write_serialized_rds <- function(value, filename, compress,
 ## delete the file *after* that.
 try_write_serialized_rds <- function(value, filename, compress,
                                      scratch_dir = NULL, long = 2^31 - 2) {
-  if (is.null(scratch_dir)) {
-    scratch_dir <- tempfile()
-    dir.create(scratch_dir)
-    on.exit(unlink(scratch_dir, recursive = TRUE))
-  }
-  tmp <- file.path(scratch_dir, basename(filename))
+  tmp <- tempfile(tmpdir = scratch_dir %||% tempdir())
 
   con <- (if (compress) gzfile else file)(tmp, "wb")
   needs_close <- TRUE
@@ -112,11 +107,6 @@ try_write_serialized_rds <- function(value, filename, compress,
 ## delete the key on a failed write (otherwise there's a copy
 ## involved)
 write_lines <- function(text, filename, ..., scratch_dir = NULL) {
-  if (is.null(scratch_dir)) {
-    scratch_dir <- tempfile()
-    dir.create(scratch_dir)
-    on.exit(unlink(scratch_dir, recursive = TRUE))
-  }
   withCallingHandlers(
     try_write_lines(text, filename, ..., scratch_dir = scratch_dir),
     error = function(e) unlink(filename))
@@ -127,7 +117,7 @@ write_lines <- function(text, filename, ..., scratch_dir = NULL) {
 ## atomic writes and rewrites.  If 'scratch' is on the same filesystem
 ## as dirname(filename), then the os's rename is atomic
 try_write_lines <- function(text, filename, ..., scratch_dir) {
-  tmp <- file.path(scratch_dir, basename(filename))
+  tmp <- tempfile(tmpdir = scratch_dir %||% tempdir())
   writeLines(text, tmp, ...)
   ## Not 100% necessary and strictly makes this nonatomic
   unlink(filename)
