@@ -340,3 +340,38 @@ test_that("corrupted mangled keys", {
                expect_silent(st$list()))
   expect_silent(st$driver$purge_corrupt_keys("objects"))
 })
+
+
+test_that("avoid race condition when writing in parallel", {
+  ## This is an integration test modified from
+  ## https://github.com/richfitz/storr/issues/80
+  ## contributed by @wlandau
+  ##
+  ## Try and hammer the rds storr with concurrent writes.  The end result should be
+  skip_on_cran()
+  skip_on_os("windows")
+
+  racy_write <- function(...) {
+    write <- function(key, path) {
+      tryCatch({
+        st <- storr_rds(path)
+        for (x in c(letters, LETTERS)) {
+          st$set(key = key, value = x,
+                 use_cache = FALSE)
+        }
+        NULL
+      },
+      warning = identity)
+    }
+
+    st <- storr_rds(tempfile())
+    res <- parallel::mclapply(letters, write, path = st$driver$path, ...)
+    values <- st$mget(letters)
+    st$destroy()
+
+    all(lengths(res) == 0L) && all(vlapply(values, identical, "Z"))
+  }
+
+  ok <- vlapply(1:10, function(i) racy_write())
+  expect_true(all(ok))
+})

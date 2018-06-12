@@ -22,6 +22,7 @@ Suggests:
     RPostgres,
     knitr,
     mockr,
+    parallel,
     progress,
     rbenchmark,
     testthat (>= 1.0.0)
