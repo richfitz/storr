@@ -347,7 +347,8 @@ test_that("avoid race condition when writing in parallel", {
   ## https://github.com/richfitz/storr/issues/80
   ## contributed by @wlandau
   ##
-  ## Try and hammer the rds storr with concurrent writes.  The end result should be
+  ## Try and hammer the rds storr with concurrent writes.  The end
+  ## result should be all keys (a-z) contain the value "Z"
   skip_on_cran()
   skip_on_os("windows")
 
