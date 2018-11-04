@@ -16,3 +16,5 @@ Rprof\.out
 ^scripts$
 ^vignettes_src$
 ^appveyor\.yml$
+^.*\.Rproj$
+^\.Rproj\.user$

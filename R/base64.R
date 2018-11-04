@@ -9,6 +9,7 @@
 ##' @param pad Logical, indicating if strings should be padded with
 ##'   \code{=} characters (as RFC 4648 requires)
 ##' @export
+##' @importFrom base64url base64_urlencode
 ##' @examples
 ##' x <- encode64("hello")
 ##' x
@@ -21,28 +22,22 @@ encode64 <- function(x, char62 = "-", char63 = "_", pad = TRUE) {
   if (length(x) != 1L) {
     return(vcapply(x, encode64, char62, char63, pad, USE.NAMES = FALSE))
   }
-  tr <- c(LETTERS, letters, 0:9, char62, char63)
-  x <- as.integer(charToRaw(x))
-  n_bytes <- length(x)
-  n_blocks <- ceiling(n_bytes / 3L)
-  n_pad <- 3L * n_blocks - n_bytes
-
-  ## The integer() call here pads the *input* to have the correct number
-  ## of blocks of bytes.
-  x <- matrix(c(x, integer(3L * n_blocks - n_bytes)), 3L, n_blocks)
-
-  y <- matrix(integer(4 * n_blocks), 4L, n_blocks)
-  y[1L, ] <- bitwShiftR(x[1L, ], 2L)
-  y[2L, ] <- bitwOr(bitwShiftL(x[1L, ], 4L), bitwShiftR(x[2L, ], 4L))
-  y[3L, ] <- bitwOr(bitwShiftL(x[2L, ], 2L), bitwShiftR(x[3L, ], 6L))
-  y[4L, ] <- x[3L, ]
-
-  z <- tr[bitwAnd(y, 63L) + 1L]
-  if (n_pad > 0) {
-    len <- length(z)
-    z[(len - n_pad + 1):len] <- if (pad) "=" else ""
+  out <- base64url::base64_urlencode(x)
+  if (!identical(char62, "-")) {
+    gsub(pattern = "-", replacement = char62, x = out, fixed = TRUE)
   }
-  paste0(z, collapse = "")
+  if (!identical(char63, "-")) {
+    gsub(pattern = "-", replacement = char62, x = out, fixed = TRUE)
+  }
+  if (pad) {
+    x <- as.integer(charToRaw(x))
+    n_bytes <- length(x)
+    n_blocks <- ceiling(n_bytes / 3L)
+    n_pad <- 3L * n_blocks - n_bytes
+    char_pad <- replicate(n_pad, "=")
+    out <- paste(c(out, char_pad), collapse = "")
+  }
+  out
 }
 
 
