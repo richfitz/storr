@@ -26,8 +26,8 @@ encode64 <- function(x, char62 = "-", char63 = "_", pad = TRUE) {
   if (!identical(char62, "-")) {
     gsub(pattern = "-", replacement = char62, x = out, fixed = TRUE)
   }
-  if (!identical(char63, "-")) {
-    gsub(pattern = "-", replacement = char62, x = out, fixed = TRUE)
+  if (!identical(char63, "_")) {
+    gsub(pattern = "_", replacement = char62, x = out, fixed = TRUE)
   }
   if (pad) {
     x <- as.integer(charToRaw(x))
