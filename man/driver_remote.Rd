@@ -12,7 +12,8 @@ what is required to implement one.}
 
 \item{...}{Arguments to pass through to \code{\link{driver_rds}},
 including \code{compress}, \code{mangle_key},
-\code{mangle_key_pad} and \code{hash_algorithm}.}
+\code{mangle_key_pad}, \code{hash_algorithm},
+\code{mangle_key_encode}, and \code{mangle_key_decode}.}
 
 \item{path_local}{Path to a local cache.  This can be left as
 \code{NULL}, in which case a per-session cache will be used.
