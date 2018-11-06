@@ -26,6 +26,11 @@ vcapply <- function(X, FUN, ...) {
   vapply(X, FUN, character(1), ...)
 }
 
+assert_identical <- function(x, y) {
+  if (!identical(x, y)) {
+    stop(sprintf("'%s' and '%s' must be identical", name), call. = FALSE)
+  }
+}
 
 assert_scalar <- function(x, name = deparse(substitute(x))) {
   if (length(x) != 1) {

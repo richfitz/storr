@@ -163,7 +163,8 @@ R6_driver_rds <- R6::R6Class(
                        driver_rds_config_file(path, "version"))
 
       if (!is.null(mangle_key)) {
-        assert_scalar_logical(mangle_key)
+        assert_scalar(mangle_key)
+        assert_is(mangle_key, c("logical", "character"))
       }
       self$mangle_key <- driver_rds_config(path, "mangle_key", mangle_key,
                                            FALSE, TRUE)
@@ -245,7 +246,7 @@ R6_driver_rds <- R6::R6Class(
       path <- file.path(self$path, "keys", namespace)
       files <- dir(path)
       if (self$mangle_key) {
-        ret <- decode64(files, error = FALSE)
+        ret <- self$decode(files, error = FALSE)
         if (anyNA(ret)) {
           message_corrupted_rds_keys(namespace, path, files[is.na(ret)])
           ret <- ret[!is.na(ret)]
@@ -268,7 +269,7 @@ R6_driver_rds <- R6::R6Class(
       if (self$mangle_key) {
         path <- file.path(self$path, "keys", namespace)
         files <- dir(path)
-        i <- is.na(decode64(files, error = FALSE))
+        i <- is.na(self$decode(files, error = FALSE))
         if (any(i)) {
           res <- file.remove(file.path(path, files[i]))
           message(sprintf("Removed %d of %d corrupt %s",
@@ -286,10 +287,46 @@ R6_driver_rds <- R6::R6Class(
     },
 
     name_key = function(key, namespace) {
-      if (self$mangle_key) {
-        key <- encode64(key, pad = self$mangle_key_pad)
-      }
+      key <- self$encode(key, pad = self$mangle_key_pad)
       file.path(self$path, "keys", namespace, key)
+    },
+
+    encode = function(x, pad) {
+      if (identical(self$mangle_key, FALSE)) {
+        return(x)
+      }
+      if (identical(self$mangle_key, "none")) {
+        return(x)
+      }
+      if (identical(self$mangle_key, TRUE)) {
+        return(encode64(x, pad = pad))
+      }
+      if (identical(self$mangle_key, "base64")) {
+        return(encode64(x, pad = pad))
+      }
+      mangler <- getOption("storr_mangler")
+      assert_list(mangler)
+      assert_identical(mangler, mangler$name)
+      mangler$encode(x)
+    },
+
+    decode = function(x, error) {
+      if (identical(self$mangle_key, FALSE)) {
+        return(x)
+      }
+      if (identical(self$mangle_key, "none")) {
+        return(x)
+      }
+      if (identical(self$mangle_key, TRUE)) {
+        return(decode64(x, error = error))
+      }
+      if (identical(self$mangle_key, "base64")) {
+        return(decode64(x, error = error))
+      }
+      mangler <- getOption("storr_mangler")
+      assert_list(mangler)
+      assert_identical(mangler, mangler$name)
+      mangler$decode(x)
     }
   ))
 
@@ -446,4 +483,40 @@ See 'Corrupt keys' within ?storr_rds for how to proceed" -> fmt
   files <- sprintf("  - '%s'", files)
   message(sprintf(fmt, length(files), namespace, path, files))
   corrupt_notices[[path]] <- now
+}
+
+storr_rds_decode <- function(x, error) {
+  if (identical(self$mangle_key, FALSE)) {
+    return(x)
+  }
+  if (identical(self$mangle_key, "none")) {
+    return(x)
+  }
+  if (identical(self$mangle_key, TRUE)) {
+    return(decode64(x, error = error))
+  }
+  if (identical(self$mangle_key, "base64")) {
+    return(decode64(x, error = error))
+  }
+  mangler <- getOption("storr_mangler")
+  assert_mangler(mangler)
+  assert_identical(mangler, mangler$name)
+  mangler$decode(x)
+}
+
+#' @title Register a key mangler
+#' @description Define custom functinons for mangling \code{storr_rds()} keys.
+#' @export
+#' @return nothing
+#' @param name character scalar, name of the mangler
+#' @param encode function to encode keys. Must have arguments \code{x}
+#'   and \code{pad}.
+#' @param decode function to decode keys. Must have arguments \code{x}
+#'   and \code{error}
+register_mangler <- function(name, encode, decode, overwrite = FALSE) {
+  current <- getOption("storr_mangler")
+  if (is.list(current) && !overwrite){
+    return()
+  }
+  options(storr_mangler = list(name = name, encode = encode, decode = decode))
 }
