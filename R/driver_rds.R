@@ -168,8 +168,11 @@ R6_driver_rds <- R6::R6Class(
         assert_is(mangle_key, c("logical", "character"))
       }
       self$mangle_key <- driver_rds_config(path, "mangle_key", mangle_key,
-                                           FALSE, TRUE)
-
+                                           "FALSE", TRUE)
+      if (self$mangle_key %in% c("TRUE", "FALSE")){
+        self$mangle_key <- as.logical(self$mangle_key)
+      }
+      
       if (!is.null(mangle_key_pad)) {
         assert_scalar_logical(mangle_key_pad)
       }
@@ -335,21 +338,17 @@ R6_driver_rds <- R6::R6Class(
 ##   from the existing storr's mangledness.
 driver_rds_config <- function(path, name, value, default, must_agree) {
   path_opt <- driver_rds_config_file(path, name)
-
+  
   load_value <- function() {
     if (file.exists(path_opt)) {
-      value_prev <- tmp <- readLines(path_opt)
-      storage.mode(tmp) <- storage.mode(default)
-      if (is.na(tmp)) {
-        stop(ConfigError(name, value_prev, value))
-      }
-      value <- tmp
+      value <- readLines(path_opt)
+      storage.mode(value) <- storage.mode(default)
     } else {
       value <- default
     }
     value
   }
-
+  
   if (is.null(value)) {
     value <- load_value()
   } else if (must_agree && file.exists(path_opt)) {
@@ -361,7 +360,7 @@ driver_rds_config <- function(path, name, value, default, must_agree) {
   if (!file.exists(path_opt)) {
     writeLines(as.character(value), path_opt)
   }
-
+  
   value
 }
 

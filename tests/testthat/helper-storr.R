@@ -67,5 +67,6 @@ test_key <- function(s, raw, encoded) {
   s$set(raw, "x")
   testthat::expect_true(file.exists(key_file))
   testthat::expect_equal(s$get(raw), "x")
-  testthat::expect_equal(s$list(), raw)
+  testthat::expect_true(s$exists(raw))
+  testthat::expect_true(raw %in% s$list())
 }

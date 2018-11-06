@@ -14,7 +14,21 @@ test_that("use registered mangler on a new storr", {
   test_key(s, "a", "test_mangler_a")
 })
 
-test_that("unregistered mangler and new storr", {
+test_that("recover an old custom mangler", {
+  on.exit(options(storr_mangler = NULL))
+  do.call(register_mangler, test_mangler)
+  s <- storr_rds(tempfile(), mangle_key = "test_mangler")
+  test_key(s, "a", "test_mangler_a")
+  s <- storr_rds(s$driver$path, mangle_key = "test_mangler")
+  expect_equal(s$get("a"), "x")
+  test_key(s, "b", "test_mangler_b")
+  s <- storr_rds(s$driver$path)
+  expect_equal(s$get("a"), "x")
+  expect_equal(s$get("b"), "x")
+  test_key(s, "c", "test_mangler_c")
+})
+
+test_that("unregistered mangler and a new storr", {
   expect_null(getOption("storr_mangler"))
   expect_error(
     storr_rds(tempfile(), mangle_key = "test_mangler"),
