@@ -16,7 +16,8 @@
 ##'
 ##' @param ... Arguments to pass through to \code{\link{driver_rds}},
 ##'   including \code{compress}, \code{mangle_key},
-##'   \code{mangle_key_pad} and \code{hash_algorithm}.
+##'   \code{mangle_key_pad}, \code{hash_algorithm},
+##'   \code{mangle_key_encode}, and \code{mangle_key_decode}.
 ##'
 ##' @param path_local Path to a local cache.  This can be left as
 ##'   \code{NULL}, in which case a per-session cache will be used.
@@ -134,7 +135,7 @@ R6_driver_remote <- R6::R6Class(
         return(character(0))
       }
       ret <- self$ops$list_dir(path)
-      if (self$rds$mangle_key) decode64(ret, TRUE) else ret
+      if (self$rds$mangle_key) self$rds$mangle_key_decode(ret, TRUE) else ret
     },
 
     ## These functions could be done better if driver_rds takes a

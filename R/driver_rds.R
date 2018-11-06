@@ -76,6 +76,16 @@
 ##'
 ##' @param default_namespace Default namespace (see
 ##'   \code{\link{storr}}).
+##'   
+##' @param mangle_key_encode Optional function for mangling keys.
+##'   Only used if `mangle_key` is `TRUE`.
+##'   Should accept arguments `key` and `pad`.
+##'
+##' @param mangle_key_decode Optional function for unmangling keys.
+##'   Inverse operation of `mangle_key_encode`.
+##'   Only used if `mangle_key` is `TRUE`.
+##'   Should accept arguments `key` and `error`.
+##'
 ##' @export
 ##' @examples
 ##'
@@ -110,16 +120,21 @@
 ##' st2$destroy()
 storr_rds <- function(path, compress = NULL, mangle_key = NULL,
                       mangle_key_pad = NULL, hash_algorithm = NULL,
-                      default_namespace = "objects") {
-  storr(driver_rds(path, compress, mangle_key, mangle_key_pad, hash_algorithm),
+                      default_namespace = "objects",
+                      mangle_key_encode = NULL,
+                      mangle_key_decode = NULL) {
+  storr(driver_rds(path, compress, mangle_key, mangle_key_pad, hash_algorithm,
+                   mangle_key_encode, mangle_key_decode),
         default_namespace)
 }
 
 ##' @export
 ##' @rdname storr_rds
 driver_rds <- function(path, compress = NULL, mangle_key = NULL,
-                       mangle_key_pad = NULL, hash_algorithm = NULL) {
-  R6_driver_rds$new(path, compress, mangle_key, mangle_key_pad, hash_algorithm)
+                       mangle_key_pad = NULL, hash_algorithm = NULL,
+                       mangle_key_encode = NULL, mangle_key_decode = NULL) {
+  R6_driver_rds$new(path, compress, mangle_key, mangle_key_pad, hash_algorithm,
+                    mangle_key_encode, mangle_key_decode)
 }
 
 R6_driver_rds <- R6::R6Class(
@@ -133,10 +148,13 @@ R6_driver_rds <- R6::R6Class(
     mangle_key = NULL,
     mangle_key_pad = NULL,
     hash_algorithm = NULL,
+    mangle_key_encode = NULL,
+    mangle_key_decode = NULL,
     traits = list(accept = "raw"),
 
     initialize = function(path, compress, mangle_key, mangle_key_pad,
-                          hash_algorithm) {
+                          hash_algorithm,
+                          mangle_key_encode, mangle_key_decode) {
       is_new <- !file.exists(file.path(path, "config"))
       dir_create(path)
       dir_create(file.path(path, "data"))
@@ -157,6 +175,14 @@ R6_driver_rds <- R6::R6Class(
         write_if_missing("TRUE", driver_rds_config_file(path, "mangle_key_pad"))
         write_if_missing("TRUE", driver_rds_config_file(path, "compress"))
         write_if_missing("md5", driver_rds_config_file(path, "hash_algorithm"))
+        write_if_missing(
+          deparse(mangle_key_encode),
+          driver_rds_config_file(path, "mangle_key_encode")
+        )
+        write_if_missing(
+          deparse(mangle_key_decode),
+          driver_rds_config_file(path, "mangle_key_decode")
+        )
       }
       ## Then write out the version number:
       write_if_missing(as.character(packageVersion("storr")),
@@ -174,6 +200,28 @@ R6_driver_rds <- R6::R6Class(
       self$mangle_key_pad <-
         driver_rds_config(path, "mangle_key_pad", mangle_key_pad,
                           FALSE, TRUE)
+
+      if (!is.null(mangle_key_encode)){
+        assert_function(mangle_key_encode)
+        mangle_key_encode <- deparse(mangle_key_encode)
+      }
+      self$mangle_key_encode <-
+        driver_rds_config(path, "mangle_key_encode",
+                          mangle_key_encode, deparse(encode64), TRUE)
+      self$mangle_key_encode <- eval(
+        parse(text = self$mangle_key_encode, keep.source = FALSE)
+      )
+
+      if (!is.null(mangle_key_decode)){
+        assert_function(mangle_key_decode)
+        mangle_key_decode <- deparse(mangle_key_decode)
+      }
+      self$mangle_key_decode <-
+        driver_rds_config(path, "mangle_key_decode",
+                          mangle_key_decode, deparse(decode64), TRUE)
+      self$mangle_key_decode <- eval(
+        parse(text = self$mangle_key_decode, keep.source = FALSE)
+      )
 
       if (!is.null(compress)) {
         assert_scalar_logical(compress)
@@ -245,7 +293,8 @@ R6_driver_rds <- R6::R6Class(
       path <- file.path(self$path, "keys", namespace)
       files <- dir(path)
       if (self$mangle_key) {
-        ret <- decode64(files, error = FALSE)
+        decode_fun <- self$mangle_key_decode %||% decode64
+        ret <- decode_fun(files, error = FALSE)
         if (anyNA(ret)) {
           message_corrupted_rds_keys(namespace, path, files[is.na(ret)])
           ret <- ret[!is.na(ret)]
@@ -268,7 +317,8 @@ R6_driver_rds <- R6::R6Class(
       if (self$mangle_key) {
         path <- file.path(self$path, "keys", namespace)
         files <- dir(path)
-        i <- is.na(decode64(files, error = FALSE))
+        decode_fun <- self$mangle_key_decode %||% decode64
+        i <- is.na(decode_fun(files, error = FALSE))
         if (any(i)) {
           res <- file.remove(file.path(path, files[i]))
           message(sprintf("Removed %d of %d corrupt %s",
@@ -287,7 +337,8 @@ R6_driver_rds <- R6::R6Class(
 
     name_key = function(key, namespace) {
       if (self$mangle_key) {
-        key <- encode64(key, pad = self$mangle_key_pad)
+        encode_fun <- self$mangle_key_encode %||% encode64
+        key <- encode_fun(key, pad = self$mangle_key_pad)
       }
       file.path(self$path, "keys", namespace, key)
     }

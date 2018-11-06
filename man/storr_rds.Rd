@@ -5,11 +5,14 @@
 \alias{driver_rds}
 \title{rds object cache driver}
 \usage{
-storr_rds(path, compress = NULL, mangle_key = NULL, mangle_key_pad = NULL,
-  hash_algorithm = NULL, default_namespace = "objects")
+storr_rds(path, compress = NULL, mangle_key = NULL,
+  mangle_key_pad = NULL, hash_algorithm = NULL,
+  default_namespace = "objects", mangle_key_encode = NULL,
+  mangle_key_decode = NULL)
 
 driver_rds(path, compress = NULL, mangle_key = NULL,
-  mangle_key_pad = NULL, hash_algorithm = NULL)
+  mangle_key_pad = NULL, hash_algorithm = NULL,
+  mangle_key_encode = NULL, mangle_key_decode = NULL)
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice
@@ -38,6 +41,15 @@ values are "md5", "sha1", and others supported by
 
 \item{default_namespace}{Default namespace (see
 \code{\link{storr}}).}
+
+\item{mangle_key_encode}{Optional function for mangling keys.
+Only used if `mangle_key` is `TRUE`.
+Should accept arguments `key` and `pad`.}
+
+\item{mangle_key_decode}{Optional function for unmangling keys.
+Inverse operation of `mangle_key_encode`.
+Only used if `mangle_key` is `TRUE`.
+Should accept arguments `key` and `error`.}
 }
 \description{
 Object cache driver that saves objects using R's native
