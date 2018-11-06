@@ -14,6 +14,9 @@ and \code{pad}.}
 
 \item{decode}{function to decode keys. Must have arguments \code{x}
 and \code{error}}
+
+\item{overwrite}{logical, whether to overwrite a previously
+registered mangler.}
 }
 \value{
 nothing

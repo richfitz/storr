@@ -490,6 +490,8 @@ See 'Corrupt keys' within ?storr_rds for how to proceed" -> fmt
 #'   and \code{pad}.
 #' @param decode function to decode keys. Must have arguments \code{x}
 #'   and \code{error}
+#' @param overwrite logical, whether to overwrite a previously
+#'   registered mangler.
 register_mangler <- function(name, encode, decode, overwrite = FALSE) {
   current <- getOption("storr_mangler")
   if (is.list(current) && !overwrite){
