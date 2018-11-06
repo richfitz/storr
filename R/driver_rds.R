@@ -21,14 +21,24 @@
 ##' is set.  Using \code{mangle_key = NULL} uses whatever mangledness
 ##' exists (or no mangledness if creating a new storr).
 ##'
+##' If base64 encoding does not meet your use case
+##' (e.g. if it is too slow) then you can supply custom functions
+##' to encode and decode the keys.
+##' First, register your encoder and decoder functions
+##' with \code{\link{register_mangler}()}.
+##' Next, set \code{mangle_key} equal to the \code{name}
+##' you gave \code{\link{register_mangler}()}.
+##'
 ##' @section Corrupt keys:
 ##'
 ##' Some file synchronisation utilities like dropbox can create file
 ##' that confuse an rds storr (e.g.,
 ##' \code{"myobject (Someone's conflicted copy)"}.  If
-##' \code{mangle_key} is \code{FALSE} these cannot be detected but at
+##' \code{mangle_key} is \code{"none"},
+##' these cannot be detected but at
 ##' the same time are not a real problem for storr.  However, if
-##' \code{mangle_key} is \code{TRUE} and keys are base64 encoded then
+##' \code{mangle_key} is \code{"base64"}
+##' and keys are base64 encoded then
 ##' these conflicted copies can break parts of storr.
 ##'
 ##' If you see a warning asking you to deal with these files, please
@@ -57,8 +67,11 @@
 ##' @param compress Compress the generated file?  This saves a small
 ##'   amount of space for a reasonable amount of time.
 ##'
-##' @param mangle_key Mangle keys?  If TRUE, then the key is encoded
-##'   using base64 before saving to the filesystem.  See Details.
+##' @param mangle_key Mangle keys? If \code{"base64"},
+##'   then the key is encoded using base64 before saving to the filesystem.
+##'   If \code{"none"}, then keys are not encoded. If some other string,
+##'   \code{storr} will use a custom key mangler set up with
+##'   \code{\link{register_mangler}()}. See Details.
 ##'
 ##' @param mangle_key_pad Logical indicating if the filenames created
 ##'   when using \code{mangle_key} should also be "padded" with the
@@ -252,7 +265,7 @@ R6_driver_rds <- R6::R6Class(
       path <- file.path(self$path, "keys", namespace)
       files <- dir(path)
       ret <- self$mangler$decode(x = files, error = FALSE)
-      if (use_base64_mangler(self$mangle_key)) {
+      if (!use_no_mangler(self$mangle_key)) {
         if (anyNA(ret)) {
           message_corrupted_rds_keys(namespace, path, files[is.na(ret)])
           ret <- ret[!is.na(ret)]
@@ -270,7 +283,7 @@ R6_driver_rds <- R6::R6Class(
     },
 
     purge_corrupt_keys = function(namespace) {
-      if (use_base64_mangler(self$mangle_key)) {
+      if (!use_no_mangler(self$mangle_key)) {
         path <- file.path(self$path, "keys", namespace)
         files <- dir(path)
         i <- is.na(self$mangler$decode(files, error = FALSE))
@@ -481,17 +494,42 @@ See 'Corrupt keys' within ?storr_rds for how to proceed" -> fmt
   corrupt_notices[[path]] <- now
 }
 
-#' @title Register a key mangler
-#' @description Define custom functinons for mangling \code{storr_rds()} keys.
-#' @export
-#' @return nothing
-#' @param name character scalar, name of the mangler
-#' @param encode function to encode keys. Must have arguments \code{x}
-#'   and \code{pad}.
-#' @param decode function to decode keys. Must have arguments \code{x}
-#'   and \code{error}
-#' @param overwrite logical, whether to overwrite a previously
-#'   registered mangler.
+##' @title Register a key mangler
+##' @description Define custom functinons for mangling \code{storr_rds()} keys.
+##' @details
+##' \code{storr_rds(mangle_key = "base64")} encodes keys using base64
+##' encoding. This precaution ensures that the names of key files
+##' do not have illegal character names such as ":". However,
+##' base 64 encoding can be slow for some applications,
+##' so you have the option of setting your own custom key mangler.
+##' First, create functions to encode and decode keys and register them
+##' with \code{\link{register_mangler}()}.
+##' Next, set \code{mangle_key} equal to the \code{name}
+##' you gave \code{\link{register_mangler}()}.
+##' @export
+##' @return nothing
+##' @param name character scalar, name of the mangler
+##' @param encode function to encode keys. Must have arguments \code{x}
+##'   and \code{pad}.
+##' @param decode function to decode keys. Must have arguments \code{x}
+##'   and \code{error}
+##' @param overwrite logical, whether to overwrite a previously
+##'   registered mangler.
+##' @examples
+##' register_mangler(
+##'   "test_mangler",
+##'   encode = function (x, pad) {
+##'     paste0("x_", x)
+##'   },
+##'   decode = function(x, error) {
+##'     substr(x, start = 3, stop = 1e7)
+##'   }
+##' )
+##' s <- storr_rds(tempfile(), mangle_key = "test_mangler")
+##' s$set("a", 1)
+##' s$get("a")
+##' list.files(file.path(s$driver$path, "keys", s$default_namespace))
+##' options(storr_mangler = NULL)
 register_mangler <- function(name, encode, decode, overwrite = FALSE) {
   current <- getOption("storr_mangler")
   if (is.list(current) && !overwrite){

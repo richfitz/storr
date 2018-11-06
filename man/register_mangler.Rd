@@ -24,3 +24,30 @@ nothing
 \description{
 Define custom functinons for mangling \code{storr_rds()} keys.
 }
+\details{
+\code{storr_rds(mangle_key = "base64")} encodes keys using base64
+encoding. This precaution ensures that the names of key files
+do not have illegal character names such as ":". However,
+base 64 encoding can be slow for some applications,
+so you have the option of setting your own custom key mangler.
+First, create functions to encode and decode keys and register them
+with \code{\link{register_mangler}()}.
+Next, set \code{mangle_key} equal to the \code{name}
+you gave \code{\link{register_mangler}()}.
+}
+\examples{
+register_mangler(
+  "test_mangler",
+  encode = function (x, pad) {
+    paste0("x_", x)
+  },
+  decode = function(x, error) {
+    substr(x, start = 3, stop = 1e7)
+  }
+)
+s <- storr_rds(tempfile(), mangle_key = "test_mangler")
+s$set("a", 1)
+s$get("a")
+list.files(file.path(s$driver$path, "keys", s$default_namespace))
+options(storr_mangler = NULL)
+}
