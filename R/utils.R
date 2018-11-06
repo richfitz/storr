@@ -103,12 +103,6 @@ assert_raw <- function(x, name = deparse(substitute(x))) {
   }
 }
 
-assert_function <- function(x, name = deparse(substitute(x))) {
-  if (!is.function(x)) {
-    stop(sprintf("'%s' must be a function", name), call. = FALSE)
-  }
-}
-
 assert_probably_storr_driver <- function(x, name = deparse(substitute(x))) {
   expected <- c("type", "get_hash", "set_hash", "get_object",
                 "set_object", "exists_hash", "exists_object",
