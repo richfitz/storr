@@ -26,12 +26,6 @@ vcapply <- function(X, FUN, ...) {
   vapply(X, FUN, character(1), ...)
 }
 
-assert_identical <- function(x, y) {
-  if (!identical(x, y)) {
-    stop(sprintf("'%s' and '%s' must be identical", name), call. = FALSE)
-  }
-}
-
 assert_scalar <- function(x, name = deparse(substitute(x))) {
   if (length(x) != 1) {
     stop(sprintf("'%s' must be a scalar", name), call. = FALSE)
@@ -132,12 +126,12 @@ assert_custom_mangler <- function(mangler, mangle_key) {
   if (!identical(mangler$name, mangle_key)) {
     stop(
       sprintf(
-        "Registered key mangler '%s' contradicts mangle_key ('%s')",
+        "Registered key mangler '%s' conflicts with mangle_key ('%s')",
         mangler$name, mangle_key
       ),
       call. = FALSE
     )
-  } 
+  }
 }
 
 
@@ -214,4 +208,3 @@ use_base64_mangler <- function(mangle_key) {
   identical(mangle_key, TRUE) ||
     identical(mangle_key, "base64")
 }
-

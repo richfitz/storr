@@ -172,7 +172,7 @@ R6_driver_rds <- R6::R6Class(
       if (self$mangle_key %in% c("TRUE", "FALSE")){
         self$mangle_key <- as.logical(self$mangle_key)
       }
-      
+
       if (!is.null(mangle_key_pad)) {
         assert_scalar_logical(mangle_key_pad)
       }
@@ -338,7 +338,7 @@ R6_driver_rds <- R6::R6Class(
 ##   from the existing storr's mangledness.
 driver_rds_config <- function(path, name, value, default, must_agree) {
   path_opt <- driver_rds_config_file(path, name)
-  
+
   load_value <- function() {
     if (file.exists(path_opt)) {
       value <- readLines(path_opt)
@@ -348,7 +348,7 @@ driver_rds_config <- function(path, name, value, default, must_agree) {
     }
     value
   }
-  
+
   if (is.null(value)) {
     value <- load_value()
   } else if (must_agree && file.exists(path_opt)) {
@@ -360,7 +360,7 @@ driver_rds_config <- function(path, name, value, default, must_agree) {
   if (!file.exists(path_opt)) {
     writeLines(as.character(value), path_opt)
   }
-  
+
   value
 }
 
@@ -494,6 +494,15 @@ register_mangler <- function(name, encode, decode, overwrite = FALSE) {
   current <- getOption("storr_mangler")
   if (is.list(current) && !overwrite){
     return()
+  }
+  if (overwrite) {
+    warning(
+      sprintf(
+        "Overwriting existing key mangler '%s' with '%s'",
+        current$name, name
+      ),
+      call. = FALSE
+    )
   }
   options(storr_mangler = list(name = name, encode = encode, decode = decode))
   invisible()
