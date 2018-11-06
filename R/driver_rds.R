@@ -528,4 +528,5 @@ register_mangler <- function(name, encode, decode, overwrite = FALSE) {
     return()
   }
   options(storr_mangler = list(name = name, encode = encode, decode = decode))
+  invisible()
 }
