@@ -124,15 +124,15 @@ assert_probably_storr_driver <- function(x, name = deparse(substitute(x))) {
 assert_custom_mangler <- function(mangler, mangle_key) {
   if (is.null(mangler)) {
     stop(
-      sprintf("No mangler set. Expected '%s'.", mangle_key),
-      "Set a key mangler with register_mangler().",
+      sprintf("Mangler '%s' not registered. ", mangle_key),
+      "Registered it with register_mangler().",
       call. = FALSE
     )
   }
-  if (identical(mangler$name, mangle_key)) {
+  if (!identical(mangler$name, mangle_key)) {
     stop(
       sprintf(
-        "New key mangler '%s' disagrees with old mangler '%s'",
+        "Registered key mangler '%s' contradicts mangle_key ('%s')",
         mangler$name, mangle_key
       ),
       call. = FALSE

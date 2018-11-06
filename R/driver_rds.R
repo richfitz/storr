@@ -205,7 +205,7 @@ R6_driver_rds <- R6::R6Class(
     },
 
     set_hash = function(key, namespace, hash) {
-      dir_create(self$name_key("", namespace))
+      dir_create(self$key_path("", namespace))
       write_lines(hash, self$name_key(key, namespace),
                   scratch_dir = self$path_scratch)
     },
@@ -249,7 +249,7 @@ R6_driver_rds <- R6::R6Class(
       path <- file.path(self$path, "keys", namespace)
       files <- dir(path)
       ret <- self$mangler$decode(x = files, error = FALSE)
-      if (self$mangle_key) {
+      if (use_base64_mangler(self$mangle_key)) {
         if (anyNA(ret)) {
           message_corrupted_rds_keys(namespace, path, files[is.na(ret)])
           ret <- ret[!is.na(ret)]
@@ -267,7 +267,7 @@ R6_driver_rds <- R6::R6Class(
     },
 
     purge_corrupt_keys = function(namespace) {
-      if (self$mangle_key) {
+      if (use_base64_mangler(self$mangle_key)) {
         path <- file.path(self$path, "keys", namespace)
         files <- dir(path)
         i <- is.na(self$mangler$decode(files, error = FALSE))
@@ -289,6 +289,10 @@ R6_driver_rds <- R6::R6Class(
 
     name_key = function(key, namespace) {
       key <- self$mangler$encode(x = key, pad = self$mangle_key_pad)
+      self$key_path(key, namespace)
+    },
+
+    key_path = function(key, namespace) {
       file.path(self$path, "keys", namespace, key)
     },
 
@@ -312,7 +316,7 @@ R6_driver_rds <- R6::R6Class(
       } else if (is_new){
         self$mangler <- getOption("storr_mangler")
         assert_custom_mangler(self$mangler, self$mangle_key)
-        saveRDS(file.path(path, "config", "mangler.rds"), self$mangler)
+        saveRDS(self$mangler, file.path(self$path, "config", "mangler.rds"))
       } else {
         self$mangler <- readRDS(file.path(path, "config", "mangler.rds"))
         assert_custom_mangler(self$mangler, self$mangle_key)
@@ -334,8 +338,12 @@ driver_rds_config <- function(path, name, value, default, must_agree) {
 
   load_value <- function() {
     if (file.exists(path_opt)) {
-      value <- readLines(path_opt)
-      storage.mode(value) <- storage.mode(default)
+      value_prev <- tmp <- readLines(path_opt)
+      storage.mode(tmp) <- storage.mode(default)
+      if (is.na(tmp)) {
+        stop(ConfigError(name, value_prev, value))
+      }
+      value <- tmp
     } else {
       value <- default
     }
