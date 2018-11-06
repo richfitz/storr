@@ -26,7 +26,6 @@ vcapply <- function(X, FUN, ...) {
   vapply(X, FUN, character(1), ...)
 }
 
-
 assert_scalar <- function(x, name = deparse(substitute(x))) {
   if (length(x) != 1) {
     stop(sprintf("'%s' must be a scalar", name), call. = FALSE)
@@ -116,6 +115,25 @@ assert_probably_storr_driver <- function(x, name = deparse(substitute(x))) {
   invisible(x)
 }
 
+assert_custom_mangler <- function(mangler, mangle_key) {
+  if (is.null(mangler)) {
+    stop(
+      sprintf("Mangler '%s' not registered. ", mangle_key),
+      "Registered it with register_mangler().",
+      call. = FALSE
+    )
+  }
+  if (!identical(mangler$name, mangle_key)) {
+    stop(
+      sprintf(
+        "Registered key mangler '%s' conflicts with mangle_key ('%s')",
+        mangler$name, mangle_key
+      ),
+      call. = FALSE
+    )
+  }
+}
+
 
 match_value <- function(x, choices, name = deparse(substitute(x))) {
   assert_scalar_character(x, name)
@@ -178,4 +196,15 @@ file_size <- function(...) {
 
 prompt_ask_yes_no <- function(reason) {
   utils::menu(c("no", "yes"), FALSE, title = reason) == 2 # nocov
+}
+
+use_no_mangler <- function(mangle_key) {
+  is.null(mangle_key) ||
+    identical(mangle_key, FALSE) ||
+    identical(mangle_key, "none")
+}
+
+use_base64_mangler <- function(mangle_key) {
+  identical(mangle_key, TRUE) ||
+    identical(mangle_key, "base64")
 }

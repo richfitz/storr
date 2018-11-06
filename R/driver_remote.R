@@ -134,7 +134,7 @@ R6_driver_remote <- R6::R6Class(
         return(character(0))
       }
       ret <- self$ops$list_dir(path)
-      if (self$rds$mangle_key) decode64(ret, TRUE) else ret
+      self$rds$mangler$decode(x = ret, error = TRUE)
     },
 
     ## These functions could be done better if driver_rds takes a
@@ -151,7 +151,6 @@ R6_driver_remote <- R6::R6Class(
         basename(dirname(p)),
         basename(p))
     }))
-
 
 ## It would be really nice to do this as a single operation but that
 ## probably can't be easily done generally.  Quite possibly it would

@@ -1,4 +1,8 @@
-## storr 1.2.1 (2018-??-??)
+## storr 1.2.2 (????-??-??)
+
+- Supply custom key manglers with `register_mangler()` (#88, @wlandau).
+
+## storr 1.2.1 (2018-10-18)
 
 * Avoid a race condition in writing to rds storrs in parallel (#80, reported by @wlandau)
 

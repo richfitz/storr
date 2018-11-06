@@ -5,8 +5,9 @@
 \alias{driver_rds}
 \title{rds object cache driver}
 \usage{
-storr_rds(path, compress = NULL, mangle_key = NULL, mangle_key_pad = NULL,
-  hash_algorithm = NULL, default_namespace = "objects")
+storr_rds(path, compress = NULL, mangle_key = NULL,
+  mangle_key_pad = NULL, hash_algorithm = NULL,
+  default_namespace = "objects")
 
 driver_rds(path, compress = NULL, mangle_key = NULL,
   mangle_key_pad = NULL, hash_algorithm = NULL)
@@ -19,8 +20,11 @@ might be nice for persistent application data.}
 \item{compress}{Compress the generated file?  This saves a small
 amount of space for a reasonable amount of time.}
 
-\item{mangle_key}{Mangle keys?  If TRUE, then the key is encoded
-using base64 before saving to the filesystem.  See Details.}
+\item{mangle_key}{Mangle keys? If \code{"base64"},
+then the key is encoded using base64 before saving to the filesystem.
+If \code{"none"}, then keys are not encoded. If some other string,
+\code{storr} will use a custom key mangler set up with
+\code{\link{register_mangler}()}. See Details.}
 
 \item{mangle_key_pad}{Logical indicating if the filenames created
 when using \code{mangle_key} should also be "padded" with the
@@ -63,6 +67,14 @@ not safe to use the same path for a storr with and without
 mangling.  So once an rds storr has been created its "mangledness"
 is set.  Using \code{mangle_key = NULL} uses whatever mangledness
 exists (or no mangledness if creating a new storr).
+
+If base64 encoding does not meet your use case
+(e.g. if it is too slow) then you can supply custom functions
+to encode and decode the keys.
+First, register your encoder and decoder functions
+with \code{\link{register_mangler}()}.
+Next, set \code{mangle_key} equal to the \code{name}
+you gave \code{\link{register_mangler}()}.
 }
 \section{Corrupt keys}{
 
@@ -70,9 +82,11 @@ exists (or no mangledness if creating a new storr).
 Some file synchronisation utilities like dropbox can create file
 that confuse an rds storr (e.g.,
 \code{"myobject (Someone's conflicted copy)"}.  If
-\code{mangle_key} is \code{FALSE} these cannot be detected but at
+\code{mangle_key} is \code{"none"},
+these cannot be detected but at
 the same time are not a real problem for storr.  However, if
-\code{mangle_key} is \code{TRUE} and keys are base64 encoded then
+\code{mangle_key} is \code{"base64"}
+and keys are base64 encoded then
 these conflicted copies can break parts of storr.
 
 If you see a warning asking you to deal with these files, please
