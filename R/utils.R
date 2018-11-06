@@ -121,15 +121,15 @@ assert_probably_storr_driver <- function(x, name = deparse(substitute(x))) {
   invisible(x)
 }
 
-assert_mangler <- function(mangler) {
+assert_custom_mangler <- function(mangler, mangle_key) {
   if (is.null(mangler)) {
-    stop("Set a key mangler with register_mangler().", call. = FALSE)
+    stop(
+      sprintf("No mangler set. Expected '%s'.", mangle_key),
+      "Set a key mangler with register_mangler().",
+      call. = FALSE
+    )
   }
-}
-
-assert_custom_mangler <- function(mangler, key) {
-  assert_mangler(mangler)
-  if (identical(mangler$name, key)) {
+  if (identical(mangler$name, mangle_key)) {
     stop(
       sprintf(
         "New key mangler '%s' disagrees with old mangler '%s'",
@@ -204,8 +204,14 @@ prompt_ask_yes_no <- function(reason) {
   utils::menu(c("no", "yes"), FALSE, title = reason) == 2 # nocov
 }
 
-chose_default_mangler <- function(mangle_key) {
+use_no_mangler <- function(mangle_key) {
   is.null(mangle_key) ||
-    is.logical(mangle_key) ||
-    mangle_key %in% c("none", "base64")
+    identical(mangle_key, FALSE) ||
+    identical(mangle_key, "none")
 }
+
+use_base64_mangler <- function(mangle_key) {
+  identical(mangle_key, TRUE) ||
+    identical(mangle_key, "base64")
+}
+

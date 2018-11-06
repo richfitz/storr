@@ -134,7 +134,7 @@ R6_driver_remote <- R6::R6Class(
         return(character(0))
       }
       ret <- self$ops$list_dir(path)
-      self$rds$decode(ret, TRUE)
+      self$rds$mangler$decode(x = ret, error = TRUE)
     },
 
     ## These functions could be done better if driver_rds takes a
