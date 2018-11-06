@@ -204,7 +204,7 @@ prompt_ask_yes_no <- function(reason) {
   utils::menu(c("no", "yes"), FALSE, title = reason) == 2 # nocov
 }
 
-chosen_default_mangler <- function(mangle_key) {
+chose_default_mangler <- function(mangle_key) {
   is.null(mangle_key) ||
     is.logical(mangle_key) ||
     mangle_key %in% c("none", "base64")

@@ -326,7 +326,7 @@ R6_driver_rds <- R6::R6Class(
     },
 
     set_mangler = function(path, mangle_key, is_new){
-      if (chosen_default_mangler(mangle_key)) {
+      if (chose_default_mangler(mangle_key)) {
         return()
       }
       if (is_new) {
