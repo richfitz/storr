@@ -187,6 +187,8 @@ R6_driver_rds <- R6::R6Class(
       }
       self$hash_algorithm <- driver_rds_config(path, "hash_algorithm",
                                                hash_algorithm, "md5", TRUE)
+
+      self$set_mangler(path, mangle_key, is_new)
     },
 
     type = function() {
@@ -304,10 +306,7 @@ R6_driver_rds <- R6::R6Class(
       if (identical(self$mangle_key, "base64")) {
         return(encode64(x, pad = pad))
       }
-      mangler <- getOption("storr_mangler")
-      assert_list(mangler)
-      assert_identical(mangler, mangler$name)
-      mangler$encode(x)
+      self$mangler$encode(x, pad = pad)
     },
 
     decode = function(x, error) {
@@ -323,12 +322,22 @@ R6_driver_rds <- R6::R6Class(
       if (identical(self$mangle_key, "base64")) {
         return(decode64(x, error = error))
       }
-      mangler <- getOption("storr_mangler")
-      assert_list(mangler)
-      assert_identical(mangler, mangler$name)
-      mangler$decode(x)
-    }
-  ))
+      self$mangler$decode(x, error = error)
+    },
+
+    set_mangler = function(path, mangle_key, is_new){
+      if (chosen_default_mangler(mangle_key)) {
+        return()
+      }
+      if (is_new) {
+        self$mangler <- getOption("storr_mangler")
+        assert_mangler(self$mangler)
+        saveRDS(file.path(path, "config", "mangler.rds"), mangler)
+      } else {
+        self$mangler <- readRDS(file.path(path, "config", "mangler.rds"))
+        assert_custom_mangler(self$mangler, mangle_key)
+      }
+    }))
 
 
 ## This attempts to check that we are connecting to a storr of

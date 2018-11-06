@@ -121,6 +121,25 @@ assert_probably_storr_driver <- function(x, name = deparse(substitute(x))) {
   invisible(x)
 }
 
+assert_mangler <- function(mangler) {
+  if (is.null(mangler)) {
+    stop("Set a key mangler with register_mangler().", call. = FALSE)
+  }
+}
+
+assert_custom_mangler <- function(mangler, key) {
+  assert_mangler(mangler)
+  if (identical(mangler$name, key)) {
+    stop(
+      sprintf(
+        "New key mangler '%s' disagrees with old mangler '%s'",
+        mangler$name, mangle_key
+      ),
+      call. = FALSE
+    )
+  } 
+}
+
 
 match_value <- function(x, choices, name = deparse(substitute(x))) {
   assert_scalar_character(x, name)
@@ -183,4 +202,10 @@ file_size <- function(...) {
 
 prompt_ask_yes_no <- function(reason) {
   utils::menu(c("no", "yes"), FALSE, title = reason) == 2 # nocov
+}
+
+chosen_default_mangler <- function(mangle_key) {
+  is.null(mangle_key) ||
+    is.logical(mangle_key) ||
+    mangle_key %in% c("none", "base64")
 }
