@@ -27,5 +27,5 @@ Suggests:
     rbenchmark,
     testthat (>= 1.0.0)
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 Encoding: UTF-8

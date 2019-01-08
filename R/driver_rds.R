@@ -133,6 +133,7 @@ R6_driver_rds <- R6::R6Class(
     mangle_key = NULL,
     mangle_key_pad = NULL,
     hash_algorithm = NULL,
+    hash_length = NULL,
     traits = list(accept = "raw"),
 
     initialize = function(path, compress, mangle_key, mangle_key_pad,
@@ -186,6 +187,10 @@ R6_driver_rds <- R6::R6Class(
       }
       self$hash_algorithm <- driver_rds_config(path, "hash_algorithm",
                                                hash_algorithm, "md5", TRUE)
+
+      self$hash_length <- nchar(
+        make_hash_serialized_object(self$hash_algorithm, 0L)("")
+      )
     },
 
     type = function() {
@@ -197,7 +202,11 @@ R6_driver_rds <- R6::R6Class(
     },
 
     get_hash = function(key, namespace) {
-      readLines(self$name_key(key, namespace))
+      readChar(
+        con = self$name_key(key, namespace),
+        nchars = self$hash_length,
+        useBytes = FALSE
+      )
     },
 
     set_hash = function(key, namespace, hash) {
