@@ -183,5 +183,5 @@ prompt_ask_yes_no <- function(reason) {
 #' @useDynLib storr
 # Read RDS keys fast.
 read_text_file <- function(path) {
-  .Call("read_text_file", path)
+  .Call("read_text_file", PACKAGE = "storr", path)
 }
