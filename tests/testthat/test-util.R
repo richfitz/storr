@@ -98,6 +98,17 @@ test_that("write_lines recovers on error", {
 
 
 test_that("read_text_file() works", {
-  
-  
+  expect_false(file.exists("does_not_exist"))
+  expect_equal(read_text_file("does_not_exist"), "")
+  randstring <- function(n) {
+    paste(sample(letters, size = n, replace = TRUE), collapse = "")
+  }
+  test_read_text_file <- function(n) {
+    string <- randstring(n)
+    file <- tempfile()
+    writeLines(string, file)
+    on.exit(unlink(file))
+    expect_equal(read_text_file(file), string)
+  }
+  lapply(seq_len(200), test_read_text_file)
 })
