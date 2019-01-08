@@ -201,11 +201,7 @@ R6_driver_rds <- R6::R6Class(
     },
 
     get_hash = function(key, namespace) {
-      readChar(
-        con = self$name_key(key, namespace),
-        nchars = self$hash_length,
-        useBytes = FALSE
-      )
+      readChar(self$name_key(key, namespace), self$hash_length, FALSE)
     },
 
     set_hash = function(key, namespace, hash) {
