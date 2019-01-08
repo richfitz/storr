@@ -1,18 +1,17 @@
+#include <fstream>
+#include <sstream>
+#include <string>
 #include <R.h>
 #include <Rinternals.h>
 
-extern "C" SEXP read_text_file(SEXP path, SEXP nchar) {
-  size_t size = asInteger(nchar) * sizeof(char);
-  char *buf = (char*) calloc(1, size);
-  FILE *fp;
-  fp = fopen(CHAR(asChar(path)), "rb");
-  fread(buf, size, 1, fp);
-  buf[size] = '\0'; // Very important: https://wiki.sei.cmu.edu/confluence/pages/viewpage.action?pageId=87152233
-  fclose(fp);
+extern "C" SEXP read_text_file(SEXP path) {
+  std::ifstream t(CHAR(asChar(path)));
+  std::stringstream ss;
+  ss << t.rdbuf();
+  std::string s = ss.str();
   SEXP out = PROTECT(allocVector(STRSXP, 1));
-  SET_STRING_ELT(out, 0, mkChar(buf));
+  SET_STRING_ELT(out, 0, mkChar(s.c_str()));
   UNPROTECT(1);
-  free(buf);
   return out;
 }
 
