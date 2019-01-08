@@ -189,8 +189,7 @@ R6_driver_rds <- R6::R6Class(
                                                hash_algorithm, "md5", TRUE)
 
       self$hash_length <- nchar(
-        make_hash_serialized_object(self$hash_algorithm, 0L)("")
-      )
+        digest::digest(as.raw(0x00), self$hash_algorithm, serialize = FALSE))
     },
 
     type = function() {
