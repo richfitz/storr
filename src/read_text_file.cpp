@@ -6,11 +6,8 @@
 
 extern "C" SEXP read_text_file(SEXP path) {
   std::ifstream t(CHAR(asChar(path)));
-//  std::stringstream ss;
   std::string s;
   std::getline(t, s);
-//  ss << t.rdbuf();
-//  std::string s = ss.str();
   SEXP out = PROTECT(allocVector(STRSXP, 1));
   SET_STRING_ELT(out, 0, mkChar(s.c_str()));
   UNPROTECT(1);
