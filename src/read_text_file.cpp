@@ -6,9 +6,7 @@
  */
 extern "C" SEXP read_text_file(SEXP path, SEXP nchar) {
   size_t size = asInteger(nchar) * sizeof(char);
-  // Negligible performance difference relative to malloc()
-  // and necessary to avoid funny business at the end of the buffer.
-  char *buf = (char*) calloc(1, size);
+  char *buf = (char*) malloc(size);
   FILE *fp;
   fp = fopen(CHAR(asChar(path)), "rb");
   fread(buf, size, 1, fp);
