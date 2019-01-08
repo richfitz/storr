@@ -181,9 +181,7 @@ prompt_ask_yes_no <- function(reason) {
 }
 
 #' @useDynLib storr
-# Read RDS keys fast.
-# Assumes the `~` in the path is already expanded out with normalizePath()
-# or path.expand() in R. Otherwise, we will get a segfault.
+# Read RDS keys fast
 read_text_file <- function(path, nchar) {
   .Call("read_text_file", PACKAGE = "storr", path, nchar)
 }

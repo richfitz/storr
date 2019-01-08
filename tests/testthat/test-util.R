@@ -95,3 +95,9 @@ test_that("write_lines recovers on error", {
   expect_silent(write_lines(value, filename))
   expect_identical(readLines(filename), value)
 })
+
+
+test_that("read_text_file() works", {
+  
+  
+})

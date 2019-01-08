@@ -1,9 +1,6 @@
 #include <R.h>
 #include <Rinternals.h>
 
-/* Assumes the `~` in the path is already expanded out with normalizePath()
- * or path.expand() in R. Otherwise, we will get a segfault.
- */
 extern "C" SEXP read_text_file(SEXP path, SEXP nchar) {
   size_t size = asInteger(nchar) * sizeof(char);
   char *buf = (char*) calloc(1, size);
