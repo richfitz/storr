@@ -197,7 +197,7 @@ R6_driver_rds <- R6::R6Class(
     },
 
     get_hash = function(key, namespace) {
-      readLines(self$name_key(key, namespace))
+      read_text_file(self$name_key(key, namespace))
     },
 
     set_hash = function(key, namespace, hash) {

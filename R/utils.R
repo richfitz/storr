@@ -179,3 +179,9 @@ file_size <- function(...) {
 prompt_ask_yes_no <- function(reason) {
   utils::menu(c("no", "yes"), FALSE, title = reason) == 2 # nocov
 }
+
+#' @useDynLib storr
+# Read RDS keys fast.
+read_text_file <- function(path) {
+  .Call("read_text_file", path)
+}
