@@ -7,7 +7,7 @@ SEXP Cread_text_file(SEXP path, SEXP nchar) {
   FILE *fp;
   fp = fopen(CHAR(asChar(path)), "rb");
   if (fp == NULL) {
-    return R_NilValue;
+    Rf_error("File %s does not exist", path);
   }
   int n = asInteger(nchar) + 1; // Need an extra character for '\0'.
   char *buf = (char*) malloc(n * sizeof(char));

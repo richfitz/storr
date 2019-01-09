@@ -183,9 +183,5 @@ prompt_ask_yes_no <- function(reason) {
 #' @useDynLib storr, .registration = TRUE
 # Read RDS keys fast
 read_text_file <- function(path, nchar) {
-  out <- .Call(Cread_text_file, path, nchar)
-  if (is.null(out)) {
-    stop("text file ", path, " does not exist", call. = FALSE)
-  }
-  out
+  .Call(Cread_text_file, path, nchar)
 }
