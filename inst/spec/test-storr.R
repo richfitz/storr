@@ -210,8 +210,8 @@ testthat::test_that("hash_algorithm", {
 
     st <- storr(dr)
     st$set(key, x)
-    testthat::expect_equal(st$get(key), x)
 
+    testthat::expect_equal(st$get(key), x)
     hash <- st$hash_object(x)
     testthat::expect_equal(st$list_hashes(), hash)
     ## Sanity check

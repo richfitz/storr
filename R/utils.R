@@ -180,8 +180,12 @@ prompt_ask_yes_no <- function(reason) {
   utils::menu(c("no", "yes"), FALSE, title = reason) == 2 # nocov
 }
 
-#' @useDynLib storr
+#' @useDynLib storr, .registration = TRUE
 # Read RDS keys fast
-read_text_file <- function(path) {
-  .Call("read_text_file", PACKAGE = "storr", path, nchar)
+read_text_file <- function(path, nchar) {
+  out <- .Call(Cread_text_file, path, nchar)
+  if (is.null(out)) {
+    stop("text file ", path, " does not exist", call. = FALSE)
+  }
+  out
 }
