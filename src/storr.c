@@ -13,8 +13,7 @@ SEXP Cread_text_file(SEXP path, SEXP nchar) {
   char *buf = (char*) malloc(n * sizeof(char));
   fgets(buf, n, fp);
   fclose(fp);
-  SEXP out = PROTECT(allocVector(STRSXP, 1));
-  SET_STRING_ELT(out, 0, mkChar(buf));
+  SEXP out = PROTECT(mkString(buf));
   UNPROTECT(1);
   free(buf);
   return out;
