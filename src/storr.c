@@ -27,7 +27,7 @@ static const R_CallMethodDef call_methods[] = {
 
 void R_init_storr(DllInfo *dll) {
   R_registerRoutines(dll, NULL, call_methods, NULL, NULL);
-  #if defined(R_VERSION) && R_VERSION >= R_Version(3, 3, 0)
+  #if defined(R_VERSION) && R_VERSION >= R_Version(3, 4, 0)
     R_useDynamicSymbols(dll, FALSE);
     R_forceSymbols(dll, TRUE);
   #endif
