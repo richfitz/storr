@@ -109,6 +109,13 @@ test_that("read_text_file() works", {
     read_text_file("empty_file", 12),
     regexp = "is empty"
   )
+  writeLines(c("123", "4567"), "multiline")
+  on.exit(unlink("multiline"), add = TRUE)
+  expect_equal(readLines("multiline"), c("123", "4567"))
+  expect_equal(read_text_file("multiline", 3), "123")
+  oneline <- read_text_file("multiline", 100) # Includes '\n'.
+  expect_true(grepl("123", oneline))
+  expect_false(grepl("[4567]", oneline))
   randstring <- function(n) {
     paste(sample(letters, size = n, replace = TRUE), collapse = "")
   }
