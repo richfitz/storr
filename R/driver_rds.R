@@ -190,6 +190,9 @@ R6_driver_rds <- R6::R6Class(
       
       self$hash_length <- nchar(
         digest::digest(as.raw(0x00), self$hash_algorithm, serialize = FALSE))
+
+     # Causes warnings in tests:
+     # self$traits <- list(accept = "raw", throw_missing = TRUE)
     },
 
     type = function() {
@@ -210,7 +213,11 @@ R6_driver_rds <- R6::R6Class(
                   scratch_dir = self$path_scratch)
     },
     get_object = function(hash) {
-      readRDS(self$name_hash(hash))
+      path <- self$name_hash(hash)
+      if (!file.exists(path)) {
+        stop("rds file missing")
+      }
+      readRDS(path)
     },
 
     set_object = function(hash, value) {
