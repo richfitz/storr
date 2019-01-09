@@ -179,3 +179,12 @@ file_size <- function(...) {
 prompt_ask_yes_no <- function(reason) {
   utils::menu(c("no", "yes"), FALSE, title = reason) == 2 # nocov
 }
+
+# These functions are not available in R-3.1.0.
+lengths <- function(x, use.names = TRUE) {
+  vapply(x, length, FUN.VALUE = integer(1), USE.NAMES = use.names)
+}
+
+file.size <- function(...) {
+  file.info(..., extra_cols = FALSE)$size
+}
