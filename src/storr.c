@@ -3,19 +3,23 @@
 #include <Rinternals.h>
 #include <Rversion.h>
 
+#define MAX_HASH_LENGTH 128
+
 SEXP Cread_text_file(SEXP path, SEXP nchar) {
   FILE *fp;
   fp = fopen(CHAR(asChar(path)), "rb");
   if (fp == NULL) {
-    Rf_error("File %s does not exist", path);
+    Rf_error("File %s does not exist.", path);
   }
   int n = asInteger(nchar) + 1; // Need an extra character for '\0'.
-  char *buf = (char*) malloc(n * sizeof(char));
-  fgets(buf, n, fp);
+  char buf[MAX_HASH_LENGTH + 1];
+  char *res = fgets(buf, n, fp);
+  if (res == NULL) {
+    Rf_error("File %s is empty.", path);
+  }
   fclose(fp);
   SEXP out = PROTECT(mkString(buf));
   UNPROTECT(1);
-  free(buf);
   return out;
 }
 
