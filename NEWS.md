@@ -1,4 +1,8 @@
-## storr 1.2.1 (2018-??-??)
+## storr 1.2.2 (2018-??-??)
+
+* Speed up the `$get_hash()` method of RDS drivers using C code and traits (#96, #98, @wlandau).
+
+## storr 1.2.1 (2018-10-18)
 
 * Avoid a race condition in writing to rds storrs in parallel (#80, reported by @wlandau)
 
