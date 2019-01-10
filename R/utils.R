@@ -185,3 +185,11 @@ prompt_ask_yes_no <- function(reason) {
 read_text_file <- function(path, nchar) {
   .Call(Cread_text_file, path, nchar)
 }
+
+
+read_rds <- function(path) {
+  if (!file.exists(path)) {
+    stop(sprintf("rds file '%s' missing", path))
+  }
+  readRDS(path)
+}

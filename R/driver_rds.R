@@ -212,12 +212,9 @@ R6_driver_rds <- R6::R6Class(
       write_lines(hash, self$name_key(key, namespace),
                   scratch_dir = self$path_scratch)
     },
+
     get_object = function(hash) {
-      path <- self$name_hash(hash)
-      if (!file.exists(path)) {
-        stop("rds file missing")
-      }
-      readRDS(path)
+      read_rds(self$name_hash(hash))
     },
 
     set_object = function(hash, value) {
