@@ -134,7 +134,7 @@ R6_driver_rds <- R6::R6Class(
     mangle_key_pad = NULL,
     hash_algorithm = NULL,
     hash_length = NULL,
-    traits = list(accept = "raw"),
+    traits = list(accept = "raw", throw_missing = TRUE),
 
     initialize = function(path, compress, mangle_key, mangle_key_pad,
                           hash_algorithm) {
@@ -190,9 +190,6 @@ R6_driver_rds <- R6::R6Class(
       
       self$hash_length <- nchar(
         digest::digest(as.raw(0x00), self$hash_algorithm, serialize = FALSE))
-
-     # Causes warnings in tests:
-     # self$traits <- list(accept = "raw", throw_missing = TRUE)
     },
 
     type = function() {
