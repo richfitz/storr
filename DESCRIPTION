@@ -1,6 +1,6 @@
 Package: storr
 Title: Simple Key Value Stores
-Version: 1.2.1
+Version: 1.2.2
 Description: Creates and manages simple key-value stores.  These can
     use a variety of approaches for storing the data.  This package
     implements the base methods and support for file system, in-memory
@@ -10,7 +10,12 @@ Depends:
 License: MIT + file LICENSE
 LazyData: true
 Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
-    email = "rich.fitzjohn@gmail.com"))
+    email = "rich.fitzjohn@gmail.com"),
+    person(c("William", "Michael"), "Landau",
+      email = "will.landau@gmail.com",
+      role = "ctb",
+      comment = c(ORCID = "0000-0003-1878-3253")
+    ))
 URL: https://github.com/richfitz/storr
 BugReports: https://github.com/richfitz/storr/issues
 Imports:
