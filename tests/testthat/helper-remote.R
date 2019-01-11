@@ -63,6 +63,9 @@ R6_fake_file_ops <- R6::R6Class(
 
     download_file = function(file, dest_dir) {
       file_remote <- file.path(self$root, file)
+      if (!file.exists(file_remote)) {
+        stop("Remote resource not found")
+      }
       if (is.null(dest_dir)) {
         readBin(file_remote, raw(), file.size(file_remote))
       } else {
