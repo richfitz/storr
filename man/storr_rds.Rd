@@ -5,8 +5,9 @@
 \alias{driver_rds}
 \title{rds object cache driver}
 \usage{
-storr_rds(path, compress = NULL, mangle_key = NULL, mangle_key_pad = NULL,
-  hash_algorithm = NULL, default_namespace = "objects")
+storr_rds(path, compress = NULL, mangle_key = NULL,
+  mangle_key_pad = NULL, hash_algorithm = NULL,
+  default_namespace = "objects")
 
 driver_rds(path, compress = NULL, mangle_key = NULL,
   mangle_key_pad = NULL, hash_algorithm = NULL)

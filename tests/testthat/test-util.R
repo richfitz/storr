@@ -95,3 +95,58 @@ test_that("write_lines recovers on error", {
   expect_silent(write_lines(value, filename))
   expect_identical(readLines(filename), value)
 })
+
+
+test_that("read_text_file throws on missing file", {
+  expect_error(
+    read_text_file(tempfile(), 12),
+    "File '.+' does not exist")
+})
+
+
+test_that("read_text_file throws on empty file", {
+  path <- tempfile()
+  file.create(path)
+  on.exit(unlink(path))
+  expect_error(read_text_file(path, 12),
+               "File '.+' is empty")
+})
+
+
+test_that("read_text_file behaves sensibly on multiline files", {
+  path <- tempfile()
+  writeLines(c("123", "4567"), path)
+  on.exit(unlink(path))
+
+  expect_equal(readLines(path), c("123", "4567"))
+  expect_equal(read_text_file(path, 3), "123")
+  oneline <- read_text_file(path, 100) # Includes '\n'.
+  expect_match(oneline, "^123\\s+$")
+})
+
+
+test_that("read_text_file bulk test", {
+  test_read_text_file <- function(n) {
+     string <- rand_str(n, FALSE)
+     file <- tempfile()
+     writeLines(string, file)
+     on.exit(unlink(file))
+     read_text_file(file, n) == string
+  }
+  expect_true(all(vlapply(seq_len(128), test_read_text_file)))
+})
+
+
+test_that("read_rds throws on missing file", {
+  expect_error(read_rds(tempfile()),
+               "rds file '.+' missing")
+})
+
+
+test_that("read_rds reads rds files", {
+  path <- tempfile()
+  x <- runif(10)
+  saveRDS(x, path)
+  on.exit(unlink(path))
+  expect_identical(read_rds(path), x)
+})
