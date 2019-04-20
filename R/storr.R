@@ -34,7 +34,7 @@
 ##'
 ##' @param default_namespace Default namespace to store objects in.
 ##'   By default \code{"objects"} is used, but this might be useful to
-##'   have two diffent \code{storr} objects pointing at the same
+##'   have two different \code{storr} objects pointing at the same
 ##'   underlying storage, but storing things in different namespaces.
 ##'
 ##' @export
