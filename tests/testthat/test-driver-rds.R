@@ -176,6 +176,33 @@ test_that("backward compatibility", {
                "Incompatible value for hash_algorithm")
 })
 
+test_that("backward compatibility: compression", {
+  ## In version 1.2.1 and earlier, the compress argument was a logical scalar.
+  path <- copy_to_tmp("v1.2.1_compress_TRUE")
+  st <- storr_rds(path)
+  expect_equal(st$list(), "key")
+  expect_equal(st$get("key"), "value")
+  for (compress in list("gzfile", TRUE)) {
+    expect_silent(st <- storr_rds(path, compress = compress))
+  }
+  for (compress in list("none", "fst", FALSE)) {
+    expect_error(st <- storr_rds(path, compress = compress),
+                 "Incompatible value for compress")
+  }
+
+  path <- copy_to_tmp("v1.2.1_compress_FALSE")
+  st <- storr_rds(path)
+  expect_equal(st$list(), "key")
+  expect_equal(st$get("key"), "value")
+  for (compress in list("none", FALSE)) {
+    expect_silent(st <- storr_rds(path, compress = compress))
+  }
+  for (compress in list("gzfile", "fst", TRUE)) {
+    expect_error(st <- storr_rds(path, compress = compress),
+                 "Incompatible value for compress")
+  }
+})
+
 test_that("mangledness padding backward compatibility", {
   ## In version 1.0.1 and earlier, mangling was always padded
   path <- copy_to_tmp("v1.0.1_mangled")
