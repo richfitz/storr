@@ -224,7 +224,10 @@ R6_driver_rds <- R6::R6Class(
 
     get_object = function(hash) {
       out <- read_rds(self$name_hash(hash))
-      if (identical(self$compress, "fst")) out <- fst::decompress_fst(out)
+      if (identical(self$compress, "fst")) {
+        out <- fst::decompress_fst(out)
+        out <- unserialize(out)
+      }
       out
     },
 

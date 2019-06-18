@@ -154,9 +154,9 @@ test_that("compression support", {
     st3$destroy()
   })
 
-  h1 <- st1$set("data", data)
-  h2 <- st2$set("data", data)
-  h3 <- st3$set("data", data)
+  h1 <- st1$set("data", data, use_cache = FALSE)
+  h2 <- st2$set("data", data, use_cache = FALSE)
+  h3 <- st3$set("data", data, use_cache = FALSE)
 
   expect_identical(h1, h2, h3)
   expect_gt(file.size(st2$driver$name_hash(h2)),
@@ -164,9 +164,9 @@ test_that("compression support", {
   expect_gt(file.size(st2$driver$name_hash(h2)),
             file.size(st3$driver$name_hash(h3)))
 
-  expect_identical(st1$get("data"), data)
-  expect_identical(st2$get("data"), data)
-  expect_identical(st3$get("data"), data)
+  expect_identical(st1$get("data", use_cache = FALSE), data)
+  expect_identical(st2$get("data", use_cache = FALSE), data)
+  expect_identical(st3$get("data", use_cache = FALSE), data)
 })
 
 test_that("backward compatibility", {
