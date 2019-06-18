@@ -86,8 +86,20 @@ write_serialized_rds <- function(value, filename, compress,
 try_write_serialized_rds <- function(value, filename, compress,
                                      scratch_dir = NULL, long = 2^31 - 2) {
   tmp <- tempfile(tmpdir = scratch_dir %||% tempdir())
+  if (identical(compress, "fst")) {
+    write_tmp_fst(value, tmp)
+  } else {
+    write_tmp_default(value, tmp, compress, scratch_dir, long)
+  }
+  file.rename(tmp, filename)
+}
 
-  con <- (if (identical(compress, "gzfile")) gzfile else file)(tmp, "wb")
+write_tmp_fst <- function(value, filename) {
+  saveRDS(fst::compress_fst(value), filename, compress = FALSE)
+}
+
+write_tmp_default <- function(value, filename, compress, scratch_dir, long) {
+  con <- (if (identical(compress, "gzfile")) gzfile else file)(filename, "wb")
   needs_close <- TRUE
   on.exit(if (needs_close) close(con), add = TRUE)
   len <- length(value)
@@ -99,9 +111,7 @@ try_write_serialized_rds <- function(value, filename, compress,
   }
   close(con)
   needs_close <- FALSE
-  file.rename(tmp, filename)
 }
-
 
 ## Same pattern for write_lines.  The difference is that this will
 ## delete the key on a failed write (otherwise there's a copy

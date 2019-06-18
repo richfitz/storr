@@ -189,6 +189,7 @@ R6_driver_rds <- R6::R6Class(
       if (!is.null(compress)) {
         compress <- as.character(compress)
       }
+
       self$compress <- driver_rds_config(path, "compress", compress,
                                          "TRUE", TRUE)
       self$compress <- parse_rds_compress(self$compress)
@@ -222,7 +223,9 @@ R6_driver_rds <- R6::R6Class(
     },
 
     get_object = function(hash) {
-      read_rds(self$name_hash(hash))
+      out <- read_rds(self$name_hash(hash))
+      if (identical(self$compress, "fst")) out <- fst::decompress_fst(out)
+      out
     },
 
     set_object = function(hash, value) {
@@ -470,12 +473,8 @@ parse_rds_compress <- function(compress) {
   } else if (identical(compress, "FALSE")) {
     "none"
   } else if (identical(compress, "fst")) {
-    if (!requireNamespace("fst", quietly = TRUE)) {
-      stop(
-        "storr_rds(compress = \"fst\") requires the fst package.",
-        call. = FALSE
-      )
-    }
+    assert_fst()
+    compress
   } else {
     compress
   }
