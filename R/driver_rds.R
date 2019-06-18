@@ -469,6 +469,13 @@ parse_rds_compress <- function(compress) {
     "gzfile"
   } else if (identical(compress, "FALSE")) {
     "none"
+  } else if (identical(compress, "fst")) {
+    if (!requireNamespace("fst", quietly = TRUE)) {
+      stop(
+        "storr_rds(compress = \"fst\") requires the fst package.",
+        call. = FALSE
+      )
+    }
   } else {
     compress
   }

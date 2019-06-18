@@ -138,26 +138,35 @@ test_that("large vector support", {
   file.remove(tmp)
 })
 
-test_that("gzfile compression support", {
+test_that("compression support", {
+  skip_if_not_installed("fst")
+  
   ## some data that will likely compress very well:
   data <- rep(1:10, each = 500)
 
   st1 <- storr_rds(tempfile(), "gzfile")
   st2 <- storr_rds(tempfile(), "none")
+  st3 <- storr_rds(tempfile(), "fst")
+  
   on.exit({
     st1$destroy()
     st2$destroy()
+    st3$destroy()
   })
 
   h1 <- st1$set("data", data)
   h2 <- st2$set("data", data)
+  h3 <- st3$set("data", data)
 
-  expect_identical(h1, h2)
+  expect_identical(h1, h2, h3)
   expect_gt(file.size(st2$driver$name_hash(h2)),
             file.size(st1$driver$name_hash(h1)))
+  expect_gt(file.size(st2$driver$name_hash(h2)),
+            file.size(st3$driver$name_hash(h3)))
 
   expect_identical(st1$get("data"), data)
   expect_identical(st2$get("data"), data)
+  expect_identical(st3$get("data"), data)
 })
 
 test_that("backward compatibility", {

@@ -25,6 +25,7 @@ Suggests:
     DBI (>= 0.6),
     RSQLite (>= 1.1-2),
     RPostgres,
+    fst,
     knitr,
     mockr,
     parallel,
