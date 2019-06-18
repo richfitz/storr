@@ -18,7 +18,16 @@ for ephemeral storage, The \code{rappdirs} package (on CRAN)
 might be nice for persistent application data.}
 
 \item{compress}{Compress the generated file?  This saves a small
-amount of space for a reasonable amount of time.}
+amount of space for a reasonable amount of time. Possible values
+are \code{"none"} for no compression, \code{"gzfile"} to write
+to a \code{gzfile} connection (default), and \code{"fst"} to use
+\code{compress_fst()} (recommended, but requires the \code{fst} package).
+To preserve back compatibility, \code{compress} can also be logical:
+\code{TRUE} for \code{"gzfile"} and \code{FALSE} for \code{"none"}.
+However, these values are not interchangeable for existings \code{storr}s.
+For example, if you create a \code{storr} with \code{compress = TRUE},
+you must continue to use \code{compress = TRUE}
+and not \code{compress = "gzfile"} when you recover it later.}
 
 \item{mangle_key}{Mangle keys?  If TRUE, then the key is encoded
 using base64 before saving to the filesystem.  See Details.}

@@ -138,12 +138,12 @@ test_that("large vector support", {
   file.remove(tmp)
 })
 
-test_that("compression support", {
+test_that("gzfile compression support", {
   ## some data that will likely compress very well:
   data <- rep(1:10, each = 500)
 
-  st1 <- storr_rds(tempfile(), TRUE)
-  st2 <- storr_rds(tempfile(), FALSE)
+  st1 <- storr_rds(tempfile(), "gzfile")
+  st2 <- storr_rds(tempfile(), "none")
   on.exit({
     st1$destroy()
     st2$destroy()
@@ -182,10 +182,8 @@ test_that("backward compatibility: compression", {
   st <- storr_rds(path)
   expect_equal(st$list(), "key")
   expect_equal(st$get("key"), "value")
-  for (compress in list("gzfile", TRUE)) {
-    expect_silent(st <- storr_rds(path, compress = compress))
-  }
-  for (compress in list("none", "fst", FALSE)) {
+  expect_silent(st <- storr_rds(path, compress = TRUE))
+  for (compress in list("none", "gzfile", "fst", FALSE)) {
     expect_error(st <- storr_rds(path, compress = compress),
                  "Incompatible value for compress")
   }
@@ -194,10 +192,8 @@ test_that("backward compatibility: compression", {
   st <- storr_rds(path)
   expect_equal(st$list(), "key")
   expect_equal(st$get("key"), "value")
-  for (compress in list("none", FALSE)) {
-    expect_silent(st <- storr_rds(path, compress = compress))
-  }
-  for (compress in list("gzfile", "fst", TRUE)) {
+  expect_silent(st <- storr_rds(path, compress = FALSE))
+  for (compress in list("none", "gzfile", "fst", TRUE)) {
     expect_error(st <- storr_rds(path, compress = compress),
                  "Incompatible value for compress")
   }

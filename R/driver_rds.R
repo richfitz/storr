@@ -58,9 +58,13 @@
 ##'   amount of space for a reasonable amount of time. Possible values
 ##'   are \code{"none"} for no compression, \code{"gzfile"} to write
 ##'   to a \code{gzfile} connection (default), and \code{"fst"} to use
-##'   \code{compress_fst} (recommended). To preserve back compatibility,
-##'   \code{compress} can also be logical: \code{TRUE} for \code{"gzfile"}
-##'   and \code{FALSE} for \code{"none"}.
+##'   \code{compress_fst()} (recommended, but requires the \code{fst} package).
+##'   To preserve back compatibility, \code{compress} can also be logical:
+##'   \code{TRUE} for \code{"gzfile"} and \code{FALSE} for \code{"none"}.
+##'   However, these values are not interchangeable for existings \code{storr}s.
+##'   For example, if you create a \code{storr} with \code{compress = TRUE},
+##'   you must continue to use \code{compress = TRUE}
+##'   and not \code{compress = "gzfile"} when you recover it later.
 ##'
 ##' @param mangle_key Mangle keys?  If TRUE, then the key is encoded
 ##'   using base64 before saving to the filesystem.  See Details.
@@ -186,7 +190,7 @@ R6_driver_rds <- R6::R6Class(
         compress <- as.character(compress)
       }
       self$compress <- driver_rds_config(path, "compress", compress,
-                                         "TRUE", FALSE)
+                                         "TRUE", TRUE)
       self$compress <- parse_rds_compress(self$compress)
 
       if (!is.null(hash_algorithm)) {
