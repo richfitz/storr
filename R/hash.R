@@ -87,7 +87,7 @@ try_write_serialized_rds <- function(value, filename, compress,
                                      scratch_dir = NULL, long = 2^31 - 2) {
   tmp <- tempfile(tmpdir = scratch_dir %||% tempdir())
 
-  con <- (if (compress) gzfile else file)(tmp, "wb")
+  con <- (if (identical(compress, "gzfile")) gzfile else file)(tmp, "wb")
   needs_close <- TRUE
   on.exit(if (needs_close) close(con), add = TRUE)
   len <- length(value)

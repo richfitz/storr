@@ -55,7 +55,12 @@
 ##'   might be nice for persistent application data.
 ##'
 ##' @param compress Compress the generated file?  This saves a small
-##'   amount of space for a reasonable amount of time.
+##'   amount of space for a reasonable amount of time. Possible values
+##'   are \code{"none"} for no compression, \code{"gzfile"} to write
+##'   to a \code{gzfile} connection (default), and \code{"fst"} to use
+##'   \code{compress_fst} (recommended). To preserve back compatibility,
+##'   \code{compress} can also be logical: \code{TRUE} for \code{"gzfile"}
+##'   and \code{FALSE} for \code{"none"}.
 ##'
 ##' @param mangle_key Mangle keys?  If TRUE, then the key is encoded
 ##'   using base64 before saving to the filesystem.  See Details.
@@ -76,6 +81,7 @@
 ##'
 ##' @param default_namespace Default namespace (see
 ##'   \code{\link{storr}}).
+##'
 ##' @export
 ##' @examples
 ##'
@@ -154,7 +160,7 @@ R6_driver_rds <- R6::R6Class(
       ## future versions of driver_rds can use to patch, warn or
       ## change behaviour with older versions of the storr.
       if (!is_new && !file.exists(driver_rds_config_file(path, "version"))) {
-        write_if_missing("1.0.1", driver_rds_config_file(path, "version"))
+        write_if_missing("1.2.2", driver_rds_config_file(path, "version"))
         write_if_missing("TRUE", driver_rds_config_file(path, "mangle_key_pad"))
         write_if_missing("TRUE", driver_rds_config_file(path, "compress"))
         write_if_missing("md5", driver_rds_config_file(path, "hash_algorithm"))
@@ -177,10 +183,11 @@ R6_driver_rds <- R6::R6Class(
                           FALSE, TRUE)
 
       if (!is.null(compress)) {
-        assert_scalar_logical(compress)
+        compress <- as.character(compress)
       }
       self$compress <- driver_rds_config(path, "compress", compress,
-                                         TRUE, FALSE)
+                                         "TRUE", FALSE)
+      self$compress <- parse_rds_compress(self$compress)
 
       if (!is.null(hash_algorithm)) {
         assert_scalar_character(hash_algorithm)
@@ -451,4 +458,14 @@ See 'Corrupt keys' within ?storr_rds for how to proceed" -> fmt
   files <- sprintf("  - '%s'", files)
   message(sprintf(fmt, length(files), namespace, path, files))
   corrupt_notices[[path]] <- now
+}
+
+parse_rds_compress <- function(compress) {
+  if (identical(compress, "TRUE")) {
+    "gzfile"
+  } else if (identical(compress, "FALSE")) {
+    "none"
+  } else {
+    compress
+  }
 }
