@@ -166,7 +166,7 @@ R6_driver_rds <- R6::R6Class(
       if (!is_new && !file.exists(driver_rds_config_file(path, "version"))) {
         write_if_missing("1.2.2", driver_rds_config_file(path, "version"))
         write_if_missing("TRUE", driver_rds_config_file(path, "mangle_key_pad"))
-        write_if_missing("TRUE", driver_rds_config_file(path, "compress"))
+        write_if_missing("gzfile", driver_rds_config_file(path, "compress"))
         write_if_missing("md5", driver_rds_config_file(path, "hash_algorithm"))
       }
       ## Then write out the version number:
