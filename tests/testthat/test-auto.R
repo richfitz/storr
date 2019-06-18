@@ -8,6 +8,11 @@ test_that("rds", {
     driver_rds(dr$path %||% tempfile("storr_"), ...))
 })
 
+test_that("fst", {
+  storr::test_driver(function(dr = NULL, ...)
+    driver_fst(dr$path %||% tempfile("storr_"), ...))
+})
+
 test_that("dbi (sqlite)", {
   if (requireNamespace("RSQLite", quietly = TRUE)) {
     new_sqlite <- function() {
