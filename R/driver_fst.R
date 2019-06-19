@@ -122,7 +122,8 @@ try_write_fst_value <- function(value, filename, compress,
                                 scratch_dir = NULL) {
   tmp <- tempfile(tmpdir = scratch_dir %||% tempdir())
   if (compress) value <- fst::compress_fst(value)
-  fst::write_fst(data.frame(value), tmp)
+
+  fst::write_fst(structure(list(value = value), class = "data.frame"), tmp)
   file.rename(tmp, filename)
 }
 
