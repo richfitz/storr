@@ -108,7 +108,7 @@ read_fst_value <- function(path, compress) {
   }
   out <- fst::read_fst(path)[[1]]
   if (compress) out <- decompress_fst(out)
-  out
+  unserialize(out)
 }
 
 write_fst_value <- function(value, filename, compress,
