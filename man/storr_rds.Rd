@@ -22,14 +22,8 @@ might be nice for persistent application data.}
   \describe{
     \item{"none"}{No compression.}
     \item{"gzip"}{gzip compression with \code{base::gzfile()} (default).}
-    \item{"lz4"}{
-      lz4 compression via \code{fst::compress_fst()}.
-      Very fast, but lower quality than zstd.
-    }
-    \item{"zstd"}{
-      zstd compression via \code{fst::compress_fst()}.
-      Higher quality but slower than lz4.
-    }
+    \item{"lz4"}{lz4 compression via \code{fst::compress_fst()}. Very fast, but lower quality than zstd.}
+    \item{"zstd"}{zstd compression via \code{fst::compress_fst()}. Higher quality but slower than lz4.}
   }
   Choices \code{"lz4"} and \code{"}
   are \code{"none"} for no compression, \code{"gzfile"} to write
