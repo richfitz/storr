@@ -1,7 +1,7 @@
 ## storr 1.2.2 (2018-??-??)
 
 * Speed up the `$get_hash()` method of RDS drivers using C code and traits (#96, #98, @wlandau).
-* Implement `fst` compression for RDS drivers (#110, #111, @wlandau, @MarcusKlik).
+* Add support for `LZ4` and `ZSTD` compression (via `fst`) for RDS drivers (#110, #111, @wlandau, @MarcusKlik).
 
 ## storr 1.2.1 (2018-10-18)
 
