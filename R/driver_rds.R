@@ -500,7 +500,7 @@ parse_rds_compress <- function(compress) {
   } else if (identical(compress, "FALSE")) {
     "none"
   } else if (compress %in% c("lz4", "zstd")) {
-    assert_fst()
+    loadNamespace("fst")
     compress
   } else {
     compress

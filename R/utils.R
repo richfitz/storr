@@ -116,15 +116,6 @@ assert_probably_storr_driver <- function(x, name = deparse(substitute(x))) {
   invisible(x)
 }
 
-assert_fst <- function() {
-  if (!requireNamespace("fst", quietly = TRUE)) {
-    stop(
-      "storr_rds(compress = \"fst\") requires the fst package.",
-      call. = FALSE
-    )
-  }
-}
-
 match_value <- function(x, choices, name = deparse(substitute(x))) {
   assert_scalar_character(x, name)
   i <- match(x, choices)
