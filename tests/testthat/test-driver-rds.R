@@ -144,29 +144,35 @@ test_that("compression support", {
   ## some data that will likely compress very well:
   data <- rep(1:10, each = 500)
 
-  st1 <- storr_rds(tempfile(), "gzfile")
+  st1 <- storr_rds(tempfile(), "gzip")
   st2 <- storr_rds(tempfile(), "none")
-  st3 <- storr_rds(tempfile(), "fst")
+  st3 <- storr_rds(tempfile(), "lz4")
+  st4 <- storr_rds(tempfile(), "zstd")
   
   on.exit({
     st1$destroy()
     st2$destroy()
     st3$destroy()
+    st4$destroy()
   })
 
   h1 <- st1$set("data", data, use_cache = FALSE)
   h2 <- st2$set("data", data, use_cache = FALSE)
   h3 <- st3$set("data", data, use_cache = FALSE)
+  h4 <- st4$set("data", data, use_cache = FALSE)
 
-  expect_identical(h1, h2, h3)
+  expect_identical(h1, h2, h3, h4)
   expect_gt(file.size(st2$driver$name_hash(h2)),
             file.size(st1$driver$name_hash(h1)))
   expect_gt(file.size(st2$driver$name_hash(h2)),
             file.size(st3$driver$name_hash(h3)))
-
+  expect_gt(file.size(st2$driver$name_hash(h2)),
+            file.size(st3$driver$name_hash(h4)))
+  
   expect_identical(st1$get("data", use_cache = FALSE), data)
   expect_identical(st2$get("data", use_cache = FALSE), data)
   expect_identical(st3$get("data", use_cache = FALSE), data)
+  expect_identical(st4$get("data", use_cache = FALSE), data)
 })
 
 test_that("backward compatibility", {
@@ -192,7 +198,7 @@ test_that("backward compatibility: compression", {
   expect_equal(st$list(), "key")
   expect_equal(st$get("key"), "value")
   expect_silent(st <- storr_rds(path, compress = TRUE))
-  for (compress in list("none", "gzfile", "fst", FALSE)) {
+  for (compress in list("none", "gzip", "lz4", "zstd", FALSE)) {
     expect_error(st <- storr_rds(path, compress = compress),
                  "Incompatible value for compress")
   }
@@ -202,7 +208,7 @@ test_that("backward compatibility: compression", {
   expect_equal(st$list(), "key")
   expect_equal(st$get("key"), "value")
   expect_silent(st <- storr_rds(path, compress = FALSE))
-  for (compress in list("none", "gzfile", "fst", TRUE)) {
+  for (compress in list("none", "gzip", "lz4", "zstd", TRUE)) {
     expect_error(st <- storr_rds(path, compress = compress),
                  "Incompatible value for compress")
   }
