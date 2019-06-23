@@ -51,7 +51,8 @@ test_that("mangledless compatibility", {
 
   ## Pointing another driver here without mangling is an error:
   expect_error(driver_rds(path, mangle_key = FALSE),
-               "Incompatible value for mangle_key")
+               "Incompatible value for mangle_key",
+               class = "ConfigError")
 
   ## But omitting the argument (NULL mangledness) is OK
   dr2 <- driver_rds(path)
@@ -67,7 +68,8 @@ test_that("mangledless compatibility", {
 
   ## Pointing another driver here without mangling is an error:
   expect_error(driver_rds(path2, mangle_key = TRUE),
-               "Incompatible value for mangle_key")
+               "Incompatible value for mangle_key",
+               class = "ConfigError")
 
   ## But omitting the argument (NULL mangledness) is OK
   dr4 <- driver_rds(path2)
@@ -84,7 +86,8 @@ test_that("mangledness padding compatibility", {
 
   ## Pointing another driver here without mangling is an error:
   expect_error(driver_rds(path, mangle_key_pad = TRUE),
-               "Incompatible value for mangle_key_pad")
+               "Incompatible value for mangle_key_pad",
+               class = "ConfigError")
 
   ## But omitting the argument (NULL mangledness) is OK
   dr2 <- driver_rds(path)
@@ -100,7 +103,8 @@ test_that("mangledness padding compatibility", {
 
   ## Pointing another driver here without mangling is an error:
   expect_error(driver_rds(path2, mangle_key = TRUE, mangle_key_pad = FALSE),
-               "Incompatible value for mangle_key")
+               "Incompatible value for mangle_key",
+               class = "ConfigError")
 
   ## But omitting the argument (NULL mangledness) is OK
   dr4 <- driver_rds(path2)
@@ -173,7 +177,8 @@ test_that("backward compatibility", {
 
   path <- copy_to_tmp("v1.0.1_clear")
   expect_error(storr_rds(path, hash_algorithm = "sha1"),
-               "Incompatible value for hash_algorithm")
+               "Incompatible value for hash_algorithm",
+               class = "ConfigError")
 })
 
 test_that("mangledness padding backward compatibility", {
