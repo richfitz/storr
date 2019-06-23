@@ -200,7 +200,8 @@ test_that("backward compatibility: compression", {
   expect_silent(st <- storr_rds(path, compress = TRUE))
   for (compress in list("none", "gzip", "lz4", "zstd", FALSE)) {
     expect_error(st <- storr_rds(path, compress = compress),
-                 "Incompatible value for compress")
+                 "Incompatible value for compress",
+                 class = "ConfigError")
   }
 
   path <- copy_to_tmp("v1.2.1_compress_FALSE")
@@ -210,7 +211,8 @@ test_that("backward compatibility: compression", {
   expect_silent(st <- storr_rds(path, compress = FALSE))
   for (compress in list("none", "gzip", "lz4", "zstd", TRUE)) {
     expect_error(st <- storr_rds(path, compress = compress),
-                 "Incompatible value for compress")
+                 "Incompatible value for compress",
+                 class = "ConfigError")
   }
 })
 
