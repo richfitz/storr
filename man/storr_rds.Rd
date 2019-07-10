@@ -25,10 +25,9 @@ might be nice for persistent application data.}
     \item{"lz4"}{lz4 compression via \code{fst::compress_fst()}. Very fast, but lower quality than zstd.}
     \item{"zstd"}{zstd compression via \code{fst::compress_fst()}. Higher quality but slower than lz4.}
   }
-  Choices \code{"lz4"} and \code{"}
-  are \code{"none"} for no compression, \code{"gzfile"} to write
-  to a \code{gzfile} connection (default), and \code{"lz4"} to use
-  \code{compress_fst()} (recommended, but requires the \code{fst} package).
+  \code{"lz4"} is generally much faster than the other compression methods.
+  \code{"lz4"} and \code{"zstd"} require the \code{fst} package,
+  and they both use more memory (RAM) than the other choices.
 
   To preserve compatibility with earlier \code{storr}s,
   \code{compress} can also be logical:
