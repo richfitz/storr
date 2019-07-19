@@ -35,7 +35,8 @@ testthat::test_that("basic", {
 
   testthat::expect_error(st$get(key),
                          sprintf("key '%s' ('objects') not found", key),
-                         fixed = TRUE)
+                         fixed = TRUE,
+                         class = "KeyError")
 
   d <- runif(100)
   hash <- st$hash_object(d)
@@ -219,7 +220,8 @@ testthat::test_that("hash_algorithm", {
 
     h_other <- setdiff(hash_algos, h)[[1L]]
     testthat::expect_error(.driver_create(dr, hash_algorithm = h_other),
-                           "Incompatible value for hash_algorithm")
+                           "Incompatible value for hash_algorithm",
+                           class = "ConfigError")
 
     testthat::expect_equal(.driver_create(dr)$hash_algorithm, h)
 
@@ -241,7 +243,8 @@ testthat::test_that("get_value", {
   testthat::expect_equal(st$get_value(h), x)
 
   testthat::expect_error(st$get_value("nosuchhash"),
-                         "hash 'nosuchhash' not found")
+                         "hash 'nosuchhash' not found",
+                         class = "HashError")
 })
 
 

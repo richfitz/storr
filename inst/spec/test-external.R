@@ -58,5 +58,6 @@ testthat::test_that("simple", {
   testthat::expect_false(st$exists("z", ns))
   testthat::expect_error(suppressWarnings(st$get("z", ns)),
                          "key 'z' ('objects') not found, with error:",
-                         fixed = TRUE)
+                         fixed = TRUE,
+                         class = "KeyErrorExternal")
 })
