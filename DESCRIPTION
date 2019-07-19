@@ -25,6 +25,7 @@ Suggests:
     DBI (>= 0.6),
     RSQLite (>= 1.1-2),
     RPostgres,
+    fst,
     knitr,
     mockr,
     parallel,
@@ -34,3 +35,20 @@ Suggests:
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
 Encoding: UTF-8
+Collate: 
+    'base64.R'
+    'defunct.R'
+    'driver_dbi.R'
+    'driver_environment.R'
+    'driver_external.R'
+    'driver_rds.R'
+    'driver_fst.R'
+    'driver_remote.R'
+    'exceptions.R'
+    'hash.R'
+    'multistorr.R'
+    'spec.R'
+    'storr.R'
+    'storr_copy.R'
+    'traits.R'
+    'utils.R'

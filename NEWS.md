@@ -1,6 +1,7 @@
-## storr 1.2.2 (2018-??-??)
+## storr 1.2.2 (2019-??-??)
 
 * Speed up the `$get_hash()` method of RDS drivers using C code and traits (#96, #98, @wlandau).
+* Add a new `fst`-powered driver (#108, @wlandau).
 
 ## storr 1.2.1 (2018-10-18)
 
