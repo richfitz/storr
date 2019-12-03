@@ -74,6 +74,11 @@
 ##'   \code{\link{digest}}.  If not given, then we will default to
 ##'   "md5".
 ##'
+##' @param use_scratch Logical, whether to create data and key files
+##'   in a scratch directory before moving them to their final destinations.
+##'   Set to \code{TRUE} to ensure atomic reads and writes, or set to
+##'   \code{FALSE} to increase speed on some file systems.
+##'
 ##' @param default_namespace Default namespace (see
 ##'   \code{\link{storr}}).
 ##' @export
@@ -110,16 +115,17 @@
 ##' st2$destroy()
 storr_rds <- function(path, compress = NULL, mangle_key = NULL,
                       mangle_key_pad = NULL, hash_algorithm = NULL,
-                      default_namespace = "objects") {
-  storr(driver_rds(path, compress, mangle_key, mangle_key_pad, hash_algorithm),
+                      default_namespace = "objects", use_scratch = TRUE) {
+  storr(driver_rds(path, compress, mangle_key, mangle_key_pad, hash_algorithm, use_scratch),
         default_namespace)
 }
 
 ##' @export
 ##' @rdname storr_rds
 driver_rds <- function(path, compress = NULL, mangle_key = NULL,
-                       mangle_key_pad = NULL, hash_algorithm = NULL) {
-  R6_driver_rds$new(path, compress, mangle_key, mangle_key_pad, hash_algorithm)
+                       mangle_key_pad = NULL, hash_algorithm = NULL,
+                       use_scratch = TRUE) {
+  R6_driver_rds$new(path, compress, mangle_key, mangle_key_pad, hash_algorithm, use_scratch)
 }
 
 R6_driver_rds <- R6::R6Class(
@@ -129,6 +135,7 @@ R6_driver_rds <- R6::R6Class(
     ## This needs sorting before anyone writes their own driver!
     path = NULL,
     path_scratch = NULL,
+    use_scratch = NULL,
     compress = NULL,
     mangle_key = NULL,
     mangle_key_pad = NULL,
@@ -137,7 +144,7 @@ R6_driver_rds <- R6::R6Class(
     traits = list(accept = "raw", throw_missing = TRUE),
 
     initialize = function(path, compress, mangle_key, mangle_key_pad,
-                          hash_algorithm) {
+                          hash_algorithm, use_scratch) {
       is_new <- !file.exists(file.path(path, "config"))
       dir_create(path)
       dir_create(file.path(path, "data"))
@@ -145,8 +152,11 @@ R6_driver_rds <- R6::R6Class(
       dir_create(file.path(path, "config"))
       self$path <- normalizePath(path, mustWork = TRUE)
 
-      self$path_scratch <- file.path(self$path, "scratch")
-      dir_create(self$path_scratch)
+      if (use_scratch) {
+        self$path_scratch <- file.path(self$path, "scratch")
+        dir_create(self$path_scratch)
+      }
+      self$use_scratch <- use_scratch
 
       ## This is a bit of complicated dancing around to mantain
       ## backward compatibility while allowing better defaults in
@@ -207,7 +217,7 @@ R6_driver_rds <- R6::R6Class(
     set_hash = function(key, namespace, hash) {
       dir_create(self$name_key("", namespace))
       write_lines(hash, self$name_key(key, namespace),
-                  scratch_dir = self$path_scratch)
+                  scratch_dir = self$path_scratch, use_scratch = self$use_scratch)
     },
 
     get_object = function(hash) {
@@ -219,7 +229,7 @@ R6_driver_rds <- R6::R6Class(
       ## already and avoids seralising twice.
       assert_raw(value)
       write_serialized_rds(value, self$name_hash(hash), self$compress,
-                           self$path_scratch)
+                           self$path_scratch, use_scratch = self$use_scratch)
     },
 
     exists_hash = function(key, namespace) {
