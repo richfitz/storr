@@ -151,11 +151,8 @@ R6_driver_rds <- R6::R6Class(
       dir_create(file.path(path, "keys"))
       dir_create(file.path(path, "config"))
       self$path <- normalizePath(path, mustWork = TRUE)
-
-      if (use_scratch) {
-        self$path_scratch <- file.path(self$path, "scratch")
-        dir_create(self$path_scratch)
-      }
+      self$path_scratch <- file.path(self$path, "scratch")
+      dir_create(self$path_scratch)
       self$use_scratch <- use_scratch
 
       ## This is a bit of complicated dancing around to mantain
