@@ -386,6 +386,5 @@ test_that("use_scratch = FALSE (#116)", {
   st <- storr_rds(tempfile(), use_scratch = FALSE)
   st$set("a", "a")
   expect_equal(st$get("a"), "a")
-  expect_null(st$driver$path_scratch)
   expect_false(st$driver$use_scratch)
 })
