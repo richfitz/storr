@@ -12,7 +12,7 @@ storr_rds(
   mangle_key_pad = NULL,
   hash_algorithm = NULL,
   default_namespace = "objects",
-  use_scratch = TRUE
+  use_scratch_keys = TRUE
 )
 
 driver_rds(
@@ -21,7 +21,7 @@ driver_rds(
   mangle_key = NULL,
   mangle_key_pad = NULL,
   hash_algorithm = NULL,
-  use_scratch = TRUE
+  use_scratch_keys = TRUE
 )
 }
 \arguments{
@@ -52,10 +52,10 @@ values are "md5", "sha1", and others supported by
 \item{default_namespace}{Default namespace (see
 \code{\link{storr}}).}
 
-\item{use_scratch}{Logical, whether to create data and key files
+\item{use_scratch_keys}{Logical, whether to create key files
 in a scratch directory before moving them to their final destinations.
-Set to \code{TRUE} to ensure atomic reads and writes, or set to
-\code{FALSE} to increase speed on some file systems.}
+Set to \code{TRUE} to ensure atomic reads and writes for keys, or set to
+\code{FALSE} to increase speed on some platforms (namely Windows).}
 }
 \description{
 Object cache driver that saves objects using R's native

@@ -382,9 +382,9 @@ test_that("avoid race condition when writing in parallel", {
   expect_true(all(ok))
 })
 
-test_that("use_scratch = FALSE (#116)", {
-  st <- storr_rds(tempfile(), use_scratch = FALSE)
+test_that("use_scratch_keys = FALSE (#116)", {
+  st <- storr_rds(tempfile(), use_scratch_keys = FALSE)
   st$set("a", "a")
   expect_equal(st$get("a"), "a")
-  expect_false(st$driver$use_scratch)
+  expect_false(st$driver$use_scratch_keys)
 })

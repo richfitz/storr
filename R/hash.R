@@ -73,10 +73,9 @@ serialize_to_raw <- function(x, ascii, xdr) {
 ## an object which cannot be retrieved later on, causing havoc
 ## upstream.
 write_serialized_rds <- function(value, filename, compress,
-                                 scratch_dir = NULL, long = 2^31 - 2,
-                                 use_scratch = TRUE) {
+                                 scratch_dir = NULL, long = 2^31 - 2) {
   withCallingHandlers(
-    try_write_serialized_rds(value, filename, compress, scratch_dir, long, use_scratch),
+    try_write_serialized_rds(value, filename, compress, scratch_dir, long),
     error = function(e) unlink(filename))
 }
 
@@ -85,10 +84,9 @@ write_serialized_rds <- function(value, filename, compress,
 ## close the connection on exit from try_write_serialized_rds and
 ## delete the file *after* that.
 try_write_serialized_rds <- function(value, filename, compress,
-                                     scratch_dir = NULL, long = 2^31 - 2,
-                                     use_scratch = TRUE) {
+                                     scratch_dir = NULL, long = 2^31 - 2) {
 
-  tmp <- ifelse(use_scratch, tempfile(tmpdir = scratch_dir %||% tempdir()), filename)
+  tmp <- tempfile(tmpdir = scratch_dir %||% tempdir())
   con <- (if (compress) gzfile else file)(tmp, "wb")
   needs_close <- TRUE
   on.exit(if (needs_close) close(con), add = TRUE)
@@ -101,9 +99,7 @@ try_write_serialized_rds <- function(value, filename, compress,
   }
   close(con)
   needs_close <- FALSE
-  if (use_scratch) {
-    file.rename(tmp, filename)
-  }
+  file.rename(tmp, filename)
 }
 
 
@@ -111,10 +107,10 @@ try_write_serialized_rds <- function(value, filename, compress,
 ## delete the key on a failed write (otherwise there's a copy
 ## involved)
 write_lines <- function(text, filename, ...,
-                        scratch_dir = NULL, use_scratch = TRUE) {
+                        scratch_dir = NULL, use_scratch_keys = TRUE) {
   withCallingHandlers(
     try_write_lines(text, filename, ..., scratch_dir = scratch_dir,
-                    use_scratch = use_scratch),
+                    use_scratch_keys = use_scratch_keys),
     error = function(e) unlink(filename))
 }
 
@@ -122,11 +118,11 @@ write_lines <- function(text, filename, ...,
 ## This implements write-then-move for writeLines, which gives us
 ## atomic writes and rewrites.  If 'scratch' is on the same filesystem
 ## as dirname(filename), then the os's rename is atomic
-try_write_lines <- function(text, filename, ..., scratch_dir, use_scratch) {
-  tmp <- ifelse(use_scratch, tempfile(tmpdir = scratch_dir %||% tempdir()), filename)
+try_write_lines <- function(text, filename, ..., scratch_dir, use_scratch_keys) {
+  tmp <- ifelse(use_scratch_keys, tempfile(tmpdir = scratch_dir %||% tempdir()), filename)
   writeLines(text, tmp, ...)
   ## Not 100% necessary and strictly makes this nonatomic
-  if (use_scratch) {
+  if (use_scratch_keys) {
     unlink(filename)
     file.rename(tmp, filename)
   }
