@@ -77,7 +77,7 @@ test_driver <- function(create) {
 
   env$.driver_create <- create
 
-  if (packageVersion("testthat") < "2.99") {
+  if (utils::packageVersion("testthat") < "2.99") {
     res <- lapply(files, testthat::test_file, env = env,
                   reporter = reporter, start_end_reporter = FALSE)
 
