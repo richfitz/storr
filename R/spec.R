@@ -76,8 +76,15 @@ test_driver <- function(create) {
   dr$destroy()
 
   env$.driver_create <- create
-  res <- lapply(files, testthat::test_file, env = env,
-                reporter = reporter, start_end_reporter = FALSE)
+
+  if (packageVersion("testthat") < "2.99") {
+    res <- lapply(files, testthat::test_file, env = env,
+                  reporter = reporter, start_end_reporter = FALSE)
+
+  } else {
+    res <- lapply(files, testthat::test_file, env = env,
+                  reporter = reporter)
+  }
 
   df <- do.call("rbind", lapply(res, as.data.frame))
 
