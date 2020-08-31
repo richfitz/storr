@@ -6,7 +6,7 @@ r_packages:
   - covr
 
 addons:
-  postgresql: "9.4"
+  postgresql: "10"
   apt:
     packages:
       - libpq-dev
