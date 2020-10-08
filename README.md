@@ -1,6 +1,6 @@
 # storr
 
-[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
+[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/)
 [![Build Status](https://travis-ci.org/richfitz/storr.svg?branch=master)](https://travis-ci.org/richfitz/storr)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/richfitz/storr?branch=master&svg=true)](https://ci.appveyor.com/project/richfitz/storr)
 [![codecov.io](https://codecov.io/github/richfitz/storr/coverage.svg?branch=master)](https://codecov.io/github/richfitz/storr?branch=master)
@@ -15,8 +15,8 @@ Simple object cacher for R.  `storr` acts as a very simple key-value store (supp
   - environment (memory)
   - rds (disk)
   - [DBI](https://cran.r-project.org/package=DBI) though which you can use:
-    * [SQLite](https://sqlite.org) (via [RSQLite](https://cran.r-project.org/package=RSQLite))
-    * [Postgres](https://postgresql.org) (via [RPostgres](https://github.com/rstats-db/RPostgres))
+    * [SQLite](https://sqlite.org/index.html) (via [RSQLite](https://cran.r-project.org/package=RSQLite))
+    * [Postgres](https://www.postgresql.org/) (via [RPostgres](https://github.com/r-dbi/RPostgres))
   - Redis (provided by [redux](https://github.com/richfitz/redux))
   - [rlite](https://github.com/seppo0010/rlite) (via [rrlite](https://github.com/ropensci/rrlite), interface function in [redux](https://github.com/richfitz/redux))
   - An on disk memory-mapped file interface is implemented in [thor](https://github.com/richfitz/thor)

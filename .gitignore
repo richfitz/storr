@@ -12,3 +12,5 @@ storr.Rcheck
 revdep
 *.o
 *.so
+doc
+Meta

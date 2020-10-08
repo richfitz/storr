@@ -18,3 +18,5 @@ Rprof\.out
 ^appveyor\.yml$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^doc$
+^Meta$

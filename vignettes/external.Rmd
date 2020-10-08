@@ -30,9 +30,11 @@ from github, using the name of the repository as the key.
 The first step is writing a hook function; this is a function with
 arguments `(key, namespace)` that returns an R object.  For
 packages stored in the root directory of a repository we can build
-URLs of the form:
+URLs of the form
 
-   https://raw.githubusercontent.com/<username>/>repo>/master/DESCRIPTION
+```
+https://raw.githubusercontent.com/<username>/<repo>/master/DESCRIPTION
+```
 
 So if the key is a username/repo pair and we ignore namespace we
 can write a function:
