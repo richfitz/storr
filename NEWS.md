@@ -1,4 +1,4 @@
-## storr 1.2.2 (2018-??-??)
+## storr 1.2.3 (2020-10-08)
 
 * Speed up the `$get_hash()` method of RDS drivers using C code and traits (#96, #98, @wlandau).
 
