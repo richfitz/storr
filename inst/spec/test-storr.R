@@ -219,9 +219,17 @@ testthat::test_that("hash_algorithm", {
     testthat::expect_equal(hash == hmd5, h == "md5")
 
     h_other <- setdiff(hash_algos, h)[[1L]]
-    testthat::expect_error(.driver_create(dr, hash_algorithm = h_other),
-                           "Incompatible value for hash_algorithm",
-                           class = "ConfigError")
+
+    ## TODO: doing this with
+    ##
+    ##   testthat::expect_error(.driver_create(dr, hash_algorithm = h_other),
+    ##                           "Incompatible value for hash_algorithm")
+    ##
+    ## would be preferable, but testthat gives a warning about this up
+    ## to version 3.0.0 and thor does not include an appropriate error
+    ## class.
+    e <- expect_error(.driver_create(dr, hash_algorithm = h_other))
+    expect_match(e$message, "Incompatible value for hash_algorithm")
 
     testthat::expect_equal(.driver_create(dr)$hash_algorithm, h)
 

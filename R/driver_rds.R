@@ -160,7 +160,7 @@ R6_driver_rds <- R6::R6Class(
         write_if_missing("md5", driver_rds_config_file(path, "hash_algorithm"))
       }
       ## Then write out the version number:
-      write_if_missing(as.character(packageVersion("storr")),
+      write_if_missing(as.character(utils::packageVersion("storr")),
                        driver_rds_config_file(path, "version"))
 
       if (!is.null(mangle_key)) {
