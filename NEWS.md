@@ -1,6 +1,7 @@
 ## storr 1.2.4 (2020-10-12)
 
 * Speed up the `$get_hash()` method of RDS drivers using C code and traits (#96, #98, @wlandau).
+* Speed up the `$clear()` method of RDS drivers using `unlink(recursive = TRUE)` rather than deleting keys one by one from R. For RDS drivers and `storr`s, the return value of `$clear()` is now `integer(0)` instead of the number of deleted keys (#121, @wlandau).
 
 ## storr 1.2.1 (2018-10-18)
 

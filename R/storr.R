@@ -201,6 +201,9 @@ R6_storr <- R6::R6Class(
     },
 
     clear = function(namespace = self$default_namespace) {
+      if (is.function(self$driver$clear)) {
+        return(invisible(self$driver$clear(namespace = namespace)))
+      }
       if (is.null(namespace)) {
         invisible(sum(viapply(self$list_namespaces(), self$clear)))
       } else {
