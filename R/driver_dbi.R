@@ -657,7 +657,11 @@ driver_classes <- function() {
 
 
 group_placeholders <- function(placeholder, n, times) {
-  p <- matrix(sprintf(placeholder, seq_len(n * times)), n)
+  if (grepl("%", placeholder)) {
+    p <- matrix(sprintf(placeholder, seq_len(n * times)), n)
+  } else {
+    p <- matrix(rep(placeholder, n * times), n)
+  }
   paste(sprintf("(%s)", apply(p, 2, paste, collapse = ", ")), collapse = ", ")
 }
 
