@@ -595,12 +595,12 @@ driver_dbi_mkey_prepare <- function(key, namespace, placeholder) {
     values <- c(ns_uniq[1L], key_uniq)
     p <- sprintf(placeholder, seq_along(values))
     where <- sprintf("namespace = %s AND key IN (%s)",
-                     p[[1L]], paste(p[-1L], collapse = ", "))
+                     paste(p[[1L]], paste(p[-1L], collapse = ", ")))
   } else if (n_key == 1) {
     values <- c(key_uniq[1L], ns_uniq)
     p <- sprintf(placeholder, seq_along(values))
     where <- sprintf("key = %s AND namespace IN (%s)",
-                     p[[1L]], paste(p[-1L], collapse = ", "))
+                     paste(p[[1L]], paste(p[-1L], collapse = ", ")))
   } else {
     ## There's a big hassle here of getting things nailed into place
     i <- unname(split(seq_along(ns_uniq), ns_uniq))
