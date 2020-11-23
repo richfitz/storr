@@ -625,7 +625,11 @@ driver_dbi_mkey_prepare <- function(key, namespace, placeholder) {
 
 
 driver_dbi_mhash_prepare <- function(hash, placeholder) {
-  paste(sprintf(placeholder, seq_along(hash)), collapse = ", ")
+  if (grepl("%", placeholder)) {
+    paste(sprintf(placeholder, seq_along(hash)), collapse = ", ")
+  } else {
+    paste(rep(placeholder, length(hash)), collapse = ", ")
+  }
 }
 
 
