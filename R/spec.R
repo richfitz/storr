@@ -65,8 +65,14 @@ test_driver <- function(create) {
     })
   }
 
-  files <- dir(system.file("spec", package = "storr"),
-               pattern = "^test-", full.names = TRUE)
+  files_spec <- dir(system.file("spec", package = "storr"),
+                    pattern = "^test-", full.names = TRUE)
+  path_test <- tempfile()
+  dir.create(path_test)
+  on.exit(unlink(path_test, recursive = TRUE))
+  file.copy(files_spec, path_test)
+  files_test <- file.path(path_test, basename(files_spec))
+
   env <- new.env(parent = environment(test_driver))
 
   ## Need to get the reported type here, but also ensure that the
@@ -77,18 +83,8 @@ test_driver <- function(create) {
 
   env$.driver_create <- create
 
-  ## This exists only until testthat version 3.0.x is released, when
-  ## we'll just depend on the most recent copy.
-  ## nocov start
-  if (utils::packageVersion("testthat") < "2.99") {
-    res <- lapply(files, testthat::test_file, env = env,
-                  reporter = reporter, start_end_reporter = FALSE)
-
-  } else {
-    res <- lapply(files, testthat::test_file, env = env,
-                  reporter = reporter)
-  }
-  ## nocov end
+  res <- lapply(files_test, testthat::test_file, env = env,
+                reporter = reporter)
 
   df <- do.call("rbind", lapply(res, as.data.frame))
 

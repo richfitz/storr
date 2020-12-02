@@ -593,12 +593,12 @@ driver_dbi_mkey_prepare <- function(key, namespace, placeholder) {
   ## thing.
   if (n_namespace == 1) {
     values <- c(ns_uniq[1L], key_uniq)
-    p <- sprintf(placeholder, seq_along(values))
+    p <- placeholder_expand(placeholder, length(values))
     where <- sprintf("namespace = %s AND key IN (%s)",
                      p[[1L]], paste(p[-1L], collapse = ", "))
   } else if (n_key == 1) {
     values <- c(key_uniq[1L], ns_uniq)
-    p <- sprintf(placeholder, seq_along(values))
+    p <- placeholder_expand(placeholder, length(values))
     where <- sprintf("key = %s AND namespace IN (%s)",
                      p[[1L]], paste(p[-1L], collapse = ", "))
   } else {
@@ -609,8 +609,7 @@ driver_dbi_mkey_prepare <- function(key, namespace, placeholder) {
     ## A little abuse of R semantics here to interleave namespaces with values:
     values <- unlist(rbind(lapply(i, function(j) ns_uniq[[j[[1L]]]]),
                            lapply(i, function(j) key_uniq[j])))
-
-    p <- sprintf(placeholder, seq_along(values))
+    p <- placeholder_expand(placeholder, length(values))
     p <- unname(split(p, rep(seq_along(len), len + 1)))
     where <- paste(vcapply(p, function(x)
       sprintf("namespace = %s AND key IN (%s)",
@@ -625,7 +624,7 @@ driver_dbi_mkey_prepare <- function(key, namespace, placeholder) {
 
 
 driver_dbi_mhash_prepare <- function(hash, placeholder) {
-  paste(sprintf(placeholder, seq_along(hash)), collapse = ", ")
+  paste(placeholder_expand(placeholder, length(hash)), collapse = ", ")
 }
 
 
@@ -657,7 +656,7 @@ driver_classes <- function() {
 
 
 group_placeholders <- function(placeholder, n, times) {
-  p <- matrix(sprintf(placeholder, seq_len(n * times)), n)
+  p <- matrix(placeholder_expand(placeholder, n * times), n)
   paste(sprintf("(%s)", apply(p, 2, paste, collapse = ", ")), collapse = ", ")
 }
 
@@ -705,5 +704,14 @@ assert_valid_table_name <- function(x, name = deparse(substitute(x))) {
   ## Just check for quotes becase we always quote the table name
   if (grepl('"', x)) {
     stop(sprintf("The name of table '%s' may not contain quotes", name))
+  }
+}
+
+
+placeholder_expand <- function(placeholder, n) {
+  if (grepl("%", placeholder)) {
+    sprintf(placeholder, seq_len(n))
+  } else {
+    rep(placeholder, n)
   }
 }

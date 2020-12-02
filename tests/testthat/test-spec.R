@@ -1,6 +1,7 @@
 context("spec")
 
 test_that("reporter handling", {
+  skip_on_cran()
   create <- function(dr = NULL, ...) driver_environment(dr$envir, ...)
   res <- testthat::evaluate_promise(
     testthat::with_reporter(
