@@ -5,12 +5,12 @@
 \alias{driver_rds}
 \title{rds object cache driver}
 \usage{
-storr_rds(path, compress = NULL, mangle_key = NULL,
-  mangle_key_pad = NULL, hash_algorithm = NULL,
+storr_rds(path, compress = NULL, compression = NULL,
+  mangle_key = NULL, mangle_key_pad = NULL, hash_algorithm = NULL,
   default_namespace = "objects")
 
-driver_rds(path, compress = NULL, mangle_key = NULL,
-  mangle_key_pad = NULL, hash_algorithm = NULL)
+driver_rds(path, compress = NULL, compression = NULL,
+  mangle_key = NULL, mangle_key_pad = NULL, hash_algorithm = NULL)
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice
@@ -18,7 +18,28 @@ for ephemeral storage, The \code{rappdirs} package (on CRAN)
 might be nice for persistent application data.}
 
 \item{compress}{Compress the generated file?  This saves a small
-amount of space for a reasonable amount of time.}
+  amount of space for a reasonable amount of time. Possible values:
+  \describe{
+    \item{"none"}{No compression.}
+    \item{"gzip"}{gzip compression with \code{base::gzfile()} (default).}
+    \item{"lz4"}{lz4 compression via \code{fst::compress_fst()}. Very fast, but lower quality than zstd.}
+    \item{"zstd"}{zstd compression via \code{fst::compress_fst()}. Higher quality but slower than lz4.}
+  }
+  \code{"lz4"} is generally much faster than the other compression methods.
+  \code{"lz4"} and \code{"zstd"} require the \code{fst} package,
+  and they both use more memory (RAM) than the other choices.
+
+  To preserve compatibility with earlier \code{storr}s,
+  \code{compress} can also be logical:
+  \code{TRUE} for \code{"gzfile"} and \code{FALSE} for \code{"none"}.
+  However, these values are not interchangeable for existings \code{storr}s.
+  For example, if you create a \code{storr} with \code{compress = TRUE},
+  you must continue to use \code{compress = TRUE}
+  and not \code{compress = "gzfile"} when you recover it later.}
+
+\item{compression}{Numeric compression factor for \code{fst::compress_fst()}.
+Between 0 and 100: 0 for lowest compression, 100 for maximum compression.
+Only applies to \code{compress = "lz4"} and \code{compress = "zstd"}.}
 
 \item{mangle_key}{Mangle keys?  If TRUE, then the key is encoded
 using base64 before saving to the filesystem.  See Details.}

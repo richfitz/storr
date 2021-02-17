@@ -55,7 +55,28 @@
 ##'   might be nice for persistent application data.
 ##'
 ##' @param compress Compress the generated file?  This saves a small
-##'   amount of space for a reasonable amount of time.
+##'   amount of space for a reasonable amount of time. Possible values:
+##'   \describe{
+##'     \item{"none"}{No compression.}
+##'     \item{"gzip"}{gzip compression with \code{base::gzfile()} (default).}
+##'     \item{"lz4"}{lz4 compression via \code{fst::compress_fst()}. Very fast, but lower quality than zstd.}
+##'     \item{"zstd"}{zstd compression via \code{fst::compress_fst()}. Higher quality but slower than lz4.}
+##'   }
+##'   \code{"lz4"} is generally much faster than the other compression methods.
+##'   \code{"lz4"} and \code{"zstd"} require the \code{fst} package,
+##'   and they both use more memory (RAM) than the other choices.
+##'
+##'   To preserve compatibility with earlier \code{storr}s,
+##'   \code{compress} can also be logical:
+##'   \code{TRUE} for \code{"gzfile"} and \code{FALSE} for \code{"none"}.
+##'   However, these values are not interchangeable for existings \code{storr}s.
+##'   For example, if you create a \code{storr} with \code{compress = TRUE},
+##'   you must continue to use \code{compress = TRUE}
+##'   and not \code{compress = "gzfile"} when you recover it later.
+##'
+##' @param compression Numeric compression factor for \code{fst::compress_fst()}.
+##'   Between 0 and 100: 0 for lowest compression, 100 for maximum compression.
+##'   Only applies to \code{compress = "lz4"} and \code{compress = "zstd"}.
 ##'
 ##' @param mangle_key Mangle keys?  If TRUE, then the key is encoded
 ##'   using base64 before saving to the filesystem.  See Details.
@@ -76,6 +97,7 @@
 ##'
 ##' @param default_namespace Default namespace (see
 ##'   \code{\link{storr}}).
+##'
 ##' @export
 ##' @examples
 ##'
@@ -108,18 +130,18 @@
 ##' # Clean up the two storrs:
 ##' st$destroy()
 ##' st2$destroy()
-storr_rds <- function(path, compress = NULL, mangle_key = NULL,
+storr_rds <- function(path, compress = NULL, compression = NULL, mangle_key = NULL,
                       mangle_key_pad = NULL, hash_algorithm = NULL,
                       default_namespace = "objects") {
-  storr(driver_rds(path, compress, mangle_key, mangle_key_pad, hash_algorithm),
+  storr(driver_rds(path, compress, compression, mangle_key, mangle_key_pad, hash_algorithm),
         default_namespace)
 }
 
 ##' @export
 ##' @rdname storr_rds
-driver_rds <- function(path, compress = NULL, mangle_key = NULL,
+driver_rds <- function(path, compress = NULL, compression = NULL, mangle_key = NULL,
                        mangle_key_pad = NULL, hash_algorithm = NULL) {
-  R6_driver_rds$new(path, compress, mangle_key, mangle_key_pad, hash_algorithm)
+  R6_driver_rds$new(path, compress, compression, mangle_key, mangle_key_pad, hash_algorithm)
 }
 
 R6_driver_rds <- R6::R6Class(
@@ -130,13 +152,14 @@ R6_driver_rds <- R6::R6Class(
     path = NULL,
     path_scratch = NULL,
     compress = NULL,
+    compression = NULL,
     mangle_key = NULL,
     mangle_key_pad = NULL,
     hash_algorithm = NULL,
     hash_length = NULL,
     traits = list(accept = "raw", throw_missing = TRUE),
 
-    initialize = function(path, compress, mangle_key, mangle_key_pad,
+    initialize = function(path, compress, compression, mangle_key, mangle_key_pad,
                           hash_algorithm) {
       is_new <- !file.exists(file.path(path, "config"))
       dir_create(path)
@@ -154,9 +177,10 @@ R6_driver_rds <- R6::R6Class(
       ## future versions of driver_rds can use to patch, warn or
       ## change behaviour with older versions of the storr.
       if (!is_new && !file.exists(driver_rds_config_file(path, "version"))) {
-        write_if_missing("1.0.1", driver_rds_config_file(path, "version"))
+        write_if_missing("1.2.2", driver_rds_config_file(path, "version"))
         write_if_missing("TRUE", driver_rds_config_file(path, "mangle_key_pad"))
-        write_if_missing("TRUE", driver_rds_config_file(path, "compress"))
+        write_if_missing("gzip", driver_rds_config_file(path, "compress"))
+        write_if_missing("0", driver_rds_config_file(path, "compression"))
         write_if_missing("md5", driver_rds_config_file(path, "hash_algorithm"))
       }
       ## Then write out the version number:
@@ -177,10 +201,15 @@ R6_driver_rds <- R6::R6Class(
                           FALSE, TRUE)
 
       if (!is.null(compress)) {
-        assert_scalar_logical(compress)
+        compress <- as.character(compress)
       }
+
       self$compress <- driver_rds_config(path, "compress", compress,
-                                         TRUE, FALSE)
+                                         "TRUE", TRUE)
+      self$compress <- parse_rds_compress(self$compress)
+
+      self$compression <- driver_rds_config(path, "compression", compression,
+                                         0, FALSE)
 
       if (!is.null(hash_algorithm)) {
         assert_scalar_character(hash_algorithm)
@@ -211,7 +240,12 @@ R6_driver_rds <- R6::R6Class(
     },
 
     get_object = function(hash) {
-      read_rds(self$name_hash(hash))
+      out <- read_rds(self$name_hash(hash))
+      if (self$compress %in% c("lz4", "zstd")) {
+        out <- fst::decompress_fst(out)
+        out <- unserialize(out)
+      }
+      out
     },
 
     set_object = function(hash, value) {
@@ -219,7 +253,7 @@ R6_driver_rds <- R6::R6Class(
       ## already and avoids seralising twice.
       assert_raw(value)
       write_serialized_rds(value, self$name_hash(hash), self$compress,
-                           self$path_scratch)
+                           self$compression, self$path_scratch)
     },
 
     exists_hash = function(key, namespace) {
@@ -451,4 +485,17 @@ See 'Corrupt keys' within ?storr_rds for how to proceed" -> fmt
   files <- sprintf("  - '%s'", files)
   message(sprintf(fmt, length(files), namespace, path, files))
   corrupt_notices[[path]] <- now
+}
+
+parse_rds_compress <- function(compress) {
+  if (identical(compress, "TRUE")) {
+    "gzip"
+  } else if (identical(compress, "FALSE")) {
+    "none"
+  } else if (compress %in% c("lz4", "zstd")) {
+    loadNamespace("fst")
+    compress
+  } else {
+    compress
+  }
 }

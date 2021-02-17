@@ -116,7 +116,6 @@ assert_probably_storr_driver <- function(x, name = deparse(substitute(x))) {
   invisible(x)
 }
 
-
 match_value <- function(x, choices, name = deparse(substitute(x))) {
   assert_scalar_character(x, name)
   i <- match(x, choices)

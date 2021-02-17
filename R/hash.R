@@ -72,10 +72,10 @@ serialize_to_raw <- function(x, ascii, xdr) {
 ## been successful, otherwise the container will claim existence for
 ## an object which cannot be retrieved later on, causing havoc
 ## upstream.
-write_serialized_rds <- function(value, filename, compress,
+write_serialized_rds <- function(value, filename, compress, compression,
                                  scratch_dir = NULL, long = 2^31 - 2) {
   withCallingHandlers(
-    try_write_serialized_rds(value, filename, compress, scratch_dir, long),
+    try_write_serialized_rds(value, filename, compress, compression, scratch_dir, long),
     error = function(e) unlink(filename))
 }
 
@@ -83,11 +83,24 @@ write_serialized_rds <- function(value, filename, compress,
 ## The split here helps keep the order really consistent; we will
 ## close the connection on exit from try_write_serialized_rds and
 ## delete the file *after* that.
-try_write_serialized_rds <- function(value, filename, compress,
+try_write_serialized_rds <- function(value, filename, compress, compression,
                                      scratch_dir = NULL, long = 2^31 - 2) {
   tmp <- tempfile(tmpdir = scratch_dir %||% tempdir())
+  if (compress %in% c("lz4", "zstd")) {
+    write_tmp_fst(value, tmp, compress, compression)
+  } else {
+    write_tmp_default(value, tmp, compress, scratch_dir, long)
+  }
+  file.rename(tmp, filename)
+}
 
-  con <- (if (compress) gzfile else file)(tmp, "wb")
+write_tmp_fst <- function(value, filename, compress, compression) {
+  saveRDS(fst::compress_fst(value, toupper(compress), compression),
+          filename, compress = FALSE)
+}
+
+write_tmp_default <- function(value, filename, compress, scratch_dir, long) {
+  con <- (if (identical(compress, "gzip")) gzfile else file)(filename, "wb")
   needs_close <- TRUE
   on.exit(if (needs_close) close(con), add = TRUE)
   len <- length(value)
@@ -99,9 +112,7 @@ try_write_serialized_rds <- function(value, filename, compress,
   }
   close(con)
   needs_close <- FALSE
-  file.rename(tmp, filename)
 }
-
 
 ## Same pattern for write_lines.  The difference is that this will
 ## delete the key on a failed write (otherwise there's a copy
