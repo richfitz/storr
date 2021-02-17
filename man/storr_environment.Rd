@@ -5,8 +5,11 @@
 \alias{driver_environment}
 \title{Environment object cache driver}
 \usage{
-storr_environment(envir = NULL, hash_algorithm = NULL,
-  default_namespace = "objects")
+storr_environment(
+  envir = NULL,
+  hash_algorithm = NULL,
+  default_namespace = "objects"
+)
 
 driver_environment(envir = NULL, hash_algorithm = NULL)
 }

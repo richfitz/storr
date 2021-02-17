@@ -1,6 +1,7 @@
 ## storr 1.2.4 (2020-10-12)
 
 * Speed up the `$get_hash()` method of RDS drivers using C code and traits (#96, #98, @wlandau).
+* Add a new `use_scratch_keys` argument to `driver_rds()` and `storr_rds()`. Allows users to bypass the `scratch` directory for keys. Speeds up processing on some file systems (#116, @wlandau).
 
 ## storr 1.2.1 (2018-10-18)
 

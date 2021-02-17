@@ -5,11 +5,24 @@
 \alias{driver_dbi}
 \title{DBI storr driver}
 \usage{
-storr_dbi(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
-  hash_algorithm = NULL, default_namespace = "objects")
+storr_dbi(
+  tbl_data,
+  tbl_keys,
+  con,
+  args = NULL,
+  binary = NULL,
+  hash_algorithm = NULL,
+  default_namespace = "objects"
+)
 
-driver_dbi(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
-  hash_algorithm = NULL)
+driver_dbi(
+  tbl_data,
+  tbl_keys,
+  con,
+  args = NULL,
+  binary = NULL,
+  hash_algorithm = NULL
+)
 }
 \arguments{
 \item{tbl_data}{Name for the table that maps hashes to values}

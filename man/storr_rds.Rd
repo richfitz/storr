@@ -5,12 +5,24 @@
 \alias{driver_rds}
 \title{rds object cache driver}
 \usage{
-storr_rds(path, compress = NULL, mangle_key = NULL,
-  mangle_key_pad = NULL, hash_algorithm = NULL,
-  default_namespace = "objects")
+storr_rds(
+  path,
+  compress = NULL,
+  mangle_key = NULL,
+  mangle_key_pad = NULL,
+  hash_algorithm = NULL,
+  default_namespace = "objects",
+  use_scratch_keys = TRUE
+)
 
-driver_rds(path, compress = NULL, mangle_key = NULL,
-  mangle_key_pad = NULL, hash_algorithm = NULL)
+driver_rds(
+  path,
+  compress = NULL,
+  mangle_key = NULL,
+  mangle_key_pad = NULL,
+  hash_algorithm = NULL,
+  use_scratch_keys = TRUE
+)
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice
@@ -39,6 +51,11 @@ values are "md5", "sha1", and others supported by
 
 \item{default_namespace}{Default namespace (see
 \code{\link{storr}}).}
+
+\item{use_scratch_keys}{Logical, whether to create key files
+in a scratch directory before moving them to their final destinations.
+Set to \code{TRUE} to ensure atomic reads and writes for keys, or set to
+\code{FALSE} to increase speed on some platforms (namely Windows).}
 }
 \description{
 Object cache driver that saves objects using R's native
