@@ -295,6 +295,15 @@ R6_driver_rds <- R6::R6Class(
         key <- encode64(key, pad = self$mangle_key_pad)
       }
       file.path(self$path, "keys", namespace, key)
+    },
+    
+    clear = function(namespace) {
+      if (is.null(namespace)) {
+        lapply(self$list_namespaces(), self$clear)
+      } else {
+        unlink(file.path(self$path, "keys", namespace), recursive = TRUE)
+      }
+      invisible(integer(0))
     }
   ))
 

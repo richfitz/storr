@@ -150,19 +150,23 @@ testthat::test_that("clear", {
   st$set("b1", 1, namespace = "b")
 
   testthat::expect_equal(sort(st$list("a")), sort(c("a1", "a2")))
-  testthat::expect_equal(st$clear("a"), 2L)
+  st$clear("a")
   testthat::expect_equal(st$list("a"), character(0))
 
   testthat::expect_equal(st$list("b"), "b1")
-  testthat::expect_equal(st$clear(NULL), 1L)
+  st$clear(NULL)
   testthat::expect_equal(st$list("b"), character(0))
 
   st$set("a1", 1, namespace = "a")
   st$set("a2", 2, namespace = "a")
   st$set("b1", 1, namespace = "b")
-  testthat::expect_equal(st$clear(NULL), 3L)
-  testthat::expect_equal(st$clear(NULL), 0L)
-  testthat::expect_equal(st$clear("no_such_namespace"), 0L)
+  testthat::expect_equal(sort(st$list("a")), sort(c("a1", "a2")))
+  testthat::expect_equal(st$list("b"), "b1")
+  st$clear(NULL)
+  testthat::expect_equal(st$list("a"), character(0))
+  testthat::expect_equal(st$list("b"), character(0))
+  testthat::expect_silent(tmp <- st$clear(NULL))
+  testthat::expect_silent(tmp <- st$clear("no_such_namespace"))
 })
 
 
