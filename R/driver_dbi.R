@@ -1,6 +1,6 @@
 ##' Object cache driver using the "DBI" package interface for storage.
 ##' This means that storr can work for any supported "DBI" driver
-##' (though practically this works only for SQLite and Postgres until
+##' (though practically this works only for `SQLite` and Postgres until
 ##' some MySQL dialect translation is done).  To connect, you must
 ##' provide the *driver* object (e.g., `RSQLite::SQLite()`,
 ##' or `RPostgres::Postgres()` as the first argument.
@@ -17,7 +17,7 @@
 ##' writing).  Apart from that the names do not matter.
 ##'
 ##' Because of treatment of binary data by the underlying DBI drivers,
-##' binary serialistion is not any faster (and might be slightly
+##' binary serialisation is not any faster (and might be slightly
 ##' slower than) string serialisation, in contrast with my experience
 ##' with other backends.
 ##'
@@ -45,7 +45,7 @@
 ##' @param binary Optional logical indicating if the values should be
 ##'   stored in binary.  If possible, this is both (potentially
 ##'   faster) and more accurate.  However, at present it is supported
-##'   only under very recent DBI and RSQLite packages, and for no
+##'   only under very recent `DBI` and `RSQLite` packages, and for no
 ##'   other DBI drivers, and is not actually any faster.  If not given
 ##'   (i.e., `NULL`), then binary storage will be used where
 ##'   possible when creating new tables, and where tables exist, we

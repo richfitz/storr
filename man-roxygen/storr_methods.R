@@ -89,7 +89,7 @@
 ##'   }
 ##' }
 ##' \item{\code{del}}{
-##'   Delete an object fom the storr.
+##'   Delete an object from the storr.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{del(key, namespace = self$default_namespace)}
@@ -107,7 +107,7 @@
 ##'   A logical vector the same length as the recycled length of key/namespace, with each element being `TRUE` if an object was deleted, `FALSE` otherwise.
 ##' }
 ##' \item{\code{duplicate}}{
-##'   Duplicate the value of a set of keys into a second set of keys. Because the value stored against a key is just the hash of its content, this operation is very efficient - it does not make a copy of the data, just the pointer to the data (for more details see the storr vignette which explains the storage model in more detail).  Multiple keys (and/or namespaces) can be provided, with keys and nmespaces recycled as needed.  However, the number of source and destination keys must be the same.  The order of operation is not defined, so if the sets of keys are overlapping it is undefined behaviour.
+##'   Duplicate the value of a set of keys into a second set of keys. Because the value stored against a key is just the hash of its content, this operation is very efficient - it does not make a copy of the data, just the pointer to the data (for more details see the storr vignette which explains the storage model in more detail).  Multiple keys (and/or namespaces) can be provided, with keys and namespaces recycled as needed.  However, the number of source and destination keys must be the same.  The order of operation is not defined, so if the sets of keys are overlapping it is undefined behaviour.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{duplicate(key_src, key_dest, namespace = self$default_namespace,

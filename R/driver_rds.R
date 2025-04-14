@@ -23,7 +23,7 @@
 ##'
 ##' @section Corrupt keys:
 ##'
-##' Some file synchronisation utilities like dropbox can create file
+##' Some file synchronisation utilities like Dropbox can create file
 ##' that confuse an rds storr (e.g.,
 ##' `"myobject (Someone's conflicted copy)"`.  If
 ##' `mangle_key` is `FALSE` these cannot be detected but at

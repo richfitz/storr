@@ -1,7 +1,7 @@
 ##' Defunct functions
 ##'
-##' The redis functions (`driver_redis_api` and `storr_redis_api`)
-##' have been moved out of this package and into redux.  I don't
+##' The Redis functions (`driver_redis_api` and `storr_redis_api`)
+##' have been moved out of this package and into `redux`.  I don't
 ##' believe anyone is using them at the time of the move so this is
 ##' being done fairly abruptly - this is unfortunate, but necessary to
 ##' avoid a circular dependency!  The new functions are simply

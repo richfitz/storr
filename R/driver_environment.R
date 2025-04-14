@@ -1,6 +1,6 @@
 ##' Fast but transient environment driver.  This driver saves objects
 ##' in a local R environment, without serialisation.  This makes
-##' lookup fast but it cannot be saved across sesssions.  The
+##' lookup fast but it cannot be saved across sessions.  The
 ##' environment storr can be made persistent by saving it out as a
 ##' file storr though.
 ##'

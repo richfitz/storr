@@ -76,7 +76,7 @@ exists (or no mangledness if creating a new storr).
 \section{Corrupt keys}{
 
 
-Some file synchronisation utilities like dropbox can create file
+Some file synchronisation utilities like Dropbox can create file
 that confuse an rds storr (e.g.,
 \code{"myobject (Someone's conflicted copy)"}.  If
 \code{mangle_key} is \code{FALSE} these cannot be detected but at

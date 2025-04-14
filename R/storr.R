@@ -1,5 +1,5 @@
 ##' Create an object cache; a "storr".  A storr is a simple key-value
-##' store where the actual content is stored in a content-addressible
+##' store where the actual content is stored in a content-addressable
 ##' way (so that duplicate objects are only stored once) and with a
 ##' caching layer so that repeated lookups are fast even if the
 ##' underlying storage driver is slow.

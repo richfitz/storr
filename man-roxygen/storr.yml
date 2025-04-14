@@ -61,7 +61,7 @@ get_hash:
     key: *key_get
     namespace: *ns_get
 del:
-  short: Delete an object fom the storr.
+  short: Delete an object from the storr.
   params:
     key: &key_vector A vector of names of keys
     namespace: &ns The namespace of the key.
@@ -78,7 +78,7 @@ duplicate:
     copy of the data, just the pointer to the data (for more details
     see the storr vignette which explains the storage model in more
     detail).  Multiple keys (and/or namespaces) can be provided, with
-    keys and nmespaces recycled as needed.  However, the number of
+    keys and namespaces recycled as needed.  However, the number of
     source and destination keys must be the same.  The order of
     operation is not defined, so if the sets of keys are overlapping
     it is undefined behaviour.
