@@ -8,7 +8,6 @@ Description: Creates and manages simple key-value stores.  These can
 Depends:
     R (>= 3.3.0)
 License: MIT + file LICENSE
-LazyData: true
 Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
     email = "rich.fitzjohn@gmail.com"),
     person(c("William", "Michael"), "Landau",
