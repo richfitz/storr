@@ -2,8 +2,8 @@
 ##' This means that storr can work for any supported "DBI" driver
 ##' (though practically this works only for SQLite and Postgres until
 ##' some MySQL dialect translation is done).  To connect, you must
-##' provide the \emph{driver} object (e.g., \code{RSQLite::SQLite()},
-##' or \code{RPostgres::Postgres()} as the first argument.
+##' provide the *driver* object (e.g., `RSQLite::SQLite()`,
+##' or `RPostgres::Postgres()` as the first argument.
 ##'
 ##' Because the DBI package specifies a uniform interface for the
 ##' using DBI compliant databases, you need only to provide a
@@ -25,10 +25,10 @@
 ##' keys, namespaces and values into the database - this should allow
 ##' odd characters without throwing SQL syntax errors.  Table names
 ##' can't be interpolated in the same way - these storr simply quotes,
-##' but validates beforehand to ensure that \code{tbl_data} and
-##' \code{tbl_keys} do not contain quotes.
+##' but validates beforehand to ensure that `tbl_data` and
+##' `tbl_keys` do not contain quotes.
 ##'
-##' Be aware that \code{$destroy()} will close the connection to the
+##' Be aware that `$destroy()` will close the connection to the
 ##' database.
 ##'
 ##' @title DBI storr driver
@@ -40,24 +40,23 @@
 ##' @param con Either A DBI connection or a DBI driver (see example)
 ##'
 ##' @param args Arguments to pass, along with the driver, to
-##'   \code{DBI::dbConnect} if \code{con} is a driver.
+##'   `DBI::dbConnect` if `con` is a driver.
 ##'
 ##' @param binary Optional logical indicating if the values should be
 ##'   stored in binary.  If possible, this is both (potentially
 ##'   faster) and more accurate.  However, at present it is supported
 ##'   only under very recent DBI and RSQLite packages, and for no
 ##'   other DBI drivers, and is not actually any faster.  If not given
-##'   (i.e., \code{NULL}), then binary storage will be used where
+##'   (i.e., `NULL`), then binary storage will be used where
 ##'   possible when creating new tables, and where tables exist, we
 ##'   use whatever was used in the existing tables.
 ##'
 ##' @param hash_algorithm Name of the hash algorithm to use.  Possible
 ##'   values are "md5", "sha1", and others supported by
-##'   \code{\link{digest}}.  If not given, then we will default to
+##'   [digest::digest].  If not given, then we will default to
 ##'   "md5".
 ##'
-##' @param default_namespace Default namespace (see
-##'   \code{\link{storr}}).
+##' @param default_namespace Default namespace (see [storr]).
 ##'
 ##' @export
 ##' @examples

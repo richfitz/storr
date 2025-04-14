@@ -16,7 +16,7 @@ not found in the store.  This function must take arguments
 throw an error if the external resource cannot be resolved.}
 
 \item{default_namespace}{Default namespace (see
-\code{\link{storr}})}
+\link{storr})}
 }
 \description{
 storr for fetching external resources.  This driver is used where

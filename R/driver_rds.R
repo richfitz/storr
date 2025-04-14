@@ -1,8 +1,8 @@
 ##' Object cache driver that saves objects using R's native
-##' serialized file format (see \code{\link{saveRDS}}) on the
+##' serialized file format (see [saveRDS]) on the
 ##' filesystem.
 ##'
-##' The \code{mangle_key} argument will run each key that is created
+##' The `mangle_key` argument will run each key that is created
 ##' through a "base 64" encoding.  This means that keys that include
 ##' symbols that are invalid on filesystems (e.g, "/", ":") will be
 ##' replaced by harmless characters.  The RFC 4648 dialect is used
@@ -12,46 +12,46 @@
 ##' with unmangled keys but the names of the stored files will be
 ##' different.
 ##'
-##' Note that the \emph{namespace} is not mangled (at least not yet)
+##' Note that the (*namespace* is not mangled (at least not yet)
 ##' so needs to contain characters that are valid in a filename.
 ##'
 ##' Because the actual file will be stored with mangled names it is
 ##' not safe to use the same path for a storr with and without
 ##' mangling.  So once an rds storr has been created its "mangledness"
-##' is set.  Using \code{mangle_key = NULL} uses whatever mangledness
+##' is set.  Using `mangle_key = NULL` uses whatever mangledness
 ##' exists (or no mangledness if creating a new storr).
 ##'
 ##' @section Corrupt keys:
 ##'
 ##' Some file synchronisation utilities like dropbox can create file
 ##' that confuse an rds storr (e.g.,
-##' \code{"myobject (Someone's conflicted copy)"}.  If
-##' \code{mangle_key} is \code{FALSE} these cannot be detected but at
+##' `"myobject (Someone's conflicted copy)"`.  If
+##' `mangle_key` is `FALSE` these cannot be detected but at
 ##' the same time are not a real problem for storr.  However, if
-##' \code{mangle_key} is \code{TRUE} and keys are base64 encoded then
+##' `mangle_key` is `TRUE` and keys are base64 encoded then
 ##' these conflicted copies can break parts of storr.
 ##'
 ##' If you see a warning asking you to deal with these files, please
 ##' delete the offending files; the path will be printed along with
 ##' the files that are causing the problem.
 ##'
-##' Alternatively, you can try (assuming a storr object \code{st})
+##' Alternatively, you can try (assuming a storr object `st`)
 ##' running
 ##'
-##' \preformatted{
+##' ```
 ##' st$driver$purge_corrupt_keys()
-##' }
+##' ```
 ##'
 ##' which will delete corrupted keys with no confirmation.  The
 ##' messages that are printed to screen will be printed by default at
 ##' most once per minute per namespace.  You can control this by
-##' setting the R option \code{storr.corrupt.notice.period} - setting
-##' this to \code{NA} suppresses the notice and otherwise it is
+##' setting the R option `storr.corrupt.notice.period` - setting
+##' this to `NA` suppresses the notice and otherwise it is
 ##' interpreted as the number of seconds.
 ##'
 ##' @title rds object cache driver
-##' @param path Path for the store.  \code{tempdir()} is a good choice
-##'   for ephemeral storage, The \code{rappdirs} package (on CRAN)
+##' @param path Path for the store.  `tempdir()` is a good choice
+##'   for ephemeral storage, The `rappdirs` package (on CRAN)
 ##'   might be nice for persistent application data.
 ##'
 ##' @param compress Compress the generated file?  This saves a small
@@ -61,21 +61,19 @@
 ##'   using base64 before saving to the filesystem.  See Details.
 ##'
 ##' @param mangle_key_pad Logical indicating if the filenames created
-##'   when using \code{mangle_key} should also be "padded" with the
-##'   \code{=} character to make up a round number of bytes.  Padding
-##'   is required to satisfy the document that describes base64
-##'   encoding (RFC 4648) but can cause problems in some applications
-##'   (see \href{https://github.com/richfitz/storr/issues/43}{this
-##'   issue}.  The default is to not pad \emph{new} storr archives.
-##'   This should be generally safe to leave alone.
+##'   when using `mangle_key` should also be "padded" with the `=`
+##'   character to make up a round number of bytes.  Padding is
+##'   required to satisfy the document that describes base64 encoding
+##'   (RFC 4648) but can cause problems in some applications (see
+##'   [this issue](https://github.com/richfitz/storr/issues/43)).  The
+##'   default is to not pad *new* storr archives.  This should be
+##'   generally safe to leave alone.
 ##'
 ##' @param hash_algorithm Name of the hash algorithm to use.  Possible
 ##'   values are "md5", "sha1", and others supported by
-##'   \code{\link{digest}}.  If not given, then we will default to
-##'   "md5".
+##'   [digest::digest].  If not given, then we will default to "md5".
 ##'
-##' @param default_namespace Default namespace (see
-##'   \code{\link{storr}}).
+##' @param default_namespace Default namespace (see [storr]).
 ##' @export
 ##' @examples
 ##'

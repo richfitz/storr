@@ -17,8 +17,7 @@
 ##' @title Storr with multiple storage drivers
 ##' @param keys Driver for the keys
 ##' @param data Driver for the data
-##' @param default_namespace Default namespace (see
-##'   \code{\link{storr}}).
+##' @param default_namespace Default namespace (see [storr])
 ##' @export
 ##' @examples
 ##' # Create a storr that is stores keys in an environment and data in

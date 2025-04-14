@@ -8,8 +8,8 @@ test_driver(create)
 }
 \arguments{
 \item{create}{A function with one arguments that when run with
-\code{NULL} as the argument will create a new driver instance.
-It will also be called with a driver (of the same type) as an
+\code{NULL} as the argument will create a new driver instance.  It
+will also be called with a driver (of the same type) as an
 argument - in this case, you must create a new driver object
 pointing at the same underlying storage (see the examples).
 Depending on your storage model, temporary directories,
@@ -32,9 +32,9 @@ The test suite is included in the package as
 
 The procedure for each test block is:
 \enumerate{
-\item{Create a new driver by running \code{dr <- create()}.}
-\item{Run a number of tests.}
-\item{Destroy the driver by running \code{dr$destroy()}.}
+\item Create a new driver by running \code{dr <- create()}
+\item Run a number of tests.
+\item Destroy the driver by running \code{dr$destroy()}
 }
 
 So before running this test suite, make sure this will not harm

@@ -2,21 +2,21 @@
 ##' will try to fetch from an external data source if a resource can
 ##' not be found locally.  This works by checking to see if a key is
 ##' present in the storr (and if so returning it).  If it is not
-##' found, then the function \code{fetch_hook} is run to fetch it.
+##' found, then the function `fetch_hook` is run to fetch it.
 ##'
-##' See the vignette \code{vignette("external")} for much more detail.
+##' See the vignette `vignette("external")` for much more detail.
 ##' This function is likely most useful for things like caching
 ##' resources from websites, or computing long-running quantities on
 ##' demand.
 ##' @title Storr that looks for external resources
-##' @param storage_driver Another \code{storr} driver to handle the
+##' @param storage_driver Another `storr` driver to handle the
 ##'   actual storage.
 ##' @param fetch_hook A function to run to fetch data when a key is
 ##'   not found in the store.  This function must take arguments
-##'   \code{key} and \code{namespace} and return an R object.  It must
+##'   `key` and `namespace` and return an R object.  It must
 ##'   throw an error if the external resource cannot be resolved.
 ##' @param default_namespace Default namespace (see
-##'   \code{\link{storr}})
+##'   [storr])
 ##' @export
 storr_external <- function(storage_driver, fetch_hook,
                            default_namespace = "objects") {
@@ -73,18 +73,18 @@ check_external_fetch_hook <- function(fetch_hook) {
 ##' driver_external.  We take two functions as arguments: the first
 ##' converts a key/namespace pair into a filename, and the second
 ##' reads from that filename.  Because many R functions support
-##' reading from URLs \code{fetch_hook_read} can be used to read from
+##' reading from URLs `fetch_hook_read` can be used to read from
 ##' remote resources.
 ##'
 ##' For more information about using this, see
-##' \code{\link{storr_external}} (this can be used as a
-##' \code{fetch_hook} argument) and the vignette:
-##' \code{vignette("external")}
+##' [storr_external] (this can be used as a
+##' `fetch_hook` argument) and the vignette:
+##' `vignette("external")`
 ##' @title Hook to fetch a resource from a file.
-##' @param fpath Function to convert \code{key, namespace} into a file
+##' @param fpath Function to convert `key, namespace` into a file
 ##'   path
-##' @param fread Function for converting \code{filename} into an R
-##'   pobject
+##' @param fread Function for converting `filename` into an R
+##'   object
 ##' @export
 ##' @examples
 ##' hook <- fetch_hook_read(

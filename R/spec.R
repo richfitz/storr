@@ -7,14 +7,13 @@
 ##' to the test suite to guard against regressions.
 ##'
 ##' The test suite is included in the package as
-##' \code{system.file("spec", package = "storr")}.
+##' `system.file("spec", package = "storr")`.
 ##'
 ##' The procedure for each test block is:
-##' \enumerate{
-##' \item{Create a new driver by running \code{dr <- create()}.}
-##' \item{Run a number of tests.}
-##' \item{Destroy the driver by running \code{dr$destroy()}.}
-##' }
+##'
+##' 1. Create a new driver by running `dr <- create()`
+##' 2. Run a number of tests.
+##' 3. Destroy the driver by running `dr$destroy()`
 ##'
 ##' So before running this test suite, make sure this will not harm
 ##' any precious data!
@@ -22,14 +21,14 @@
 ##' @title Test a storr driver
 ##'
 ##' @param create A function with one arguments that when run with
-##'   \code{NULL} as the argument will create a new driver instance.
-##'   It will also be called with a driver (of the same type) as an
+##'   `NULL` as the argument will create a new driver instance.  It
+##'   will also be called with a driver (of the same type) as an
 ##'   argument - in this case, you must create a new driver object
 ##'   pointing at the same underlying storage (see the examples).
 ##'   Depending on your storage model, temporary directories,
 ##'   in-memory locations, or random-but-unique prefixes may help
 ##'   create isolated locations for the test (the tests assume that a
-##'   storr created with \code{create} is entirely empty).
+##'   storr created with `create` is entirely empty).
 ##'
 ##' @export
 ##' @examples

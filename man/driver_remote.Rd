@@ -10,9 +10,8 @@ driver_remote(ops, ..., path_local = NULL)
 \item{ops}{A file operations object.  See tests for now to see
 what is required to implement one.}
 
-\item{...}{Arguments to pass through to \code{\link{driver_rds}},
-including \code{compress}, \code{mangle_key},
-\code{mangle_key_pad} and \code{hash_algorithm}.}
+\item{...}{Arguments to pass through to \link{driver_rds}, including
+\code{compress}, \code{mangle_key}, \code{mangle_key_pad} and \code{hash_algorithm}.}
 
 \item{path_local}{Path to a local cache.  This can be left as
 \code{NULL}, in which case a per-session cache will be used.
@@ -30,7 +29,7 @@ so there is no \code{storr_remote} function.  Instead this
 function is designed to support external packages that implement
 the details.  For a worked example, see the package tests
 (\code{helper-remote.R}).  In the current implementation these
-build off of the \code{\link{driver_rds}} driver by copying files
+build off of the \link{driver_rds} driver by copying files
 to some remote location.
 }
 \author{

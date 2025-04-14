@@ -11,8 +11,7 @@ storr_multistorr(keys, data, default_namespace = "objects")
 
 \item{data}{Driver for the data}
 
-\item{default_namespace}{Default namespace (see
-\code{\link{storr}}).}
+\item{default_namespace}{Default namespace (see \link{storr})}
 }
 \description{
 Create a special storr that uses separate storage drivers for the

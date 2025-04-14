@@ -5,12 +5,22 @@
 \alias{driver_rds}
 \title{rds object cache driver}
 \usage{
-storr_rds(path, compress = NULL, mangle_key = NULL,
-  mangle_key_pad = NULL, hash_algorithm = NULL,
-  default_namespace = "objects")
+storr_rds(
+  path,
+  compress = NULL,
+  mangle_key = NULL,
+  mangle_key_pad = NULL,
+  hash_algorithm = NULL,
+  default_namespace = "objects"
+)
 
-driver_rds(path, compress = NULL, mangle_key = NULL,
-  mangle_key_pad = NULL, hash_algorithm = NULL)
+driver_rds(
+  path,
+  compress = NULL,
+  mangle_key = NULL,
+  mangle_key_pad = NULL,
+  hash_algorithm = NULL
+)
 }
 \arguments{
 \item{path}{Path for the store.  \code{tempdir()} is a good choice
@@ -24,25 +34,23 @@ amount of space for a reasonable amount of time.}
 using base64 before saving to the filesystem.  See Details.}
 
 \item{mangle_key_pad}{Logical indicating if the filenames created
-when using \code{mangle_key} should also be "padded" with the
-\code{=} character to make up a round number of bytes.  Padding
-is required to satisfy the document that describes base64
-encoding (RFC 4648) but can cause problems in some applications
-(see \href{https://github.com/richfitz/storr/issues/43}{this
-issue}.  The default is to not pad \emph{new} storr archives.
-This should be generally safe to leave alone.}
+when using \code{mangle_key} should also be "padded" with the \code{=}
+character to make up a round number of bytes.  Padding is
+required to satisfy the document that describes base64 encoding
+(RFC 4648) but can cause problems in some applications (see
+\href{https://github.com/richfitz/storr/issues/43}{this issue}).  The
+default is to not pad \emph{new} storr archives.  This should be
+generally safe to leave alone.}
 
 \item{hash_algorithm}{Name of the hash algorithm to use.  Possible
 values are "md5", "sha1", and others supported by
-\code{\link{digest}}.  If not given, then we will default to
-"md5".}
+\link[digest:digest]{digest::digest}.  If not given, then we will default to "md5".}
 
-\item{default_namespace}{Default namespace (see
-\code{\link{storr}}).}
+\item{default_namespace}{Default namespace (see \link{storr}).}
 }
 \description{
 Object cache driver that saves objects using R's native
-serialized file format (see \code{\link{saveRDS}}) on the
+serialized file format (see \link{saveRDS}) on the
 filesystem.
 }
 \details{
@@ -56,7 +64,7 @@ transparent to the user -- the storr will appear to store things
 with unmangled keys but the names of the stored files will be
 different.
 
-Note that the \emph{namespace} is not mangled (at least not yet)
+Note that the (\emph{namespace} is not mangled (at least not yet)
 so needs to contain characters that are valid in a filename.
 
 Because the actual file will be stored with mangled names it is
@@ -83,9 +91,8 @@ the files that are causing the problem.
 Alternatively, you can try (assuming a storr object \code{st})
 running
 
-\preformatted{
-st$driver$purge_corrupt_keys()
-}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{st$driver$purge_corrupt_keys()
+}\if{html}{\out{</div>}}
 
 which will delete corrupted keys with no confirmation.  The
 messages that are printed to screen will be printed by default at

@@ -5,11 +5,24 @@
 \alias{driver_dbi}
 \title{DBI storr driver}
 \usage{
-storr_dbi(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
-  hash_algorithm = NULL, default_namespace = "objects")
+storr_dbi(
+  tbl_data,
+  tbl_keys,
+  con,
+  args = NULL,
+  binary = NULL,
+  hash_algorithm = NULL,
+  default_namespace = "objects"
+)
 
-driver_dbi(tbl_data, tbl_keys, con, args = NULL, binary = NULL,
-  hash_algorithm = NULL)
+driver_dbi(
+  tbl_data,
+  tbl_keys,
+  con,
+  args = NULL,
+  binary = NULL,
+  hash_algorithm = NULL
+)
 }
 \arguments{
 \item{tbl_data}{Name for the table that maps hashes to values}
@@ -32,11 +45,10 @@ use whatever was used in the existing tables.}
 
 \item{hash_algorithm}{Name of the hash algorithm to use.  Possible
 values are "md5", "sha1", and others supported by
-\code{\link{digest}}.  If not given, then we will default to
+\link[digest:digest]{digest::digest}.  If not given, then we will default to
 "md5".}
 
-\item{default_namespace}{Default namespace (see
-\code{\link{storr}}).}
+\item{default_namespace}{Default namespace (see \link{storr}).}
 }
 \description{
 Object cache driver using the "DBI" package interface for storage.
@@ -70,7 +82,7 @@ can't be interpolated in the same way - these storr simply quotes,
 but validates beforehand to ensure that \code{tbl_data} and
 \code{tbl_keys} do not contain quotes.
 
-Be aware that \code{$destroy()} will close the connection to the
+Be aware that \verb{$destroy()} will close the connection to the
 database.
 }
 \examples{

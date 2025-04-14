@@ -7,11 +7,11 @@
 fetch_hook_read(fpath, fread)
 }
 \arguments{
-\item{fpath}{Function to convert \code{key, namespace} into a file
+\item{fpath}{Function to convert \verb{key, namespace} into a file
 path}
 
 \item{fread}{Function for converting \code{filename} into an R
-pobject}
+object}
 }
 \description{
 Hook to fetch a resource from a file, for use with
@@ -23,7 +23,7 @@ remote resources.
 }
 \details{
 For more information about using this, see
-\code{\link{storr_external}} (this can be used as a
+\link{storr_external} (this can be used as a
 \code{fetch_hook} argument) and the vignette:
 \code{vignette("external")}
 }

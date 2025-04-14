@@ -5,26 +5,26 @@
 ##' underlying storage driver is slow.
 ##'
 ##' To create a storr you need to provide a "driver" object.  There
-##' are three in this package: \code{\link{driver_environment}} for
-##' ephemeral in-memory storage, \code{\link{driver_rds}} for
-##' serialized storage to disk, and \code{\link{driver_dbi}} for use
-##' with DBI-compliant database interfaces.  The \code{redux} package
-##' (on CRAN) provides a storr driver that uses Redis.
+##' are three in this package: [driver_environment] for ephemeral
+##' in-memory storage, [driver_rds] for serialized storage to disk,
+##' and [driver_dbi] for use with DBI-compliant database interfaces.
+##' The `redux` package (on CRAN) provides a storr driver that uses
+##' Redis.
 ##'
-##' There are convenience functions (e.g.,
-##' \code{\link{storr_environment}} and \code{\link{storr_rds}}) that
-##' may be more convenient to use than this function.
+##' There are convenience functions (e.g., [storr_environment] and
+##' [storr_rds]) that may be more convenient to use than this
+##' function.
 ##'
 ##' Once a storr has been made it provides a number of methods.
-##' Because storr uses \code{R6} (\code{\link{R6Class}}) objects, each
-##' method is accessed by using \code{$} on a storr object (see the
+##' Because storr uses `R6` ([R6::R6Class]) objects, each
+##' method is accessed by using `$` on a storr object (see the
 ##' examples).  The methods are described below in the "Methods"
 ##' section.
 ##'
-##' The \code{default_namespace} affects all methods of the storr
-##' object that refer to namespaces; if a namespace is not given, then
-##' the action (get, set, del, list, import, export) will affect the
-##' \code{default_namespace}.  By default this is \code{"objects"}.
+##' The `default_namespace` affects all methods of the storr object
+##' that refer to namespaces; if a namespace is not given, then the
+##' action (get, set, del, list, import, export) will affect the
+##' `default_namespace`.  By default this is `"objects"`.
 ##'
 ##' @template storr_methods
 ##'
@@ -33,8 +33,8 @@
 ##' @param driver A driver object
 ##'
 ##' @param default_namespace Default namespace to store objects in.
-##'   By default \code{"objects"} is used, but this might be useful to
-##'   have two different \code{storr} objects pointing at the same
+##'   By default `"objects"` is used, but this might be useful to have
+##'   two different `storr` objects pointing at the same
 ##'   underlying storage, but storing things in different namespaces.
 ##'
 ##' @export
@@ -60,7 +60,7 @@
 ##' st$del("mykey")
 ##'
 ##' ## Storr objects can be created that have a default namespace that is
-##' ## not "objects" by using the \code{default_namespace} argument (this
+##' ## not "objects" by using the `default_namespace` argument (this
 ##' ## one also points at the same memory as the first storr).
 ##' st2 <- storr(driver_environment(st$driver$envir),
 ##'              default_namespace = "namespace2")
@@ -551,14 +551,14 @@ check_length <- function(key, namespace) {
 ##' Utility function for driver authors
 ##'
 ##' This exists to join, predictably, keys and namespaces for
-##' operations like \code{mget}.  Given a vector or scalar for
-##' \code{key} and \code{namespace} we work out what the required
-##' length is and recycle \code{key} and \code{namespace} to the
+##' operations like `mget`.  Given a vector or scalar for
+##' `key` and `namespace` we work out what the required
+##' length is and recycle `key` and `namespace` to the
 ##' appropriate length.
 ##' @title Recycle key and namespace
 ##' @param key A vector of keys
 ##' @param namespace A vector of namespace
-##' @return A list with elements \code{n}, \code{key} and \code{namespace}
+##' @return A list with elements `n`, `key` and `namespace`
 ##' @export
 join_key_namespace <- function(key, namespace) {
   n <- check_length(key, namespace)
