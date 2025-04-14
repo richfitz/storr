@@ -71,7 +71,7 @@ Set a key to a value.
 \item{\code{key}:   The key name.  Can be any string.
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{value}:   Any R object to store.  The object will generally be serialized (this is not actually true for the environment storr) so only objects that would usually be expected to survive a \code{saveRDS}/\code{readRDS} roundtrip will work.  This excludes Rcpp modules objects, external pointers, etc.  But any "normal" R object will work fine.
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{value}:   Any R object to store.  The object will generally be serialized (this is not actually true for the environment storr) so only objects that would usually be expected to survive a `saveRDS`/`readRDS` roundtrip will work.  This excludes Rcpp modules objects, external pointers, etc.  But any "normal" R object will work fine.
 \}
 
 \\item\{\code{namespace}:   An optional namespace.  By default the default namespace that the storr was created with will be used (by default that is "objects").  Different namespaces allow different types of objects to be stored without risk of names colliding.  Use of namespaces is optional, but if used they must be a string.
@@ -87,7 +87,7 @@ Set a key to a value.
 Invisibly, the hash of the saved object.
 }
 \item{\code{set_by_value}}{
-Like \code{set} but saves the object with a key that is the same as the hash of the object.  Equivalent to \code{$set(digest::digest(value), value)}.
+Like \code{set} but saves the object with a key that is the same as the hash of the object.  Equivalent to \verb{$set(digest::digest(value), value)}.
 
 \emph{Usage:}
 \code{set_by_value(value, namespace = self$default_namespace, use_cache = TRUE)}
@@ -178,7 +178,7 @@ Duplicate the value of a set of keys into a second set of keys. Because the valu
 \if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{key_dest}:   The destination key
 \}
 
-\\item\{\code{namespace}:   The namespace to copy keys within (used only of \code{namespace_src} and \code{namespace_dest} are not provided
+\\item\{\code{namespace}:   The namespace to copy keys within (used only of `namespace_src` and `namespace_dest` are not provided
 \}
 
 \\item\{\code{namespace_src}:   The source namespace - use this where keys are duplicated across namespaces.
@@ -301,7 +301,7 @@ Get multiple elements at once
 \\item\{\code{use_cache}:   Use the internal cache to avoid reading or writing to the underlying storage if the data has already been seen (i.e., we have seen the hash of the object before).
 \}
 
-\\item\{\code{missing}:   Value to use for missing elements; by default \code{NULL} will be used.  IF \code{NULL} is a value that you might have stored in the storr you might want to use a different value here to distinguish "missing" from "set to NULL".  In addition, the \code{missing} attribute will indicate which values were missing.
+\\item\{\code{missing}:   Value to use for missing elements; by default `NULL` will be used.  IF `NULL` is a value that you might have stored in the storr you might want to use a different value here to distinguish "missing" from "set to NULL".  In addition, the `missing` attribute will indicate which values were missing.
 \}
 }\if{html}{\out{</div>}}
 
@@ -441,13 +441,13 @@ Import R objects from an environment.
 \item{\code{src}:   Object to import objects from; can be a list, environment or another storr.
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{list}:   Names of of objects to import (or \code{NULL} to import all objects in \code{envir}.  If given it must be a character vector.  If named, the names of the character vector will be the names of the objects as created in the storr.
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{list}:   Names of of objects to import (or `NULL` to import all objects in `envir`.  If given it must be a character vector.  If named, the names of the character vector will be the names of the objects as created in the storr.
 \}
 
-\\item\{\code{namespace}:   Namespace to get objects from, and to put objects into.  If \code{NULL}, all namespaces from \code{src} will be imported. If named, then the same rule is followed as \code{list}; \code{namespace = c(a = b)} will import the contents of namespace \code{b} as namespace \code{a}.
+\\item\{\code{namespace}:   Namespace to get objects from, and to put objects into.  If `NULL`, all namespaces from `src` will be imported. If named, then the same rule is followed as `list`; `namespace = c(a = b)` will import the contents of namespace `b` as namespace `a`.
 \}
 
-\\item\{\code{skip_missing}:   Logical, indicating if missing keys (specified in \code{list}) should be skipped over, rather than being treated as an error (the default).
+\\item\{\code{skip_missing}:   Logical, indicating if missing keys (specified in `list`) should be skipped over, rather than being treated as an error (the default).
 \}
 }\if{html}{\out{</div>}}
 
@@ -465,13 +465,13 @@ Export objects from the storr into something else.
 \item{\code{dest}:   A target destination to export objects to; can be a list, environment, or another storr.  Use \code{list()} to export to a brand new list, or use \code{as.list(object)} for a shorthand.
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{list}:   Names of objects to export, with the same rules as \code{list} in \code{$import}.
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{list}:   Names of objects to export, with the same rules as `list` in `$import`.
 \}
 
-\\item\{\code{namespace}:   Namespace to get objects from, and to put objects into.  If \code{NULL}, then this will export namespaces from this (source) storr into the destination; if there is more than one namespace,this is only possible if \code{dest} is a storr (otherwise there will be an error).
+\\item\{\code{namespace}:   Namespace to get objects from, and to put objects into.  If `NULL`, then this will export namespaces from this (source) storr into the destination; if there is more than one namespace,this is only possible if `dest` is a storr (otherwise there will be an error).
 \}
 
-\\item\{\code{skip_missing}:   Logical, indicating if missing keys (specified in \code{list}) should be skipped over, rather than being treated as an error (the default).
+\\item\{\code{skip_missing}:   Logical, indicating if missing keys (specified in `list`) should be skipped over, rather than being treated as an error (the default).
 \}
 }\if{html}{\out{</div>}}
 
@@ -481,7 +481,7 @@ Export objects from the storr into something else.
 Invisibly, \code{dest}, which allows use of \code{e <- st$export(new.env())} and \code{x <- st$export(list())}.
 }
 \item{\code{archive_export}}{
-Export objects from the storr into a special "archive" storr, which is an \code{\link{storr_rds}} with name mangling turned on (which encodes keys with base64 so that they do not voilate filesystem naming conventions).
+Export objects from the storr into a special "archive" storr, which is an \link{storr_rds} with name mangling turned on (which encodes keys with base64 so that they do not violate filesystem naming conventions).
 
 \emph{Usage:}
 \code{archive_export(path, names = NULL, namespace = NULL)}
@@ -491,10 +491,10 @@ Export objects from the storr into a special "archive" storr, which is an \code{
 \item{\code{path}:   Path to create the storr at; can exist already.
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{names}:   As for \code{$export}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{names}:   As for `$export`
 \}
 
-\\item\{\code{namespace}:   Namespace to get objects from.  If \code{NULL}, then exports all namespaces found in this (source) storr.
+\\item\{\code{namespace}:   Namespace to get objects from.  If `NULL`, then exports all namespaces found in this (source) storr.
 \}
 }\if{html}{\out{</div>}}
 
@@ -511,10 +511,10 @@ Inverse of \code{archive_export}; import objects from a storr that was created b
 \item{\code{path}:   Path of the exported storr.
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{names}:   As for \code{$import}
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\\item\{\code{names}:   As for `$import`
 \}
 
-\\item\{\code{namespace}:   Namespace to import objects into.  If \code{NULL}, then imports all namespaces from the source storr.
+\\item\{\code{namespace}:   Namespace to import objects into.  If `NULL`, then imports all namespaces from the source storr.
 \}
 }\if{html}{\out{</div>}}
 
