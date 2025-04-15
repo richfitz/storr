@@ -28,10 +28,6 @@ check_all: build
 autodoc:
 	${RSCRIPT} autodoc.R process
 
-vignettes/storr.Rmd: vignettes_src/storr.R
-	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
-vignettes/external.Rmd: vignettes_src/external.R
-	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
 vignettes: vignettes/storr.Rmd vignettes/external.Rmd
 	${RSCRIPT} -e 'library(methods); devtools::build_vignettes()'
 
