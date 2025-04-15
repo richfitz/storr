@@ -15,7 +15,7 @@ Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
       role = "ctb",
       comment = c(ORCID = "0000-0003-1878-3253")
     ))
-URL: https://github.com/richfitz/storr
+URL: https://richfitz.github.io/storr/, https://github.com/richfitz/storr
 BugReports: https://github.com/richfitz/storr/issues
 Imports:
     R6 (>= 2.1.0),
