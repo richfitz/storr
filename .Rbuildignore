@@ -20,3 +20,4 @@ Rprof\.out
 ^\.Rproj\.user$
 ^doc$
 ^Meta$
+^\.github$

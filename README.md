@@ -1,10 +1,11 @@
 # storr
 
+<!-- badges: start -->
 [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/)
-[![Build Status](https://travis-ci.org/richfitz/storr.svg?branch=master)](https://travis-ci.org/richfitz/storr)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/richfitz/storr?branch=master&svg=true)](https://ci.appveyor.com/project/richfitz/storr)
-[![codecov.io](https://codecov.io/github/richfitz/storr/coverage.svg?branch=master)](https://codecov.io/github/richfitz/storr?branch=master)
+[![R-CMD-check](https://github.com/richfitz/storr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/richfitz/storr/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/richfitz/storr/graph/badge.svg)](https://app.codecov.io/gh/richfitz/storr)
 [![](http://www.r-pkg.org/badges/version/storr)](https://cran.r-project.org/package=storr)
+<!-- badges: end -->
 
 Simple object cacher for R.  `storr` acts as a very simple key-value store (supporting `get`/`set`/`del` for arbitrary R objects as data).  The actual storage can be transient or persistent, local or distributed without changing the interface.  To allow for distributed access, data is returned by *content* rather than simply by key (with a key/content lookup step) so that if another process changes the data, `storr` will retrieve the current version.
 
