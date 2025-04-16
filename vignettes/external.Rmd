@@ -25,7 +25,7 @@ key refers to a set of arguments to a long running function we get
 something like memoisation (see the bottom of this file).
 
 As an example, this vignette will download some DESCRIPTION files
-from github, using the name of the repository as the key.
+from GitHub, using the name of the repository as the key.
 
 The first step is writing a hook function; this is a function with
 arguments `(key, namespace)` that returns an R object.  For
@@ -78,7 +78,7 @@ As with other storr creation functions, you can set the default
 namespace using the `default_namespace` argument.
 
 The returned object is exactly the same as a usual storr except
-that the `get` method has changed (this is done by inheritence).
+that the `get` method has changed (this is done by inheritance).
 The `get` method only behaves differently when the object is not
 present in the storr, in which case it will try to fetch the object
 and insert it into the storr.

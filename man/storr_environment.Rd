@@ -5,8 +5,11 @@
 \alias{driver_environment}
 \title{Environment object cache driver}
 \usage{
-storr_environment(envir = NULL, hash_algorithm = NULL,
-  default_namespace = "objects")
+storr_environment(
+  envir = NULL,
+  hash_algorithm = NULL,
+  default_namespace = "objects"
+)
 
 driver_environment(envir = NULL, hash_algorithm = NULL)
 }
@@ -19,15 +22,15 @@ argument along.}
 
 \item{hash_algorithm}{Name of the hash algorithm to use.  Possible
 values are "md5", "sha1", and others supported by
-\code{\link{digest}}.  If not given, then we will default to
+\link[digest:digest]{digest::digest}.  If not given, then we will default to
 "md5".}
 
-\item{default_namespace}{Default namespace (see \code{\link{storr}}).}
+\item{default_namespace}{Default namespace (see \link{storr}).}
 }
 \description{
 Fast but transient environment driver.  This driver saves objects
 in a local R environment, without serialisation.  This makes
-lookup fast but it cannot be saved across sesssions.  The
+lookup fast but it cannot be saved across sessions.  The
 environment storr can be made persistent by saving it out as a
 file storr though.
 }

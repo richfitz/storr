@@ -1,13 +1,13 @@
 ##' Defunct functions
 ##'
-##' The redis functions (\code{driver_redis_api} and
-##' \code{storr_redis_api}) have been moved out of this package and
-##' into Redis.  I don't believe anyone is using them at the time of
-##' the move so this is being done fairly abruptly - this is
-##' unfortunate, but necessary to avoid a circular dependency!  The
-##' new functions are simply \code{redux::driver_redis_api} and
-##' \code{redux::storr_redis_api}, along with a helper function
-##' \code{redux::storr_hiredis} which also creates the connection.
+##' The Redis functions (`driver_redis_api` and `storr_redis_api`)
+##' have been moved out of this package and into `redux`.  I don't
+##' believe anyone is using them at the time of the move so this is
+##' being done fairly abruptly - this is unfortunate, but necessary to
+##' avoid a circular dependency!  The new functions are simply
+##' `redux::driver_redis_api` and `redux::storr_redis_api`, along with
+##' a helper function `redux::storr_hiredis` which also creates the
+##' connection.
 ##'
 ##' @title Defunct functions
 ##' @param ... parameters (now all dropped as dots)

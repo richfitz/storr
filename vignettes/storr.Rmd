@@ -58,7 +58,7 @@ What is in the `storr`?
 st$list()
 ```
 
-Or, much faster, test for existance of a particular key:
+Or, much faster, test for existence of a particular key:
 ``` {r }
 st$exists("mykey")
 
@@ -219,19 +219,19 @@ st2$list()
   store the data.  This is not the fastest interface but allows for
   interprocess key/value stores where a relational database is
   supported.  All databases supported by DBI are supported (so at
-  least SQLite, MySQL and Postgres).
+  least `SQLite`, `MySQL` and `Postgres`).
 * Redis (`driver_redis`) - uses
   [`redux`](https://github.com/richfitz/redux) to store the data in a
   Redis (`http://redis.io`) database.  About the same speed as rds
   (faster write, slower read at present), but can allow multiple R
   processes to share the same set of objects.
-* rlite (`driver_rlite`) - stores data in an
-  [rlite](https://github.com/seppo0010/rlite) database using
+* `rlite` (`driver_rlite`) - stores data in an
+  [`rlite`](https://github.com/seppo0010/rlite) database using
   [`rrlite`](https://github.com/ropensci/rrlite).  This is quite
   quick, but is stalled for general release because `rrlite` does not
   support windows.
 * The in-development package
-  [thor](https://github.com/richfitz/thor) provides an alternative
+  [`thor`](https://github.com/richfitz/thor) provides an alternative
   on-disk storr that can handle multiple processes on a single
   machine.
 
@@ -276,7 +276,7 @@ if present
 stores it and save it into the caching environment
 
 Because looking up data in the environment is likely to be orders
-of magnitide faster than reading from disks or databases, this
+of magnitude faster than reading from disks or databases, this
 means that commonly accessed data will be accessed at a similar
 speed to native R objects, while still immediately reflecting
 changes to the content (because that would mean the hash changes)
@@ -286,7 +286,7 @@ To demonstrate:
 st <- storr::storr(driver = storr::driver_rds(tempfile("storr_")))
 ```
 
-This is the caching environent; currently empty
+This is the caching environment; currently empty
 ``` {r }
 ls(st$envir)
 ```
@@ -347,7 +347,7 @@ If a key is not in the database, storr will return a `KeyError`
 reasonable thing to do).
 
 If you _did_ want to return `NULL` when a key is requested but not
-present, use tryCatch in this way:
+present, use `tryCatch` in this way:
 ``` {r }
 tryCatch(st$get("no_such_key"),
          KeyError = function(e) NULL)

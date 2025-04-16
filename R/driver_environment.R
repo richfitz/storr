@@ -1,6 +1,6 @@
 ##' Fast but transient environment driver.  This driver saves objects
 ##' in a local R environment, without serialisation.  This makes
-##' lookup fast but it cannot be saved across sesssions.  The
+##' lookup fast but it cannot be saved across sessions.  The
 ##' environment storr can be made persistent by saving it out as a
 ##' file storr though.
 ##'
@@ -9,14 +9,14 @@
 ##' @param envir The environment to point the storr at.  The default
 ##'   creates an new empty environment which is generally the right
 ##'   choice.  However, if you want multiple environment storrs
-##'   pointing at the same environment then pass the \code{envir}
+##'   pointing at the same environment then pass the `envir`
 ##'   argument along.
 ##'
-##' @param default_namespace Default namespace (see \code{\link{storr}}).
+##' @param default_namespace Default namespace (see [storr]).
 ##'
 ##' @param hash_algorithm Name of the hash algorithm to use.  Possible
 ##'   values are "md5", "sha1", and others supported by
-##'   \code{\link{digest}}.  If not given, then we will default to
+##'   [digest::digest].  If not given, then we will default to
 ##'   "md5".
 ##'
 ##' @export

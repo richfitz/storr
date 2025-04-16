@@ -7,7 +7,7 @@
 ##' @param char62 Character to use for the 62nd index
 ##' @param char63 Character to use for the 63rd index
 ##' @param pad Logical, indicating if strings should be padded with
-##'   \code{=} characters (as RFC 4648 requires)
+##'   `=` characters (as RFC 4648 requires)
 ##' @export
 ##' @examples
 ##' x <- encode64("hello")
@@ -47,7 +47,7 @@ encode64 <- function(x, char62 = "-", char63 = "_", pad = TRUE) {
 
 
 ##' @param error Throw an error if the decoding fails.  If
-##'   \code{FALSE} then \code{NA_character_} values are returned for
+##'   `FALSE` then `NA_character_` values are returned for
 ##'   failures.
 ##'
 ##' @export

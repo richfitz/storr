@@ -24,7 +24,7 @@
 ##'     \item{\code{key}:   The key name.  Can be any string.
 ##'     }
 ##'
-##'     \item{\code{value}:   Any R object to store.  The object will generally be serialized (this is not actually true for the environment storr) so only objects that would usually be expected to survive a \code{saveRDS}/\code{readRDS} roundtrip will work.  This excludes Rcpp modules objects, external pointers, etc.  But any "normal" R object will work fine.
+##'     \item{\code{value}:   Any R object to store.  The object will generally be serialized (this is not actually true for the environment storr) so only objects that would usually be expected to survive a `saveRDS`/`readRDS` roundtrip will work.  This excludes Rcpp modules objects, external pointers, etc.  But any "normal" R object will work fine.
 ##'     }
 ##'
 ##'     \item{\code{namespace}:   An optional namespace.  By default the default namespace that the storr was created with will be used (by default that is "objects").  Different namespaces allow different types of objects to be stored without risk of names colliding.  Use of namespaces is optional, but if used they must be a string.
@@ -38,14 +38,14 @@
 ##'   Invisibly, the hash of the saved object.
 ##' }
 ##' \item{\code{set_by_value}}{
-##'   Like \code{set} but saves the object with a key that is the same as the hash of the object.  Equivalent to \code{$set(digest::digest(value), value)}.
+##'   Like `set` but saves the object with a key that is the same as the hash of the object.  Equivalent to `$set(digest::digest(value), value)`.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{set_by_value(value, namespace = self$default_namespace, use_cache = TRUE)}
 ##'
 ##'   \emph{Arguments:}
 ##'   \itemize{
-##'     \item{\code{value}:   An R object to save, with the same limitations as \code{set}.
+##'     \item{\code{value}:   An R object to save, with the same limitations as `set`.
 ##'     }
 ##'
 ##'     \item{\code{namespace}:   Optional namespace to save the key into.
@@ -56,7 +56,7 @@
 ##'   }
 ##' }
 ##' \item{\code{get}}{
-##'   Retrieve an object from the storr.  If the requested value is not found then a \code{KeyError} will be raised (an R error, but can be caught with \code{tryCatch}; see the "storr" vignette).
+##'   Retrieve an object from the storr.  If the requested value is not found then a `KeyError` will be raised (an R error, but can be caught with `tryCatch`; see the "storr" vignette).
 ##'
 ##'   \emph{Usage:}
 ##'   \code{get(key, namespace = self$default_namespace, use_cache = TRUE)}
@@ -89,7 +89,7 @@
 ##'   }
 ##' }
 ##' \item{\code{del}}{
-##'   Delete an object fom the storr.
+##'   Delete an object from the storr.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{del(key, namespace = self$default_namespace)}
@@ -104,10 +104,10 @@
 ##'   }
 ##'
 ##'   \emph{Value}:
-##'   A logical vector the same length as the recycled length of key/namespace, with each element being \code{TRUE} if an object was deleted, \code{FALSE} otherwise.
+##'   A logical vector the same length as the recycled length of key/namespace, with each element being `TRUE` if an object was deleted, `FALSE` otherwise.
 ##' }
 ##' \item{\code{duplicate}}{
-##'   Duplicate the value of a set of keys into a second set of keys. Because the value stored against a key is just the hash of its content, this operation is very efficient - it does not make a copy of the data, just the pointer to the data (for more details see the storr vignette which explains the storage model in more detail).  Multiple keys (and/or namespaces) can be provided, with keys and nmespaces recycled as needed.  However, the number of source and destination keys must be the same.  The order of operation is not defined, so if the sets of keys are overlapping it is undefined behaviour.
+##'   Duplicate the value of a set of keys into a second set of keys. Because the value stored against a key is just the hash of its content, this operation is very efficient - it does not make a copy of the data, just the pointer to the data (for more details see the storr vignette which explains the storage model in more detail).  Multiple keys (and/or namespaces) can be provided, with keys and namespaces recycled as needed.  However, the number of source and destination keys must be the same.  The order of operation is not defined, so if the sets of keys are overlapping it is undefined behaviour.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{duplicate(key_src, key_dest, namespace = self$default_namespace,
@@ -121,7 +121,7 @@
 ##'     \item{\code{key_dest}:   The destination key
 ##'     }
 ##'
-##'     \item{\code{namespace}:   The namespace to copy keys within (used only of \code{namespace_src} and \code{namespace_dest} are not provided
+##'     \item{\code{namespace}:   The namespace to copy keys within (used only of `namespace_src` and `namespace_dest` are not provided
 ##'     }
 ##'
 ##'     \item{\code{namespace_src}:   The source namespace - use this where keys are duplicated across namespaces.
@@ -160,7 +160,7 @@
 ##'
 ##'   \emph{Arguments:}
 ##'   \itemize{
-##'     \item{\code{namespace}:   A namespace, to clear a single namespace, or \code{NULL} to clear all namespaces.
+##'     \item{\code{namespace}:   A namespace, to clear a single namespace, or `NULL` to clear all namespaces.
 ##'     }
 ##'   }
 ##' }
@@ -180,7 +180,7 @@
 ##'   }
 ##'
 ##'   \emph{Value}:
-##'   A logical vector the same length as the recycled length of key/namespace, with each element being \code{TRUE} if the object exists and \code{FALSE} otherwise.
+##'   A logical vector the same length as the recycled length of key/namespace, with each element being `TRUE` if the object exists and `FALSE` otherwise.
 ##' }
 ##' \item{\code{exists_object}}{
 ##'   Test if an object with a given hash exists within the storr
@@ -216,7 +216,7 @@
 ##'   }
 ##'
 ##'   \emph{Details:}
-##'   The arguments \code{key} and \code{namespace} are recycled such that either can be given as a scalar if the other is a vector. Other recycling is not allowed.
+##'   The arguments `key` and `namespace` are recycled such that either can be given as a scalar if the other is a vector. Other recycling is not allowed.
 ##' }
 ##' \item{\code{mget}}{
 ##'   Get multiple elements at once
@@ -236,18 +236,18 @@
 ##'     \item{\code{use_cache}:   Use the internal cache to avoid reading or writing to the underlying storage if the data has already been seen (i.e., we have seen the hash of the object before).
 ##'     }
 ##'
-##'     \item{\code{missing}:   Value to use for missing elements; by default \code{NULL} will be used.  IF \code{NULL} is a value that you might have stored in the storr you might want to use a different value here to distinguish "missing" from "set to NULL".  In addition, the \code{missing} attribute will indicate which values were missing.
+##'     \item{\code{missing}:   Value to use for missing elements; by default `NULL` will be used.  IF `NULL` is a value that you might have stored in the storr you might want to use a different value here to distinguish "missing" from "set to NULL".  In addition, the `missing` attribute will indicate which values were missing.
 ##'     }
 ##'   }
 ##'
 ##'   \emph{Details:}
-##'   The arguments \code{key} and \code{namespace} are recycled such that either can be given as a scalar if the other is a vector. Other recycling is not allowed.
+##'   The arguments `key` and `namespace` are recycled such that either can be given as a scalar if the other is a vector. Other recycling is not allowed.
 ##'
 ##'   \emph{Value}:
-##'   A list with a length of the recycled length of \code{key} and \code{namespace}.  If any elements are missing, then an attribute \code{missing} will indicate the elements that are missing (this will be an integer vector with the indices of values were not found in the storr).
+##'   A list with a length of the recycled length of `key` and `namespace`.  If any elements are missing, then an attribute `missing` will indicate the elements that are missing (this will be an integer vector with the indices of values were not found in the storr).
 ##' }
 ##' \item{\code{mset_by_value}}{
-##'   Set multiple elements at once, by value.  A cross between \code{mset} and \code{set_by_value}.
+##'   Set multiple elements at once, by value.  A cross between `mset` and `set_by_value`.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{mset_by_value(value, namespace = self$default_namespace, use_cache = TRUE)}
@@ -265,7 +265,7 @@
 ##'   }
 ##' }
 ##' \item{\code{gc}}{
-##'   Garbage collect the storr.  Because keys do not directly map to objects, but instead map to hashes which map to objects, it is possible that hash/object pairs can persist with nothing pointing at them.  Running \code{gc} will remove these objects from the storr.
+##'   Garbage collect the storr.  Because keys do not directly map to objects, but instead map to hashes which map to objects, it is possible that hash/object pairs can persist with nothing pointing at them.  Running `gc` will remove these objects from the storr.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{gc()}
@@ -286,7 +286,7 @@
 ##'   }
 ##'
 ##'   \emph{Value}:
-##'   The object if it is present, otherwise throw a \code{HashError}.
+##'   The object if it is present, otherwise throw a `HashError`.
 ##' }
 ##' \item{\code{set_value}}{
 ##'   Add an object value, but don't add a key.  You will not need to use this very often, but it is used internally.
@@ -366,13 +366,13 @@
 ##'     \item{\code{src}:   Object to import objects from; can be a list, environment or another storr.
 ##'     }
 ##'
-##'     \item{\code{list}:   Names of of objects to import (or \code{NULL} to import all objects in \code{envir}.  If given it must be a character vector.  If named, the names of the character vector will be the names of the objects as created in the storr.
+##'     \item{\code{list}:   Names of of objects to import (or `NULL` to import all objects in `envir`.  If given it must be a character vector.  If named, the names of the character vector will be the names of the objects as created in the storr.
 ##'     }
 ##'
-##'     \item{\code{namespace}:   Namespace to get objects from, and to put objects into.  If \code{NULL}, all namespaces from \code{src} will be imported. If named, then the same rule is followed as \code{list}; \code{namespace = c(a = b)} will import the contents of namespace \code{b} as namespace \code{a}.
+##'     \item{\code{namespace}:   Namespace to get objects from, and to put objects into.  If `NULL`, all namespaces from `src` will be imported. If named, then the same rule is followed as `list`; `namespace = c(a = b)` will import the contents of namespace `b` as namespace `a`.
 ##'     }
 ##'
-##'     \item{\code{skip_missing}:   Logical, indicating if missing keys (specified in \code{list}) should be skipped over, rather than being treated as an error (the default).
+##'     \item{\code{skip_missing}:   Logical, indicating if missing keys (specified in `list`) should be skipped over, rather than being treated as an error (the default).
 ##'     }
 ##'   }
 ##' }
@@ -385,24 +385,24 @@
 ##'
 ##'   \emph{Arguments:}
 ##'   \itemize{
-##'     \item{\code{dest}:   A target destination to export objects to; can be a list, environment, or another storr.  Use \code{list()} to export to a brand new list, or use \code{as.list(object)} for a shorthand.
+##'     \item{\code{dest}:   A target destination to export objects to; can be a list, environment, or another storr.  Use `list()` to export to a brand new list, or use `as.list(object)` for a shorthand.
 ##'     }
 ##'
-##'     \item{\code{list}:   Names of objects to export, with the same rules as \code{list} in \code{$import}.
+##'     \item{\code{list}:   Names of objects to export, with the same rules as `list` in `$import`.
 ##'     }
 ##'
-##'     \item{\code{namespace}:   Namespace to get objects from, and to put objects into.  If \code{NULL}, then this will export namespaces from this (source) storr into the destination; if there is more than one namespace,this is only possible if \code{dest} is a storr (otherwise there will be an error).
+##'     \item{\code{namespace}:   Namespace to get objects from, and to put objects into.  If `NULL`, then this will export namespaces from this (source) storr into the destination; if there is more than one namespace,this is only possible if `dest` is a storr (otherwise there will be an error).
 ##'     }
 ##'
-##'     \item{\code{skip_missing}:   Logical, indicating if missing keys (specified in \code{list}) should be skipped over, rather than being treated as an error (the default).
+##'     \item{\code{skip_missing}:   Logical, indicating if missing keys (specified in `list`) should be skipped over, rather than being treated as an error (the default).
 ##'     }
 ##'   }
 ##'
 ##'   \emph{Value}:
-##'   Invisibly, \code{dest}, which allows use of \code{e <- st$export(new.env())} and \code{x <- st$export(list())}.
+##'   Invisibly, `dest`, which allows use of `e <- st$export(new.env())` and `x <- st$export(list())`.
 ##' }
 ##' \item{\code{archive_export}}{
-##'   Export objects from the storr into a special "archive" storr, which is an \code{\link{storr_rds}} with name mangling turned on (which encodes keys with base64 so that they do not voilate filesystem naming conventions).
+##'   Export objects from the storr into a special "archive" storr, which is an [storr_rds] with name mangling turned on (which encodes keys with base64 so that they do not violate filesystem naming conventions).
 ##'
 ##'   \emph{Usage:}
 ##'   \code{archive_export(path, names = NULL, namespace = NULL)}
@@ -412,15 +412,15 @@
 ##'     \item{\code{path}:   Path to create the storr at; can exist already.
 ##'     }
 ##'
-##'     \item{\code{names}:   As for \code{$export}
+##'     \item{\code{names}:   As for `$export`
 ##'     }
 ##'
-##'     \item{\code{namespace}:   Namespace to get objects from.  If \code{NULL}, then exports all namespaces found in this (source) storr.
+##'     \item{\code{namespace}:   Namespace to get objects from.  If `NULL`, then exports all namespaces found in this (source) storr.
 ##'     }
 ##'   }
 ##' }
 ##' \item{\code{archive_import}}{
-##'   Inverse of \code{archive_export}; import objects from a storr that was created by \code{archive_export}.
+##'   Inverse of `archive_export`; import objects from a storr that was created by `archive_export`.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{archive_import(path, names = NULL, namespace = NULL)}
@@ -430,15 +430,15 @@
 ##'     \item{\code{path}:   Path of the exported storr.
 ##'     }
 ##'
-##'     \item{\code{names}:   As for \code{$import}
+##'     \item{\code{names}:   As for `$import`
 ##'     }
 ##'
-##'     \item{\code{namespace}:   Namespace to import objects into.  If \code{NULL}, then imports all namespaces from the source storr.
+##'     \item{\code{namespace}:   Namespace to import objects into.  If `NULL`, then imports all namespaces from the source storr.
 ##'     }
 ##'   }
 ##' }
 ##' \item{\code{index_export}}{
-##'   Generate a data.frame with an index of objects present in a storr. This can be saved (for an rds storr) in lieu of the keys/ directory and re-imported with \code{index_import}.  It will provide a more version control friendly export of the data in a storr.
+##'   Generate a data.frame with an index of objects present in a storr. This can be saved (for an rds storr) in lieu of the keys/ directory and re-imported with `index_import`.  It will provide a more version control friendly export of the data in a storr.
 ##'
 ##'   \emph{Usage:}
 ##'   \code{index_export(namespace = NULL)}

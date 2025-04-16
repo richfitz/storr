@@ -20,3 +20,5 @@ Rprof\.out
 ^\.Rproj\.user$
 ^doc$
 ^Meta$
+^\.github$
+^_pkgdown\.yml$
